@@ -19,6 +19,13 @@ def main() -> int:
     a=ap.parse_args(); binary=Path(a.binary).resolve(); out=Path(a.output).resolve()
     out.parent.mkdir(parents=True,exist_ok=True)
     tools={n:shutil.which(n) for n in ('zstd','gzip','lz4','tar','bsdtar')}
+    if os.name=='nt':
+        # Use the same Windows-native tar in PowerShell and Git Bash. Git's
+        # GNU tar can otherwise take precedence and parse drive letters as hosts.
+        windows_tar=Path(os.environ.get('SystemRoot',r'C:\Windows'))/'System32'/'tar.exe'
+        if windows_tar.is_file():
+            tools['tar']=str(windows_tar)
+            tools['bsdtar']=str(windows_tar)
     tools['7zz']=shutil.which('7zz') or shutil.which('7z')
     if not tools['7zz'] and os.name=='nt':
         for key in ('ProgramFiles','ProgramFiles(x86)'):
