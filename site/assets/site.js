@@ -97,7 +97,7 @@
     if (available) {
       const file = item.asset.filename;
       const unixHash = selected === 'mac' ? 'shasum -a 256' : 'sha256sum';
-      const stem = file.replace(/\.(?:tar\.gz|zip)$/, '');
+      const stem = file.endsWith('.tar.gz') ? file.slice(0, -7) : file.endsWith('.zip') ? file.slice(0, -4) : file;
       const hashCmd = item.asset.sha256
         ? selected === 'windows' ? `if ((Get-FileHash .\\${file} -Algorithm SHA256).Hash.ToLower() -ne '${item.asset.sha256}') { throw 'SHA-256 mismatch' }` : `echo '${item.asset.sha256}  ${file}' | ${unixHash} -c -`
         : item.asset.checksumUrl

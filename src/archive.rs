@@ -165,6 +165,7 @@ fn preflight(root: &Path, limits: &ArchiveLimits) -> io::Result<Vec<Item>> {
     items.sort_by(|a, b| a.rel.cmp(&b.rel));
     for i in &mut items {
         if !i.dir {
+            #[cfg(unix)]
             let m = fs::metadata(&i.path)?;
             #[cfg(unix)]
             {
