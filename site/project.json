@@ -4,24 +4,24 @@
   "repository": "https://github.com/megasoft1978/bytepleat",
   "pages": "https://megasoft1978.github.io/bytepleat/",
   "release_status": "pending",
-  "native_ci_status": "partial",
+  "native_ci_status": "passed",
   "targets": [
     {
       "label": "macOS \u00b7 Apple silicon",
       "triple": "aarch64-apple-darwin",
-      "status": "pending",
+      "status": "passed",
       "asset": null
     },
     {
       "label": "Linux \u00b7 x86-64",
       "triple": "x86_64-unknown-linux-gnu",
-      "status": "pending",
+      "status": "passed",
       "asset": null
     },
     {
       "label": "Windows \u00b7 x86-64",
       "triple": "x86_64-pc-windows-msvc",
-      "status": "pending",
+      "status": "passed",
       "asset": null
     }
   ]
