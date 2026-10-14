@@ -1,0 +1,348 @@
+--- upstream/src/reader.rs
++++ mosaic/src/reader.rs
+@@ -21,6 +21,8 @@
+ /// (untrusted) uncompressed size. The buffer still grows to the real size as data is
+ /// read; this only stops a tiny archive from forcing a huge up-front allocation.
+ const MAX_PREALLOC_BYTES: usize = 4 << 20;
++const MAX_METADATA_ENTRIES: usize = 100_000;
++const MAX_BLOCK_GRAPH_NODES: usize = 64;
+ 
+ pub struct BoundedReader<R: Read> {
+     inner: R,
+@@ -194,6 +196,18 @@
+     /// }
+     /// ```
+     pub fn read<R: Read + Seek>(reader: &mut R, password: &Password) -> Result<Archive, Error> {
++        Self::read_with_limits(reader, password, usize::MAX, usize::MAX, usize::MAX)
++    }
++
++    /// Read a 7z archive while bounding compressed/decoded header sizes and LZMA dictionaries.
++    /// Added by Mosaic to ensure untrusted headers cannot trigger unbounded allocations.
++    pub fn read_with_limits<R: Read + Seek>(
++        reader: &mut R,
++        password: &Password,
++        max_header_bytes: usize,
++        max_dictionary_bytes: usize,
++        max_entries: usize,
++    ) -> Result<Archive, Error> {
+         let reader_len = reader.seek(SeekFrom::End(0))?;
+         reader.seek(SeekFrom::Start(0))?;
+ 
+@@ -226,9 +240,26 @@
+         };
+         if header_valid {
+             let start_header = Self::read_start_header(reader, start_header_crc)?;
+-            Self::init_archive(reader, start_header, password, true, 1)
++            Self::init_archive(
++                reader,
++                start_header,
++                password,
++                true,
++                1,
++                max_header_bytes,
++                max_dictionary_bytes,
++                max_entries.min(MAX_METADATA_ENTRIES),
++            )
+         } else {
+-            Self::try_to_locale_end_header(reader, reader_len, password, 1)
++            Self::try_to_locale_end_header(
++                reader,
++                reader_len,
++                password,
++                1,
++                max_header_bytes,
++                max_dictionary_bytes,
++                max_entries.min(MAX_METADATA_ENTRIES),
++            )
+         }
+     }
+ 
+@@ -258,6 +289,7 @@
+         header: &mut R,
+         archive: &mut Archive,
+         limit: usize,
++        max_entries: usize,
+     ) -> Result<(), Error> {
+         let mut nid = header.read_u8()?;
+         if nid == K_ARCHIVE_PROPERTIES {
+@@ -273,7 +305,7 @@
+             nid = header.read_u8()?;
+         }
+         if nid == K_FILES_INFO {
+-            Self::read_files_info(header, archive, limit)?;
++            Self::read_files_info(header, archive, limit, max_entries)?;
+             nid = header.read_u8()?;
+         }
+         if nid != K_END {
+@@ -300,6 +332,9 @@
+         reader_len: u64,
+         password: &Password,
+         thread_count: u32,
++        max_header_bytes: usize,
++        max_dictionary_bytes: usize,
++        max_entries: usize,
+     ) -> Result<Self, Error> {
+         let search_limit = 1024 * 1024;
+         let prev_data_size = reader.stream_position()? + 20;
+@@ -326,8 +361,16 @@
+                     next_header_size: reader_len - pos,
+                     next_header_crc: 0,
+                 };
+-                let result =
+-                    Self::init_archive(reader, start_header, password, false, thread_count)?;
++                let result = Self::init_archive(
++                    reader,
++                    start_header,
++                    password,
++                    false,
++                    thread_count,
++                    max_header_bytes,
++                    max_dictionary_bytes,
++                    max_entries,
++                )?;
+ 
+                 if !result.files.is_empty() {
+                     return Ok(result);
+@@ -345,10 +388,14 @@
+         password: &Password,
+         verify_crc: bool,
+         thread_count: u32,
++        max_header_bytes: usize,
++        max_dictionary_bytes: usize,
++        max_entries: usize,
+     ) -> Result<Self, Error> {
+         // Bound the declared next-header size against the actual file length before allocating.
+         let reader_len = reader.seek(SeekFrom::End(0))?;
+-        if start_header.next_header_size > usize::MAX as u64
++        if start_header.next_header_size > max_header_bytes as u64
++            || start_header.next_header_size > usize::MAX as u64
+             || start_header.next_header_size > reader_len
+         {
+             return Err(Error::other(format!(
+@@ -385,6 +432,8 @@
+                 password,
+                 next_header_size_int,
+                 thread_count,
++                max_header_bytes,
++                max_dictionary_bytes,
+             )?;
+             // Read the decoded header lazily instead of pre-allocating `buf_size` bytes:
+             // a crafted encoded header can declare a huge unpack size, and `resize`
+@@ -416,7 +465,7 @@
+         let header_len_bound = header.len();
+         let mut header = std::io::Cursor::new(&mut header);
+         if nid == K_HEADER {
+-            Self::read_header(&mut header, &mut archive, header_len_bound)?;
++            Self::read_header(&mut header, &mut archive, header_len_bound, max_entries)?;
+         } else {
+             return Err(Error::other("Broken or unsupported archive: no Header"));
+         }
+@@ -436,6 +485,8 @@
+         password: &Password,
+         limit: usize,
+         thread_count: u32,
++        max_header_bytes: usize,
++        max_dictionary_bytes: usize,
+     ) -> Result<(Box<dyn Read + 'r>, usize), Error> {
+         Self::read_streams_info(header, archive, limit)?;
+         let block = archive
+@@ -452,8 +503,21 @@
+ 
+         reader.seek(SeekFrom::Start(block_offset))?;
+         let coder_len = block.coders.len();
+-        let unpack_size = block.get_unpack_size() as usize;
+-        let pack_size = archive.pack_sizes[first_pack_stream_index] as usize;
++        let unpack_size = usize::try_from(block.get_unpack_size())
++            .map_err(|_| Error::other("decoded 7z header size does not fit this platform"))?;
++        if unpack_size > max_header_bytes {
++            return Err(Error::other("decoded 7z header exceeds configured limit"));
++        }
++        let pack_size = usize::try_from(archive.pack_sizes[first_pack_stream_index])
++            .map_err(|_| Error::other("encoded 7z header size does not fit this platform"))?;
++        let file_len = reader.seek(SeekFrom::End(0))?;
++        let pack_end = block_offset
++            .checked_add(pack_size as u64)
++            .ok_or_else(|| Error::other("encoded-header packed range overflow"))?;
++        if block_offset < SIGNATURE_HEADER_SIZE || pack_end > file_len {
++            return Err(Error::other("encoded-header packed range exceeds archive file"));
++        }
++        reader.seek(SeekFrom::Start(block_offset))?;
+         let input_reader = BoundedReader::new(reader, pack_size);
+         let mut decoder: Box<dyn Read> = Box::new(input_reader);
+         let mut decoder = if coder_len > 0 {
+@@ -463,9 +527,15 @@
+                         "Multi input/output stream coders are not yet supported",
+                     ));
+                 }
++                let intermediate_size = usize::try_from(block.get_unpack_size_at_index(index))
++                    .map_err(|_| Error::other("encoded-header intermediate size overflow"))?;
++                if intermediate_size > max_header_bytes {
++                    return Err(Error::other("encoded-header intermediate exceeds configured limit"));
++                }
++                check_dictionary(coder, max_dictionary_bytes)?;
+                 let next = add_decoder(
+                     decoder,
+-                    block.get_unpack_size_at_index(index) as usize,
++                    intermediate_size,
+                     coder,
+                     password,
+                     MAX_MEM_LIMIT_KB,
+@@ -516,8 +586,9 @@
+         header: &mut R,
+         archive: &mut Archive,
+         limit: usize,
++        max_entries: usize,
+     ) -> Result<(), Error> {
+-        let num_files = bounded_count(read_variable_u64(header)?, limit, "num files")?;
++        let num_files = bounded_count(read_variable_u64(header)?, limit.min(max_entries), "num files")?;
+         let mut files: Vec<ArchiveEntry> = vec![Default::default(); num_files];
+ 
+         let mut is_empty_stream: Option<BitSet> = None;
+@@ -832,7 +903,7 @@
+     ) -> Result<(), Error> {
+         archive.pack_pos = read_variable_u64(header)?;
+         let num_pack_streams =
+-            bounded_count(read_variable_u64(header)?, limit, "num pack streams")?;
++            bounded_count(read_variable_u64(header)?, limit.min(MAX_METADATA_ENTRIES), "num pack streams")?;
+         let mut nid = header.read_u8()?;
+         if nid == K_SIZE {
+             archive.pack_sizes = vec![0u64; num_pack_streams];
+@@ -868,7 +939,7 @@
+         if nid != K_FOLDER {
+             return Err(Error::other(format!("Expected kFolder, got {nid}")));
+         }
+-        let num_blocks = bounded_count(read_variable_u64(header)?, limit, "num blocks")?;
++        let num_blocks = bounded_count(read_variable_u64(header)?, limit.min(MAX_METADATA_ENTRIES), "num blocks")?;
+ 
+         archive.blocks.reserve_exact(num_blocks);
+         let external = header.read_u8()?;
+@@ -931,12 +1002,16 @@
+         if nid == K_NUM_UNPACK_STREAM {
+             total_unpack_streams = 0;
+             for block in archive.blocks.iter_mut() {
+-                let num_streams = bounded_count(read_variable_u64(header)?, limit, "numStreams")?;
++                let num_streams = bounded_count(
++                    read_variable_u64(header)?,
++                    limit.min(MAX_METADATA_ENTRIES),
++                    "numStreams",
++                )?;
+                 block.num_unpack_sub_streams = num_streams;
+                 // Each sub-stream still consumes header bytes downstream, so the running
+                 // total stays bounded by `limit`; reject anything larger up front.
+                 total_unpack_streams += num_streams;
+-                if total_unpack_streams > limit {
++                if total_unpack_streams > limit.min(MAX_METADATA_ENTRIES) {
+                     return Err(Error::other("total unpack streams exceeds available input"));
+                 }
+             }
+@@ -1031,7 +1106,7 @@
+     fn read_block<R: Read>(header: &mut R, limit: usize) -> Result<Block, Error> {
+         let mut block = Block::default();
+ 
+-        let num_coders = bounded_count(read_variable_u64(header)?, limit, "num coders")?;
++        let num_coders = bounded_count(read_variable_u64(header)?, limit.min(MAX_BLOCK_GRAPH_NODES), "num coders")?;
+         let mut coders = Vec::with_capacity(num_coders);
+         let mut total_in_streams: u64 = 0;
+         let mut total_out_streams: u64 = 0;
+@@ -1063,8 +1138,8 @@
+             total_out_streams = total_out_streams
+                 .checked_add(coder.num_out_streams)
+                 .ok_or_else(|| Error::other("coder stream counts exceed available input"))?;
+-            if total_in_streams > limit as u64 || total_out_streams > limit as u64 {
+-                return Err(Error::other("coder stream counts exceed available input"));
++            if total_in_streams > MAX_BLOCK_GRAPH_NODES as u64 || total_out_streams > MAX_BLOCK_GRAPH_NODES as u64 {
++                return Err(Error::other("coder stream counts exceed 64-node graph cap"));
+             }
+             if has_attributes {
+                 let properties_size =
+@@ -1135,6 +1210,36 @@
+ 
+         Ok(block)
+     }
++}
++
++fn check_dictionary(coder: &crate::Coder, max_dictionary_bytes: usize) -> Result<(), Error> {
++    let method = coder.encoder_method_id();
++    let dict = if method == crate::EncoderMethod::ID_LZMA2 {
++        let prop = *coder
++            .properties()
++            .first()
++            .ok_or(Error::other("LZMA2 properties too short"))? as u32;
++        if prop > 40 {
++            return Err(Error::other("invalid LZMA2 dictionary property"));
++        }
++        if prop == 40 {
++            u32::MAX
++        } else {
++            (2 | (prop & 1)) << (prop / 2 + 11)
++        }
++    } else if method == crate::EncoderMethod::ID_LZMA {
++        let props = coder.properties();
++        if props.len() < 5 {
++            return Err(Error::other("LZMA properties too short"));
++        }
++        u32::from_le_bytes([props[1], props[2], props[3], props[4]])
++    } else {
++        0
++    };
++    if dict as u64 > max_dictionary_bytes as u64 {
++        return Err(Error::other("7z dictionary exceeds configured limit"));
++    }
++    Ok(())
+ }
+ 
+ /// Validates an attacker-controlled count/size decoded from the header against an upper
+@@ -1289,6 +1394,28 @@
+             std::thread::available_parallelism().unwrap_or(NonZeroUsize::new(1).unwrap());
+         reader.set_thread_count(thread_count.get() as u32);
+ 
++        Ok(reader)
++    }
++
++    /// Creates a reader with allocation bounds applied before parsing or decoding headers.
++    /// `max_entries` is additionally capped at 100,000 metadata entries. The returned reader
++    /// is single-threaded; this bounded constructor is added by Mosaic.
++    pub fn new_with_limits(
++        mut source: R,
++        password: Password,
++        max_header_bytes: usize,
++        max_dictionary_bytes: usize,
++        max_entries: usize,
++    ) -> Result<Self, Error> {
++        let archive = Archive::read_with_limits(
++            &mut source,
++            &password,
++            max_header_bytes,
++            max_dictionary_bytes,
++            max_entries,
++        )?;
++        let mut reader = Self::from_archive(archive, source, password);
++        reader.set_thread_count(1);
+         Ok(reader)
+     }
+ 
+--- upstream/src/writer.rs
++++ mosaic/src/writer.rs
+@@ -697,6 +697,11 @@
+         if has_empty {
+             header.write_u8(K_EMPTY_FILE)?;
+ 
++            // The bitmap covers every empty stream, including directory entries
++            // after the final empty file. `insert` alone only grows to the last
++            // set bit, which produces a truncated, non-portable 7z header.
++            bitset.reserve_len_exact(empty_stream_counter);
++
+             let mut temp: Vec<u8> = Vec::with_capacity(bitset.len() / 8 + 1);
+             write_bit_set(&mut temp, &bitset)?;
+             write_u64(header, temp.len() as u64)?;
+@@ -721,6 +726,10 @@
+         }
+         if has_anti {
+             header.write_u8(K_ANTI)?;
++
++            // Anti-item indexes share the empty-stream index space, so their
++            // bitmap must also include trailing non-anti empty streams.
++            bitset.reserve_len_exact(counter);
+ 
+             let mut temp: Vec<u8> = Vec::with_capacity(bitset.len() / 8 + 1);
+             write_bit_set(&mut temp, &bitset)?;

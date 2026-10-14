@@ -1,0 +1,47 @@
+[package]
+name = "arqlet"
+version = "0.5.0"
+edition = "2021"
+rust-version = "1.93"
+homepage = "https://megasoft1978.github.io/arqlet/"
+repository = "https://github.com/megasoft1978/arqlet"
+documentation = "https://megasoft1978.github.io/arqlet/"
+license = "MIT"
+description = "Streaming compression CLI using established formats"
+
+[[bin]]
+name = "arqlet"
+path = "src/main.rs"
+
+[dependencies]
+zstd = { version = "=0.13.3", features = ["zstdmt"] }
+lz4_flex = { version = "=0.11.6", features = ["frame"] }
+lz4 = { version = "=1.28.1", optional = true }
+flate2 = { version = "=1.1.10", default-features = false }
+pco = "=1.0.4"
+better_io = "0.2"
+sha2 = "=0.11.1"
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tar = "=0.4.46"
+tempfile = "3"
+walkdir = "2"
+unicode-normalization = "0.1"
+same-file = "1"
+filetime = "0.2"
+
+zip = { version = "=9.0.3", default-features = false, features = ["deflate-flate2"] }
+sevenz-rust2 = { version = "=0.24.0", default-features = false, features = ["compress"] }
+
+[features]
+default = ["gzip-zlib-rs", "lz4-native"]
+gzip-zlib-rs = ["flate2/zlib-rs"]
+gzip-miniz = ["flate2/miniz_oxide"]
+lz4-native = ["dep:lz4"]
+lz4-flex = []
+
+[dev-dependencies]
+
+[patch.crates-io]
+sevenz-rust2 = { path = "vendor/sevenz-rust2" }

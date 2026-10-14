@@ -1,0 +1,18 @@
+name: Feature request
+description: Suggest a focused improvement to Arqlet
+title: ""
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Include relevant format or compatibility details if applicable.
+    validations:
+      required: true

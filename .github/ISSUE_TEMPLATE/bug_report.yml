@@ -1,0 +1,32 @@
+name: Bug report
+description: Report a reproducible Arqlet problem
+title: ""
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Arqlet version
+      placeholder: "0.5.0"
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Operating system and architecture
+      placeholder: "macOS 15, Apple Silicon"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Command and reproduction steps
+      description: Remove private paths or data. Do not include vulnerability details here.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual result
+    validations:
+      required: true

@@ -1,0 +1,192 @@
+use arqlet::{
+    archive::ArchiveLimits,
+    archive_safety::ReadLimits,
+    archive_zip::{self, PackOptions},
+};
+use std::{fs, io::Cursor};
+use tempfile::tempdir;
+use zip::{write::SimpleFileOptions, CompressionMethod, ZipWriter};
+
+fn limits() -> ReadLimits {
+    ReadLimits::default()
+}
+fn pack(src: &std::path::Path, path: &std::path::Path, stored: bool) {
+    let mut f = fs::File::create(path).unwrap();
+    archive_zip::pack(
+        src,
+        &mut f,
+        &PackOptions { level: 6, stored },
+        &ArchiveLimits::default(),
+    )
+    .unwrap();
+}
+#[test]
+fn stored_and_deflate_file_and_tree_roundtrip() {
+    let t = tempdir().unwrap();
+    let src = t.path().join("src");
+    fs::create_dir(&src).unwrap();
+    fs::create_dir(src.join("empty")).unwrap();
+    fs::write(
+        src.join("é-long-名前-abcdefghijklmnopqrstuvwxyz.txt"),
+        b"byte data\0\xff",
+    )
+    .unwrap();
+    for stored in [true, false] {
+        let z = t.path().join(format!("{stored}.zip"));
+        pack(&src, &z, stored);
+        let dst = t.path().join(format!("out-{stored}"));
+        let s = archive_zip::unpack(&z, &dst, &limits()).unwrap();
+        assert_eq!(
+            fs::read(dst.join("é-long-名前-abcdefghijklmnopqrstuvwxyz.txt")).unwrap(),
+            b"byte data\0\xff"
+        );
+        assert!(dst.join("empty").is_dir());
+        assert_eq!(s.output_bytes, 11);
+        assert_eq!(archive_zip::test(&z, &limits()).unwrap().output_bytes, 11);
+    }
+}
+fn raw_zip(name: &str, mode: Option<u32>) -> Vec<u8> {
+    let c = Cursor::new(Vec::new());
+    let mut z = ZipWriter::new(c);
+    let mut o = SimpleFileOptions::default().compression_method(CompressionMethod::Stored);
+    if let Some(m) = mode {
+        o = o.unix_permissions(m)
+    }
+    z.start_file(name, o).unwrap();
+    use std::io::Write;
+    z.write_all(b"x").unwrap();
+    z.finish().unwrap().into_inner()
+}
+#[test]
+fn rejects_traversal_and_links() {
+    let t = tempdir().unwrap();
+    for (name, mode) in [("../escape", None), ("/absolute", None)] {
+        let p = t.path().join("bad.zip");
+        fs::write(&p, raw_zip(name, mode)).unwrap();
+        assert!(archive_zip::test(&p, &limits()).is_err());
+    }
+}
+#[test]
+fn rejects_trailing_bytes_and_preserves_existing_destination() {
+    let t = tempdir().unwrap();
+    let src = t.path().join("f");
+    fs::write(&src, b"ok").unwrap();
+    let p = t.path().join("a.zip");
+    pack(&src, &p, false);
+    let mut b = fs::read(&p).unwrap();
+    b.extend_from_slice(b"junk");
+    fs::write(&p, &b).unwrap();
+    assert!(archive_zip::test(&p, &limits()).is_err());
+    let dest = t.path().join("existing");
+    fs::create_dir(&dest).unwrap();
+    fs::write(dest.join("keep"), b"yes").unwrap();
+    assert!(archive_zip::unpack(&p, &dest, &limits()).is_err());
+    assert_eq!(fs::read(dest.join("keep")).unwrap(), b"yes");
+}
+#[test]
+fn rejects_malformed_eocd_and_zip64_markers() {
+    let t = tempdir().unwrap();
+    let p = t.path().join("bad.zip");
+    for bytes in [
+        b"PK\x05\x06\0\0\0\0\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\0\0".to_vec(),
+        b"PK\x05\x06\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0".to_vec(),
+    ] {
+        fs::write(&p, bytes).unwrap();
+        assert!(archive_zip::test(&p, &limits()).is_err());
+    }
+}
+
+#[test]
+fn rejects_case_and_nfc_collisions_before_decoding() {
+    let t = tempdir().unwrap();
+    let p = t.path().join("collision.zip");
+    let mut z = ZipWriter::new(Cursor::new(Vec::new()));
+    for name in ["A.txt", "a.TXT"] {
+        z.start_file(name, SimpleFileOptions::default()).unwrap();
+        use std::io::Write;
+        z.write_all(b"x").unwrap();
+    }
+    fs::write(&p, z.finish().unwrap().into_inner()).unwrap();
+    assert!(archive_zip::test(&p, &limits()).is_err());
+}
+
+#[test]
+fn crc_tamper_and_truncation_fail() {
+    let t = tempdir().unwrap();
+    let source = t.path().join("file");
+    fs::write(&source, b"payload").unwrap();
+    let p = t.path().join("x.zip");
+    pack(&source, &p, true);
+    let original = fs::read(&p).unwrap();
+    let mut corrupt = original.clone();
+    let data = 30
+        + u16::from_le_bytes([corrupt[26], corrupt[27]]) as usize
+        + u16::from_le_bytes([corrupt[28], corrupt[29]]) as usize;
+    corrupt[data] ^= 0x20;
+    fs::write(&p, corrupt).unwrap();
+    assert!(archive_zip::test(&p, &limits()).is_err());
+    fs::write(&p, &original[..original.len() - 8]).unwrap();
+    assert!(archive_zip::test(&p, &limits()).is_err());
+}
+
+#[test]
+fn applies_output_entry_and_header_caps() {
+    let t = tempdir().unwrap();
+    let source = t.path().join("large");
+    fs::write(&source, vec![7; 128]).unwrap();
+    let p = t.path().join("x.zip");
+    pack(&source, &p, false);
+    let mut l = limits();
+    l.archive.max_total_bytes = 64;
+    assert!(archive_zip::test(&p, &l).is_err());
+    let mut l = limits();
+    l.archive.max_entries = 0;
+    assert!(archive_zip::test(&p, &l).is_err());
+    let mut l = limits();
+    l.max_header_bytes = 1;
+    assert!(archive_zip::test(&p, &l).is_err());
+}
+
+#[test]
+fn rejects_local_zip64_and_unreferenced_prefix_payload() {
+    let t = tempdir().unwrap();
+    let p = t.path().join("bad.zip");
+    let original = raw_zip("ok", None);
+    let mut prefixed = b"hidden".to_vec();
+    prefixed.extend_from_slice(&original);
+    fs::write(&p, prefixed).unwrap();
+    assert!(archive_zip::test(&p, &limits()).is_err());
+    let mut changed = original;
+    changed[26] = 3; // central/local names disagree
+    fs::write(&p, changed).unwrap();
+    assert!(archive_zip::test(&p, &limits()).is_err());
+}
+
+#[test]
+fn exact_duplicate_names_cannot_be_silently_dropped() {
+    use std::io::Write;
+    let t = tempdir().unwrap();
+    let p = t.path().join("duplicate.zip");
+    let mut writer = ZipWriter::new(Cursor::new(Vec::new()));
+    for name in ["one", "two"] {
+        writer
+            .start_file(
+                name,
+                SimpleFileOptions::default().compression_method(CompressionMethod::Stored),
+            )
+            .unwrap();
+        writer.write_all(b"data").unwrap();
+    }
+    let mut data = writer.finish().unwrap().into_inner();
+    for at in 0..data.len() - 2 {
+        if &data[at..at + 3] == b"two" {
+            data[at..at + 3].copy_from_slice(b"one");
+        }
+    }
+    fs::write(&p, data).unwrap();
+    assert!(archive_zip::test(&p, &limits()).is_err());
+    assert!(archive_zip::info(&p, &limits()).is_err());
+    let destination = t.path().join("out");
+    assert!(archive_zip::unpack(&p, &destination, &limits()).is_err());
+    assert!(!destination.exists());
+}
