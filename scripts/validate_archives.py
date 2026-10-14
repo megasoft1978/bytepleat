@@ -125,7 +125,10 @@ def main():
             if got['files']!=expected['files'] or got['directories']!=expected['directories']:raise RuntimeError('candidate Python ZIP extraction differs')
             return {'input_archive_sha256':sha(pyzip),'restored':got,'integrity_validated':False}
         record(results,'python-deflate-zip-read',python_zip_read)
-        native_zip=t/'native-deflate.zip'; native_args=['a','-tzip','-mm=Deflate','-mx=6','-mmt=1',native_zip,*[p.relative_to(source) for p in sorted(source.iterdir())]]
+        native_zip=t/'native-deflate.zip'
+        # Arqlet accepts ASCII names or UTF-8-flagged UTF-8 names; force 7-Zip
+        # to encode non-ASCII ZIP names as UTF-8 instead of the Windows codepage.
+        native_args=['a','-tzip','-mm=Deflate','-mx=6','-mmt=1','-mcu=on',native_zip,*[p.relative_to(source) for p in sorted(source.iterdir())]]
         np=subprocess.run([str(native),*map(str,native_args)],cwd=source,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         commands.append({'argv':[str(native),*map(str,native_args)],'exit_code':np.returncode,'stdout':np.stdout.decode('utf8','replace')[-2000:],'stderr':np.stderr.decode('utf8','replace')[-2000:]})
         def native_zip_read():
