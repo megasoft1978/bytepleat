@@ -1,0 +1,94 @@
+name: Desktop package schema probe
+on:
+  push:
+    branches: [desktop-alpha]
+    paths:
+      - .github/workflows/desktop-package-probe.yml
+      - desktop/integrations/windows/package/**
+  workflow_dispatch:
+    inputs:
+      source-run-id:
+        description: Successful desktop workflow run containing Windows x64 and ARM64 executable and Explorer artifacts
+        required: true
+        type: string
+        default: '38626708085'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  package-probe:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: x64
+            executable-artifact: desktop-executable-Windows
+            explorer-artifact: explorer-x64
+          - architecture: ARM64
+            executable-artifact: desktop-executable-Windows-ARM64
+            explorer-artifact: explorer-ARM64
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+      - name: Download executable from source run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ matrix.executable-artifact }}
+          path: source-executable
+          run-id: ${{ inputs.source-run-id || '38626708085' }}
+          github-token: ${{ github.token }}
+      - name: Download matching Explorer DLL from source run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ matrix.explorer-artifact }}
+          path: source-explorer
+          run-id: ${{ inputs.source-run-id || '38626708085' }}
+          github-token: ${{ github.token }}
+      - name: Assemble exact architecture payload and record hashes
+        shell: pwsh
+        env:
+          SOURCE_RUN_ID: ${{ inputs.source-run-id || '38626708085' }}
+          MANIFEST_COMMIT: ${{ github.sha }}
+          ARCHITECTURE: ${{ matrix.architecture }}
+        run: |
+          $payload = Join-Path $PWD 'package-input'
+          New-Item -ItemType Directory -Path $payload | Out-Null
+          $exe = @(Get-ChildItem source-executable -Recurse -File -Filter 'bytepleat-desktop.exe')
+          $dll = @(Get-ChildItem source-explorer -Recurse -File -Filter 'BytepleatExplorerCommands.dll')
+          if ($exe.Count -ne 1) { throw "Expected one executable in ${{ matrix.executable-artifact }}; found $($exe.Count)" }
+          if ($dll.Count -ne 1) { throw "Expected one Explorer DLL in ${{ matrix.explorer-artifact }}; found $($dll.Count)" }
+          Copy-Item -LiteralPath $exe[0].FullName -Destination (Join-Path $payload 'bytepleat-desktop.exe')
+          Copy-Item -LiteralPath $dll[0].FullName -Destination (Join-Path $payload 'BytepleatExplorerCommands.dll')
+          $exeHash = (Get-FileHash (Join-Path $payload 'bytepleat-desktop.exe') -Algorithm SHA256).Hash.ToLowerInvariant()
+          $dllHash = (Get-FileHash (Join-Path $payload 'BytepleatExplorerCommands.dll') -Algorithm SHA256).Hash.ToLowerInvariant()
+          $provenance = [ordered]@{
+            schemaVersion = 1
+            claim = 'Schema-only unsigned package validation; no consumer/runtime or installation claim.'
+            manifestCommit = $env:MANIFEST_COMMIT
+            artifactSourceRunId = $env:SOURCE_RUN_ID
+            architecture = $env:ARCHITECTURE
+            payloadSha256 = [ordered]@{
+              executable = $exeHash
+              explorerDll = $dllHash
+            }
+          }
+          $provenance | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath provenance.json -Encoding utf8
+      - name: Build unsigned schema validation package with MakeAppx
+        shell: pwsh
+        run: >-
+          ./desktop/integrations/windows/package/Build-Package.ps1
+          -AppDirectory ./package-input
+          -Architecture ${{ matrix.architecture }}
+          -OutputDirectory ./package-output
+      - name: Upload unsigned schema validation artifact and provenance
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: package-schema-probe-${{ matrix.architecture }}
+          path: |
+            package-output/Bytepleat-${{ matrix.architecture }}.msix
+            provenance.json
+          if-no-files-found: error
+          retention-days: 7

@@ -16,10 +16,12 @@ class WindowsAdapterManifestTests(unittest.TestCase):
             'com': 'http://schemas.microsoft.com/appx/manifest/com/windows10',
         }
         classes = {x.attrib['Id'].upper() for x in root.findall('.//com:Class', ns)}
-        verbs = root.findall('.//d4:Verb', ns)
+        verbs = root.findall('.//d5:Verb', ns)
         self.assertTrue(verbs)
         self.assertTrue(all(v.attrib['Clsid'].upper() in classes for v in verbs))
-        self.assertEqual({x.attrib['Type'] for x in root.findall('.//d4:ItemType', ns)}, {'*', 'Directory'})
+        item_types = root.findall('.//d5:ItemType', ns)
+        self.assertEqual({x.attrib['Type'] for x in item_types}, {'*', 'Directory'})
+        self.assertTrue(all(x.find('d5:Verb', ns) is not None for x in item_types))
         self.assertIsNotNone(root.find('{http://schemas.microsoft.com/appx/manifest/foundation/windows10}Properties/{http://schemas.microsoft.com/appx/manifest/foundation/windows10}Logo'))
         self.assertIsNotNone(root.find('.//uap:VisualElements', ns).attrib.get('Square150x150Logo'))
         self.assertIsNotNone(root.find('.//uap:VisualElements', ns).attrib.get('Square44x44Logo'))
