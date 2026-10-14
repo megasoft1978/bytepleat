@@ -78,7 +78,7 @@
     if (download) {
       download.href = available ? item.asset.url : releases;
       download.textContent = available ? `Download for ${selected === 'windows' ? 'Windows' : selected === 'linux' ? 'Linux' : 'macOS'}` : 'View release status ↗';
-      download.setAttribute('aria-label', available ? `Download ${item.asset.filename}` : 'View release status on GitHub');
+      download.setAttribute('aria-label', available ? `${download.textContent}: ${item.asset.filename}` : 'View release status on GitHub');
     }
     if (details) {
       details.hidden = !available;

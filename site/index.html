@@ -36,7 +36,7 @@
         <tr><td>ZIP / 7z</td><td>Supported directory archive subsets</td><td>Pack · inspect · test · unpack</td></tr>
         <tr><td>pco</td><td>Typed raw little-endian values</td><td>Numeric streams · explicit <code>--type</code></td></tr>
       </tbody></table></div>
-      <p class="note">Pco reads typed raw values; it does not parse CSV. For Zstandard and gzip, choose <code>--preset fast</code>, <code>balanced</code> (default), or <code>compact</code>; to select codec levels. Time and size depend on your files. LZ4 has one level. See the <a href="./docs/">guide</a> for details.</p>
+      <p class="note">Pco reads typed raw values; it does not parse CSV. For Zstandard and gzip, choose <code>--preset fast</code>, <code>balanced</code> (default), or <code>compact</code> to select codec levels. Time and size depend on your files. LZ4 has one level. See the <a href="./docs/">guide</a> for details.</p>
       <div class="usecases" aria-label="Example uses"><span>Package project folders</span><span>Compress individual files</span><span>Move archives between tools</span><span>Keep numeric data typed</span></div>
     </div></section>
 
@@ -48,7 +48,7 @@
       <div id="install-commands" hidden><p><strong>Verify SHA-256</strong></p><pre><code id="checksum-command"></code></pre><button class="copy" type="button" id="copy-checksum" data-copy="">Copy checksum command</button><p><strong>Extract and run</strong></p><pre><code id="extract-command"></code></pre><button class="copy" type="button" id="copy-install" data-copy="">Copy install command</button></div>
       <div class="target-list"><div class="target"><strong>macOS · Apple silicon</strong><code>aarch64-apple-darwin</code><small data-target-status="mac">Native CI passed</small></div><div class="target"><strong>Linux · x86-64</strong><code>x86_64-unknown-linux-gnu</code><small data-target-status="linux">Native CI passed</small></div><div class="target"><strong>Windows · x86-64</strong><code>x86_64-pc-windows-msvc</code><small data-target-status="windows">Native CI passed</small></div></div>
       <p class="note">Windows packages need the x64 <a href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist">Microsoft Visual C++ v14 runtime</a>. It is not bundled. Packages are unsigned; macOS builds are not notarized.</p>
-      <p class="install-alt">If you have Rust installed, install the tagged source with: <code>cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.1</code>. See the <a href="https://github.com/megasoft1978/bytepleat/releases">GitHub releases list</a> for current availability.</p>
+      <p class="install-alt">With Rust 1.93+ and a C compiler toolchain, install the tagged source with: <code>cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.1</code>. See the <a href="https://github.com/megasoft1978/bytepleat/releases">GitHub releases list</a> for current availability.</p>
     </div></section>
 
     <section class="section" id="guide"><div class="wrap">
