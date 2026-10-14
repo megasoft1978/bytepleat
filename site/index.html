@@ -20,8 +20,8 @@
     <section class="wrap hero" aria-labelledby="hero-title">
       <div><span class="eyebrow">A small, clear command line</span><h1 id="hero-title">Files in.<br><em>Bytes back.</em></h1>
         <p class="lead">Arqlet is a Rust tool for compressing individual files and packaging directories with established formats. It is built around a simple promise: restore the original file bytes exactly.</p>
-        <div class="actions"><a class="button" href="https://github.com/megasoft1978/arqlet/releases/latest">Download Arqlet <span aria-hidden="true">↗</span></a><a class="button secondary" href="./docs/">Read the guide</a></div>
-        <p class="release-note">Version 0.5.0 · first public release pending · source is open on GitHub</p>
+        <div class="actions"><a class="button" href="https://github.com/megasoft1978/arqlet/releases" data-release-link>View release status <span aria-hidden="true">↗</span></a><a class="button secondary" href="./docs/">Read the guide</a></div>
+        <p class="release-note" data-release-note>Version 0.5.0 · first public release pending · source is open on GitHub</p>
       </div>
       <div class="visual" aria-hidden="true"><div class="archive-art"><div class="sheet one"></div><div class="sheet two"></div><div class="sheet three"><span class="tag">ARQLET / ARCHIVE</span><strong>source → intact</strong><div class="sheet-lines"><i></i><i></i><i></i></div></div><span class="float-label label-a">format: standard</span><span class="float-label label-b">restore: exact bytes</span></div></div>
     </section>
@@ -32,19 +32,21 @@
         <tr><td>zstd</td><td>General files and directory archives</td><td>Compress · decompress · pack</td></tr>
         <tr><td>gzip</td><td>Broad compatibility and streams</td><td>Compress · decompress · pack</td></tr>
         <tr><td>LZ4</td><td>Fast, widely supported streams</td><td>Compress · decompress · pack</td></tr>
-        <tr><td>ZIP / 7z</td><td>Interchangeable directory archives</td><td>Pack · inspect · test · unpack</td></tr>
-        <tr><td>pco</td><td>Typed little-endian buffers</td><td>Numeric stream workflows</td></tr>
+        <tr><td>ZIP / 7z</td><td>Supported directory archive subsets</td><td>Pack · inspect · test · unpack</td></tr>
+        <tr><td>pco</td><td>Typed raw little-endian values</td><td>Numeric streams · explicit <code>--type</code></td></tr>
       </tbody></table></div>
-      <p class="note">The format name tells you what kind of stream or archive you are creating. Compression results depend on the data and settings; no format is best for every file.</p>
+      <p class="note">Pco reads typed raw values; it does not parse CSV. Compression results depend on data and settings, and no format is best for every file.</p>
       <div class="usecases" aria-label="Example uses"><span>Package project folders</span><span>Compress individual files</span><span>Move archives between tools</span><span>Keep numeric data typed</span></div>
     </div></section>
 
     <section class="install" id="install"><div class="wrap section">
-      <div class="section-head"><div><span class="eyebrow">Get started</span><h2>Pick your platform.</h2></div><p class="section-intro">Release assets are being prepared. The architecture choices below are planned targets, not downloads that are available today.</p></div>
-      <div class="platform-row" role="group" aria-label="Select a planned platform"><button class="platform" type="button" aria-pressed="true" data-target="mac">macOS · Apple silicon</button><button class="platform" type="button" aria-pressed="false" data-target="linux">Linux · x86-64</button><button class="platform" type="button" aria-pressed="false" data-target="windows">Windows · x86-64</button></div>
-      <div class="platform-output" aria-live="polite"><code id="target-triple">aarch64-apple-darwin</code><span class="pending">Planned target · release pending</span></div>
-      <div class="target-list"><div class="target"><strong>macOS · Apple silicon</strong><code>aarch64-apple-darwin</code><small>Release pending</small></div><div class="target"><strong>Linux · x86-64</strong><code>x86_64-unknown-linux-gnu</code><small>Release pending</small></div><div class="target"><strong>Windows · x86-64</strong><code>x86_64-pc-windows-msvc</code><small>Release pending</small></div></div>
-      <p class="install-alt">When release archives are available, compare their published SHA-256 checksum before extracting or running them. If you have Rust installed, the planned source install is <code>cargo install --locked --git https://github.com/megasoft1978/arqlet --tag v0.5.0</code>. This command becomes usable after that tag is published. For now, visit the <a href="https://github.com/megasoft1978/arqlet/releases/latest">release page</a> for current availability and checksums.</p>
+      <div class="section-head"><div><span class="eyebrow">Get started</span><h2>Pick your platform.</h2></div><p class="section-intro" data-install-summary>Check the release status for available builds. Platform choices describe the planned package targets.</p></div>
+      <div class="platform-row" role="group" aria-label="Select a platform"><button class="platform" type="button" aria-pressed="true" data-target="mac">macOS · Apple silicon</button><button class="platform" type="button" aria-pressed="false" data-target="linux">Linux · x86-64</button><button class="platform" type="button" aria-pressed="false" data-target="windows">Windows · x86-64</button></div>
+      <div class="platform-output" aria-live="polite"><code id="target-triple">aarch64-apple-darwin</code><span class="pending" id="target-status">Release pending</span></div>
+      <p id="download-details" hidden></p>
+      <div id="install-commands" hidden><p><strong>Verify SHA-256</strong></p><pre><code id="checksum-command"></code></pre><button class="copy" type="button" id="copy-checksum" data-copy="">Copy checksum command</button><p><strong>Extract and run</strong></p><pre><code id="extract-command"></code></pre><button class="copy" type="button" id="copy-install" data-copy="">Copy install command</button></div>
+      <div class="target-list"><div class="target"><strong>macOS · Apple silicon</strong><code>aarch64-apple-darwin</code><small data-target-status="mac">Release pending</small></div><div class="target"><strong>Linux · x86-64</strong><code>x86_64-unknown-linux-gnu</code><small data-target-status="linux">Release pending</small></div><div class="target"><strong>Windows · x86-64</strong><code>x86_64-pc-windows-msvc</code><small data-target-status="windows">Release pending</small></div></div>
+      <p class="install-alt">If you have Rust installed, source installation is available after the <code>v0.5.0</code> tag is published: <code>cargo install --locked --git https://github.com/megasoft1978/arqlet --tag v0.5.0</code>. See the <a href="https://github.com/megasoft1978/arqlet/releases">GitHub releases list</a> for current availability.</p>
     </div></section>
 
     <section class="section" id="guide"><div class="wrap">
@@ -62,18 +64,17 @@
 
     <section class="section"><div class="wrap">
       <div class="section-head"><div><span class="eyebrow">Careful by default</span><h2>Archives deserve a second look.</h2></div><p class="section-intro">Compression is one part of file handling. Arqlet also makes archive extraction an explicit step with limits and path checks.</p></div>
-      <div class="honesty"><div><strong>Review before restoring</strong><p>Inspect archive contents and only unpack files from sources you trust. Set an output directory you control, and keep a separate backup for important data.</p></div><div><strong>Integrity has limits</strong><p>Checksums can detect changes where a format provides them; they do not prove who created a file or guarantee that an archive is safe. A successful test is not a security certificate.</p></div><div><strong>Exact means bytes</strong><p>Arqlet's lossless file workflows preserve the input bytes when decompressed. Metadata such as paths and filesystem attributes is a separate concern.</p></div><div><strong>Still an early release</strong><p>Arqlet 0.5.0 is a planned first public release based on the reviewed 0.3.1 project. Release assets and hosted platform checks are pending.</p></div></div>
-      <div class="target-list"><div class="target"><strong>macOS · Apple silicon</strong><code>aarch64-apple-darwin</code><small>Native CI pending</small></div><div class="target"><strong>Linux · x86-64</strong><code>x86_64-unknown-linux-gnu</code><small>Native CI pending</small></div><div class="target"><strong>Windows · x86-64</strong><code>x86_64-pc-windows-msvc</code><small>Native CI pending</small></div></div>
+      <div class="honesty"><div><strong>Review before restoring</strong><p>Inspect archive contents and unpack only trusted files into a new directory you control.</p></div><div><strong>Integrity has limits</strong><p>Checksums detect changes; they do not prove who created a file or that it is safe.</p></div><div><strong>Exact means bytes</strong><p>Lossless file workflows restore input bytes. Paths and filesystem attributes are separate metadata.</p></div><div><strong>Release status</strong><p data-release-status>First public release pending. macOS and Linux native CI passed; Windows installer fix is pending.</p></div></div>
     </div></section>
 
     <section class="section"><div class="wrap faq"><span class="eyebrow">Good to know</span><h2>Questions, plainly answered.</h2>
       <details><summary>Does Arqlet invent its own compression format?</summary><p>No. Its file and archive workflows use established formats such as zstd, gzip, LZ4, ZIP, and 7z. Pco is available for typed numeric data.</p></details>
       <details><summary>Will every file get smaller?</summary><p>No. Compressed, encrypted, or already optimized files may not shrink and can grow slightly. Choose a format based on compatibility and the kind of data you have.</p></details>
-      <details><summary>Is the 0.5.0 download available now?</summary><p>The initial public release is pending. The download link points to GitHub's latest release page, which will show assets and checksums when the coordinator publishes them.</p></details>
-      <details><summary>How can I contribute?</summary><p>Read the repository's contribution guidance, open an issue with a reproducible example, or propose a change on <a href="https://github.com/megasoft1978/arqlet">GitHub</a>.</p></details>
+      <details><summary>Is the 0.5.0 download available now?</summary><p data-release-faq>The initial public release is pending. Check the release list for current availability.</p></details>
+      <details><summary>How can I contribute?</summary><p>Read <a href="https://github.com/megasoft1978/arqlet/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> or <a href="https://github.com/megasoft1978/arqlet/issues">open an issue</a>.</p></details>
     </div></section>
   </main>
-  <footer class="footer"><div class="wrap footer-inner"><div><a class="brand" href="./"><img src="./assets/arqlet-mark.svg" alt=""><span>arqlet</span></a><small>Rust · open source · version 0.5.0 planned</small></div><div class="footer-links"><a href="./docs/">Guide</a><a href="https://github.com/megasoft1978/arqlet">Source ↗</a><a href="https://github.com/megasoft1978/arqlet/releases/latest">Releases ↗</a><a href="https://github.com/megasoft1978/arqlet/issues">Issues ↗</a></div></div></footer>
+  <footer class="footer"><div class="wrap footer-inner"><div><a class="brand" href="./"><img src="./assets/arqlet-mark.svg" alt=""><span>arqlet</span></a><small>Rust · open source · version 0.5.0</small></div><div class="footer-links"><a href="./docs/">Guide</a><a href="https://github.com/megasoft1978/arqlet">Source ↗</a><a href="https://github.com/megasoft1978/arqlet/releases">Releases ↗</a><a href="https://github.com/megasoft1978/arqlet/blob/main/SECURITY.md">Security ↗</a><a href="https://github.com/megasoft1978/arqlet/blob/main/CONTRIBUTING.md">Contributing ↗</a></div></div></footer>
   <script src="./assets/site.js" defer></script>
 </body>
 </html>
