@@ -1,7 +1,12 @@
-/target/
+target/
 /dist/
 /.ci-results/
 /__pycache__/
 **/__pycache__/
 *.pyc
 .DS_Store
+
+# The source export must never contain nested workspaces or worker artifacts.
+release-workspace/
+worker-logs/
+worker-prompts/
