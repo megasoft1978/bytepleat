@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f8f6ef">
-  <meta name="description" content="One command line to compress files, pack folders, inspect archives, test supported data, and restore the same file bytes.">
-  <title>Compress files. Pack folders. · Bytepleat</title>
+  <meta name="description" content="Bytepleat is an archive app in development. Create, browse, and extract archives from your desktop, or get the Bytepleat CLI 0.5.1.">
+  <title>Open archives. Pack files. · Bytepleat</title>
   <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./assets/site.css">
 </head>
@@ -14,70 +14,61 @@
   <header class="site-header"><nav class="wrap nav" aria-label="Main navigation">
     <a class="brand" href="./" aria-label="Bytepleat home"><img src="./assets/bytepleat-mark.svg" alt=""><span>bytepleat</span></a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
-    <div class="nav-links" id="nav-links"><a href="#formats">Formats</a><a href="#install">Install</a><a href="#guide">Guide</a><a class="github" href="https://github.com/megasoft1978/bytepleat">GitHub ↗</a></div>
+    <div class="nav-links" id="nav-links"><a href="#workflow">How it works</a><a href="#formats">Formats</a><a href="#cli-downloads">CLI downloads</a><a class="github" href="https://github.com/megasoft1978/bytepleat">GitHub ↗</a></div>
   </nav></header>
   <main id="main">
-    <section class="wrap hero" aria-labelledby="hero-title">
-      <div><span class="eyebrow">Familiar formats. Careful defaults.</span><h1 id="hero-title">Compress files.<br><em>Pack folders.</em></h1>
-        <p class="lead">A Rust CLI for everyday archiving. Use familiar formats, keep your originals, and check archives before you unpack.</p>
-        <p class="hero-command"><span>Start with a file</span><code>bytepleat compress report.pdf</code></p>
-        <div class="actions"><a class="button" href="https://github.com/megasoft1978/bytepleat/releases" data-release-link>View release status <span aria-hidden="true">↗</span></a><a class="button secondary" href="./docs/">Read the guide</a></div>
-        <p class="release-note" data-release-note>Version 0.5.1 · release available · source is open on GitHub</p>
+    <section class="wrap hero desktop-hero" aria-labelledby="hero-title">
+      <div><span class="eyebrow">A desktop archive tool, with a familiar CLI</span><h1 id="hero-title">Open archives.<br><em>Pack files.</em><br>From your desktop.</h1>
+        <p class="lead">Create archives, browse what’s inside, choose the files you need, and extract to a place you control. Bytepleat brings everyday archive work to a clear desktop window, with the command-line tool available alongside it.</p>
+        <div class="actions"><a class="button" href="https://github.com/megasoft1978/bytepleat/pull/1">Follow desktop app development <span aria-hidden="true">↗</span></a><a class="button secondary" href="#cli-downloads">Explore the CLI release</a></div>
+        <p class="release-note">Desktop app in development · No desktop installer yet</p>
       </div>
-      <div class="visual" aria-hidden="true"><div class="archive-art"><div class="sheet one"></div><div class="sheet two"></div><div class="sheet three"><span class="tag">BYTEPLEAT / ARCHIVE</span><strong>source → intact</strong><div class="sheet-lines"><i></i><i></i><i></i></div></div><span class="float-label label-a">format: standard</span><span class="float-label label-b">restore: exact bytes</span></div></div>
+      <figure class="desktop-preview">
+        <div class="app-window" aria-label="Illustration of an archive app window showing selected files">
+          <div class="app-titlebar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>project-files.zip</span><span class="titlebar-spacer"></span></div>
+          <div class="app-toolbar"><span class="app-mark" aria-hidden="true">B</span><span>Open archive</span><span class="toolbar-current">project-files.zip</span><span class="toolbar-action">Extract selected</span></div>
+          <div class="app-body"><aside class="app-sidebar"><b>ARCHIVE</b><span class="sidebar-active">▱ &nbsp; Contents</span><span>↗ &nbsp; Create archive</span><span>↙ &nbsp; Extract archive</span></aside><div class="file-panel"><div class="archive-summary"><span class="folder-icon">▰</span><div><b>project-files.zip</b><small>6 items · 24.8 MB</small></div><span class="format-pill">ZIP</span></div><div class="file-head"><span>Name</span><span>Size</span><span>Type</span></div><div class="file-row"><span>⌄ &nbsp; project</span><span>—</span><span>Folder</span></div><div class="file-row selected-row"><span>▧ &nbsp; brief.pdf</span><span>2.1 MB</span><span>PDF</span></div><div class="file-row"><span>▧ &nbsp; notes.txt</span><span>8 KB</span><span>Text</span></div><div class="file-row"><span>▰ &nbsp; assets</span><span>—</span><span>Folder</span></div><div class="selection-note">1 item selected <span>Choose where to extract</span></div></div></div>
+          <div class="app-bottom"><span><i class="status-dot"></i> Ready to extract</span><span>Destination&nbsp; <b>Choose folder…</b></span></div>
+        </div>
+        <figcaption>Illustration of the Bytepleat desktop app in development. Not a product screenshot.</figcaption>
+      </figure>
     </section>
 
-    <section class="section" id="formats"><div class="wrap">
-      <div class="section-head"><div><span class="eyebrow">Choose the right shape</span><h2>One file, or a whole folder.</h2></div><p class="section-intro">Start with Zstandard for everyday files, choose gzip for broad tool compatibility, or use the throughput-oriented LZ4 codec. Package folders as compressed tar, ZIP, or 7z within the documented subsets.</p></div>
-      <div style="overflow-x:auto"><table class="format-table"><thead><tr><th scope="col">Format</th><th scope="col">For</th><th scope="col">Bytepleat workflow</th></tr></thead><tbody>
-        <tr><td>zstd</td><td>General files and directory archives</td><td>Compress · decompress · pack</td></tr>
-        <tr><td>gzip</td><td>Broad compatibility and streams</td><td>Compress · decompress · pack</td></tr>
-        <tr><td>LZ4</td><td>Throughput-oriented frame streams</td><td>Compress · decompress · pack</td></tr>
-        <tr><td>ZIP / 7z</td><td>Supported directory archive subsets</td><td>Pack · inspect · test · unpack</td></tr>
-        <tr><td>pco</td><td>Typed raw little-endian values</td><td>Numeric streams · explicit <code>--type</code></td></tr>
-      </tbody></table></div>
-      <p class="note">Pco reads typed raw values; it does not parse CSV. For Zstandard and gzip, choose <code>--preset fast</code>, <code>balanced</code> (default), or <code>compact</code> to select codec levels. Time and size depend on your files. LZ4 has one level. See the <a href="./docs/">guide</a> for details.</p>
-      <div class="usecases" aria-label="Example uses"><span>Package project folders</span><span>Compress individual files</span><span>Move archives between tools</span><span>Keep numeric data typed</span></div>
+    <section class="section" id="workflow"><div class="wrap">
+      <div class="section-head"><div><span class="eyebrow">Everyday archive tasks</span><h2>Create, browse, and extract.</h2></div><p class="section-intro">Use one interface to create archives, inspect their entries, and extract the files you need.</p></div>
+      <div class="workflow-grid"><article><span class="step-number">01</span><h3>Create</h3><p>Choose files or folders, select a format, and save a new archive.</p><span class="step-icon" aria-hidden="true">＋</span></article><article><span class="step-number">02</span><h3>Open</h3><p>Browse an archive’s file list and select the entries you need.</p><span class="step-icon" aria-hidden="true">⌕</span></article><article><span class="step-number">03</span><h3>Extract</h3><p>Choose a destination and review what will be written before starting.</p><span class="step-icon" aria-hidden="true">↗</span></article></div>
     </div></section>
 
-    <section class="install" id="install"><div class="wrap section">
-      <div class="section-head"><div><span class="eyebrow">Get started</span><h2>Pick your platform.</h2></div><p class="section-intro" data-install-summary>Choose a tested target, download its package, and verify the checksum before running it.</p></div>
-      <div class="platform-row" role="group" aria-label="Select a platform"><button class="platform" type="button" aria-pressed="true" data-target="mac">macOS · Apple silicon</button><button class="platform" type="button" aria-pressed="false" data-target="linux">Linux · x86-64</button><button class="platform" type="button" aria-pressed="false" data-target="windows">Windows · x86-64</button></div>
-      <div class="platform-output" aria-live="polite"><code id="target-triple">aarch64-apple-darwin</code><span class="pending" id="target-status">Native CI passed</span></div>
+    <section class="section formats-section" id="formats"><div class="wrap">
+      <div class="section-head"><div><span class="eyebrow">Work with familiar archives</span><h2>Formats for everyday files.</h2></div><p class="section-intro">Create and open ZIP and 7z archives, plus compressed tar archives in Zstandard, gzip, or LZ4 formats.</p></div>
+      <div class="format-list"><article><span class="format-extension">.zip</span><div><h3>ZIP</h3><p>Create and open supported ZIP archives.</p></div><span class="format-type">Archive</span></article><article><span class="format-extension">.7z</span><div><h3>7z</h3><p>Create and open the supported 7z subset.</p></div><span class="format-type">Archive</span></article><article><span class="format-extension">.tar.zst</span><div><h3>Tar + Zstandard</h3><p>Pack folders or open compressed tar archives.</p></div><span class="format-type">Compressed tar</span></article><article><span class="format-extension">.tar.gz</span><div><h3>Tar + gzip</h3><p>Pack folders or open compressed tar archives.</p></div><span class="format-type">Compressed tar</span></article><article><span class="format-extension">.tar.lz4</span><div><h3>Tar + LZ4</h3><p>Pack folders or open compressed tar archives.</p></div><span class="format-type">Compressed tar</span></article></div>
+      <aside class="format-limits"><strong>Know the current limits</strong><p>RAR is not supported for extraction. Password-protected and ZIP64 archives are not supported by the current desktop app. <a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/formats.md">Read format details ↗</a></p></aside>
+    </div></section>
+
+    <section class="section desktop-status"><div class="wrap status-layout"><div><span class="eyebrow">Desktop app progress</span><h2>Built in the open.</h2><p class="section-intro">The desktop app is in development. Platform work is moving forward, with interface and integration checks still underway.</p><a class="text-link" href="https://github.com/megasoft1978/bytepleat/pull/1">See development and test evidence ↗</a></div><div class="platform-progress"><article><span class="progress-icon">✓</span><div><h3>macOS · Apple silicon</h3><p>ZIP creation, inspection, selected and full extraction, no-overwrite, and cancellation tested on macOS 27. Finder Compress and Extract actions are verified.</p></div><span class="progress-label done">Local tests passed</span></article><article><span class="progress-icon in-progress">◌</span><div><h3>Linux · ARM</h3><p>Engine build and tests pass. Desktop interface and file-manager integration are still in progress.</p></div><span class="progress-label">In progress</span></article><article><span class="progress-icon in-progress">◌</span><div><h3>Windows</h3><p>Native app CI has passed. Windows 11 interactive checks and corrected MSIX validation are still pending.</p></div><span class="progress-label">In progress</span></article></div></div></section>
+
+    <section class="install" id="cli-downloads"><div class="wrap section">
+      <div class="section-head"><div><span class="eyebrow">Command line · Version 0.5.1</span><h2>Get the Bytepleat CLI.</h2></div><p class="section-intro" data-install-summary>Choose a tested target, download its package, and verify the checksum before running it.</p></div>
+      <div class="platform-row" role="group" aria-label="Select a CLI platform"><button class="platform" type="button" aria-pressed="true" data-target="mac">macOS · Apple silicon</button><button class="platform" type="button" aria-pressed="false" data-target="linux">Linux · x86-64</button><button class="platform" type="button" aria-pressed="false" data-target="windows">Windows · x86-64</button></div>
+      <div class="platform-output" role="status" aria-live="polite"><code id="target-triple">aarch64-apple-darwin</code><span class="pending" id="target-status">Native CI passed</span></div>
+      <div class="actions cli-download-action"><a class="button" href="https://github.com/megasoft1978/bytepleat/releases" data-release-link>Download CLI 0.5.1 <span aria-hidden="true">↗</span></a></div>
       <p id="download-details" hidden></p>
       <div id="install-commands" hidden><p><strong>Verify SHA-256</strong></p><pre><code id="checksum-command"></code></pre><button class="copy" type="button" id="copy-checksum" data-copy="">Copy checksum command</button><p><strong>Extract and run</strong></p><pre><code id="extract-command"></code></pre><button class="copy" type="button" id="copy-install" data-copy="">Copy install command</button></div>
       <div class="target-list"><div class="target"><strong>macOS · Apple silicon</strong><code>aarch64-apple-darwin</code><small data-target-status="mac">Native CI passed</small></div><div class="target"><strong>Linux · x86-64</strong><code>x86_64-unknown-linux-gnu</code><small data-target-status="linux">Native CI passed</small></div><div class="target"><strong>Windows · x86-64</strong><code>x86_64-pc-windows-msvc</code><small data-target-status="windows">Native CI passed</small></div></div>
-      <p class="note">Windows packages need the x64 <a href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist">Microsoft Visual C++ v14 runtime</a>. It is not bundled. Packages are unsigned; macOS builds are not notarized.</p>
+      <p class="note">Windows CLI packages need the x64 <a href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist">Microsoft Visual C++ v14 runtime</a>. It is not bundled. Packages are unsigned; macOS builds are not notarized.</p>
       <p class="install-alt">With Rust 1.93+ and a C compiler toolchain, install the tagged source with: <code>cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.1</code>. See the <a href="https://github.com/megasoft1978/bytepleat/releases">GitHub releases list</a> for current availability.</p>
     </div></section>
 
-    <section class="section" id="guide"><div class="wrap">
-      <div class="section-head"><div><span class="eyebrow">A short tour</span><h2>Pack. Check. Unpack.</h2></div><p class="section-intro">These examples show the shape of the workflow: make an archive, inspect it, then restore it to a chosen directory.</p></div>
-      <div class="commands">
-        <div><div class="command"><div class="command-head"><span>Package a directory</span><button class="copy" type="button" data-copy="bytepleat pack ./project --format zstd -o project.tar.zst">Copy command</button></div><pre><code>bytepleat pack ./project --format zstd -o project.tar.zst</code></pre></div><p class="command-explain">Creates a standard compressed tar archive from the folder.</p></div>
-        <div><div class="command"><div class="command-head"><span>Check the archive</span><button class="copy" type="button" data-copy="bytepleat test project.tar.zst">Copy command</button></div><pre><code>bytepleat test project.tar.zst</code></pre></div><p class="command-explain">Tests the stream or archive for decode and integrity errors supported by its format.</p></div>
-        <div><div class="command"><div class="command-head"><span>Restore a directory</span><button class="copy" type="button" data-copy="bytepleat unpack project.tar.zst --output ./restored-project">Copy command</button></div><pre><code>bytepleat unpack project.tar.zst --output ./restored-project</code></pre></div><p class="command-explain">Writes the archived entries into a new destination directory.</p></div>
-        <div><div class="command"><div class="command-head"><span>Compress a single file</span><button class="copy" type="button" data-copy="bytepleat compress ./notes.txt --format gzip">Copy command</button></div><pre><code>bytepleat compress ./notes.txt --format gzip</code></pre></div><p class="command-explain">Creates a gzip stream beside the input; decompression detects the stream format.</p></div>
-      </div>
-      <p class="status" id="copy-status" role="status" aria-live="polite"></p>
-      <div class="restore-line"><span>the same bytes out</span><strong>input = restored output</strong><span>by design</span></div>
-      <p class="note">Examples assume Bytepleat is installed and that output paths do not already exist. See <a href="./docs/">the guide</a> for options and safety details.</p>
-    </div></section>
-
-    <section class="section"><div class="wrap">
-      <div class="section-head"><div><span class="eyebrow">Know what each command checks</span><h2>Inspect. Test. Then unpack.</h2></div><p class="section-intro"><code>info</code> reads bounded metadata. <code>test</code> decodes supported content and checks format integrity and available checksums without extracting files. Neither can establish who sent an archive or whether its contents are safe.</p></div>
-      <div class="honesty"><div><strong>Review before restoring</strong><p>Inspect archive contents and unpack only trusted files into a new directory you control.</p></div><div><strong>Integrity has limits</strong><p>Checksums detect changes; they do not prove who created a file or that it is safe.</p></div><div><strong>Exact means bytes</strong><p>Lossless file workflows restore input bytes. Paths and filesystem attributes are separate metadata.</p></div><div><strong>Release status</strong><p data-release-status>Native package checks passed on macOS Apple silicon, Linux x86-64, and Windows x86-64. Version 0.5.1 is available.</p></div></div>
-    </div></section>
-
     <section class="section"><div class="wrap faq"><span class="eyebrow">Good to know</span><h2>Questions, plainly answered.</h2>
-      <details><summary>Does Bytepleat invent its own compression format?</summary><p>No. Its file and archive workflows use established formats such as zstd, gzip, LZ4, ZIP, and 7z. Pco is available for typed numeric data.</p></details>
-      <details><summary>Will every file get smaller?</summary><p>No. Compressed, encrypted, or already optimized files may not shrink and can grow slightly. Choose a format based on compatibility and the kind of data you have.</p></details>
-      <details><summary>How do I choose a compression setting?</summary><p>For Zstandard or gzip, <code>fast</code>, <code>balanced</code>, and <code>compact</code> choose codec levels. Time and size depend on your files. Compressed, encrypted, or already optimized files may not shrink and can grow slightly.</p></details>
-      <details><summary>Is the 0.5.1 download available now?</summary><p data-release-faq>Yes. Choose a platform above to download its verified package and view checksum and installation commands.</p></details>
-      <details><summary>How can I contribute?</summary><p>Read <a href="https://github.com/megasoft1978/bytepleat/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> or <a href="https://github.com/megasoft1978/bytepleat/issues">open an issue</a>.</p></details>
+      <details><summary>Is the desktop app ready to download?</summary><p>Not yet. It is in development. Follow the <a href="https://github.com/megasoft1978/bytepleat/pull/1">draft development PR</a> for progress; no desktop installer is offered here.</p></details>
+      <details><summary>Can I open RAR archives?</summary><p>RAR files are not supported for extraction. Use a compatible archive tool to extract them first.</p></details>
+      <details><summary>Can I open password-protected or ZIP64 archives?</summary><p>Those archive features are not supported by the current desktop app. See the <a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/formats.md">format guide</a> for supported subsets.</p></details>
+      <details><summary>Does opening an archive check its contents?</summary><p>Opening shows a bounded entry list. Use extraction to decode and check the supported archive contents before files are published. Selected extraction decodes the whole archive first.</p></details>
+      <details><summary>Does Bytepleat change my original files?</summary><p>Creating an archive leaves the selected originals in place. Extraction writes files to the destination you choose. Review the destination and existing-file behavior before proceeding.</p></details>
+      <details><summary>Where are the command-line downloads?</summary><p>Bytepleat CLI 0.5.1 packages for macOS Apple silicon, Linux x86-64, and Windows x86-64 are available above with checksums and install commands.</p></details>
     </div></section>
   </main>
-  <footer class="footer"><div class="wrap footer-inner"><div><a class="brand" href="./"><img src="./assets/bytepleat-mark.svg" alt=""><span>bytepleat</span></a><small>Rust · open source · version 0.5.1</small></div><div class="footer-links"><a href="./docs/">Guide</a><a href="https://github.com/megasoft1978/bytepleat">Source ↗</a><a href="https://github.com/megasoft1978/bytepleat/releases">Releases ↗</a><a href="https://github.com/megasoft1978/bytepleat/blob/main/SECURITY.md">Security ↗</a><a href="https://github.com/megasoft1978/bytepleat/blob/main/CONTRIBUTING.md">Contributing ↗</a></div></div></footer>
+  <footer class="footer"><div class="wrap footer-inner"><div><a class="brand" href="./"><img src="./assets/bytepleat-mark.svg" alt=""><span>bytepleat</span></a><small>Desktop app in development · CLI 0.5.1 · Open source</small></div><div class="footer-links"><a href="#cli-downloads">CLI downloads</a><a href="./docs/">CLI guide</a><a href="https://github.com/megasoft1978/bytepleat">Source ↗</a><a href="https://github.com/megasoft1978/bytepleat/releases">Releases ↗</a></div></div></footer>
   <script src="./assets/site.js" defer></script>
 </body>
 </html>

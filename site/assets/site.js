@@ -3,11 +3,20 @@
   const releases = `${repo}/releases`;
   const menu = document.querySelector('.menu-toggle');
   const nav = document.querySelector('#nav-links');
-  if (menu && nav) menu.addEventListener('click', () => {
-    const expanded = menu.getAttribute('aria-expanded') === 'true';
-    menu.setAttribute('aria-expanded', String(!expanded));
-    nav.classList.toggle('open', !expanded);
-  });
+  const setMenuOpen = open => {
+    if (!menu || !nav) return;
+    menu.setAttribute('aria-expanded', String(open));
+    nav.classList.toggle('open', open);
+  };
+  if (menu && nav) {
+    menu.addEventListener('click', () => setMenuOpen(menu.getAttribute('aria-expanded') !== 'true'));
+    nav.addEventListener('click', event => {
+      if (event.target.closest('a')) setMenuOpen(false);
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') setMenuOpen(false);
+    });
+  }
 
   const targets = {
     mac: { triple: 'aarch64-apple-darwin', label: 'macOS · Apple silicon' },
@@ -77,7 +86,7 @@
     const available = config?.release_status === 'available' && item.asset;
     if (download) {
       download.href = available ? item.asset.url : releases;
-      download.textContent = available ? `Download for ${selected === 'windows' ? 'Windows' : selected === 'linux' ? 'Linux' : 'macOS'}` : 'View release status ↗';
+      download.textContent = available ? `Download CLI for ${selected === 'windows' ? 'Windows' : selected === 'linux' ? 'Linux' : 'macOS'}` : 'View release status ↗';
       download.setAttribute('aria-label', available ? `${download.textContent}: ${item.asset.filename}` : 'View release status on GitHub');
     }
     if (details) {
