@@ -33,11 +33,11 @@ fn atomic_failure_and_no_clobber_preserve_existing() {
 fn rejects_alias_and_symlink() {
     let d = tempdir().unwrap();
     let src = d.path().join("src");
-    let link = d.path().join("link");
     fs::write(&src, b"source").unwrap();
     assert!(write(&src, Some(&src), true, b"bad").is_err());
     #[cfg(unix)]
     {
+        let link = d.path().join("link");
         std::os::unix::fs::symlink(&src, &link).unwrap();
         assert!(write(&link, None, true, b"bad").is_err());
     }

@@ -6,7 +6,9 @@ Arqlet is an open-source Rust command-line file and folder archiver. It reads an
 
 ## Install
 
-**Downloads:** [Arqlet releases](https://github.com/megasoft1978/arqlet/releases) — release assets are pending publication. The planned packages are `arqlet-0.5.0-<Rust target>.tar.gz` for macOS/Linux and `arqlet-0.5.0-<Rust target>.zip` for Windows, with `SHA256SUMS` alongside them. Use only an asset matching your operating system and Rust target triple. Packages are unsigned and macOS builds are not notarized.
+**Downloads:** [Arqlet releases](https://github.com/megasoft1978/arqlet/releases) — v0.5.0 assets are pending publication. The planned packages are `arqlet-0.5.0-aarch64-apple-darwin.tar.gz` (macOS Apple silicon), `arqlet-0.5.0-x86_64-unknown-linux-gnu.tar.gz` (Linux x86-64), and `arqlet-0.5.0-x86_64-pc-windows-msvc.zip` (Windows x86-64). Choose the matching package and verify it with its adjacent `.sha256` file; see [release verification and extraction](RELEASE.md). Hosted macOS and Linux CI have passed; the Windows compiler fix is still in progress, so Windows CI has not passed. Packages are unsigned and macOS builds are not notarized.
+
+Each archive extracts into a same-named directory containing `arqlet` (or `arqlet.exe` on Windows) at its root. Run it from that directory as `./arqlet --help` on macOS/Linux or `.\arqlet.exe --help` in PowerShell; to invoke `arqlet` from any directory, add the extracted directory to your `PATH`.
 
 **Build from source** (Rust 1.93 or newer required):
 
@@ -18,7 +20,7 @@ cargo build --release --locked
 
 The executable is `target/release/arqlet` (`target/release/arqlet.exe` on Windows).
 
-**Install from the Git tag** once v0.5.0 is published:
+**Install from the Git tag** once v0.5.0 is published (Rust 1.93 or newer required):
 
 ```sh
 cargo install --locked --git https://github.com/megasoft1978/arqlet --tag v0.5.0
