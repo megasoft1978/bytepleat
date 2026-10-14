@@ -7,6 +7,7 @@ let mode = 'create';
 let selected = [];
 let destination = null;
 let currentJobs = [];
+let lastJobsFingerprint = null;
 let pollHandle = null;
 let selectedEntries = [];
 let selectiveExtraction = false;
@@ -81,12 +82,12 @@ function renderArchiveListing(listing){
 }
 function formatBytes(n){if(n===0)return '0 B';if(!n)return 'size unavailable';const units=['B','KB','MB','GB','TB'];let u=0,x=n;while(x>=1000&&u<units.length-1){x/=1000;u++;}return `${x.toFixed(u?1:0)} ${units[u]}`;}
 function renderJobs(jobs){
-  currentJobs=jobs;updateRunState();const host=$('#job-list');if(!jobs.length){host.innerHTML='<p class="empty-history">Your archive jobs will appear here.</p>';return;}
+  currentJobs=jobs;updateRunState();const fingerprint=JSON.stringify(jobs);if(fingerprint===lastJobsFingerprint)return;lastJobsFingerprint=fingerprint;const host=$('#job-list');if(!jobs.length){host.innerHTML='<p class="empty-history">Your archive jobs will appear here.</p>';return;}
   host.innerHTML=jobs.map(job=>{const progress=job.total_bytes?`<div class="progress-track" aria-label="${formatBytes(job.processed_bytes)} of ${formatBytes(job.total_bytes)}"><span style="width:${Math.min(100,job.processed_bytes/job.total_bytes*100)}%"></span></div>`:'';const actionLabel=job.state==='completed'?'Open folder':job.state==='running'?'Cancel':job.state==='cancelling'?'Stopping…':'';const terminal={failed:'Failed',cancelled:'Cancelled',completed:'Completed'}[job.state];return `<div class="job-link"><strong>${esc(job.action)} · ${esc(terminal||job.phase)}</strong><small>${esc(job.message||job.state)}${job.error?` — ${esc(job.error)}`:''}</small>${progress}${actionLabel?`<div class="job-actions"><button type="button" data-job="${esc(job.id)}" data-action="${job.state==='completed'?'open':'cancel'}" ${job.state==='cancelling'?'disabled':''}>${actionLabel}</button></div>`:''}</div>`;}).join('');
   host.querySelectorAll('[data-job]').forEach(btn=>btn.addEventListener('click',async()=>{try{if(btn.dataset.action==='cancel')await invoke('cancel_job',{id:btn.dataset.job});else await invoke('open_destination',{id:btn.dataset.job});await refreshJobs();}catch(e){status(String(e),true);}}));
 }
 async function refreshJobs(){if(!native)return;try{renderJobs(await invoke('jobs'));}catch(e){status(String(e),true);}}
-async function receivePaths(action,paths,error){if(error){status(error,true);return;}if(!paths?.length)return;setMode(action==='create'?'create':action==='extract'?'extract':'open');showSelection(paths);if(action!=='create'&&paths.length>1)status(`Selected ${paths.length} archives. Multiarchive ${action} is unsupported; select exactly one archive. No archive was processed.`,true);}
+async function receivePaths(action,paths,error){if(error){showSelection([]);status(error,true);return;}if(!paths?.length)return;setMode(action==='create'?'create':action==='extract'?'extract':'open');showSelection(paths);if(action!=='create'&&paths.length>1)status(`Selected ${paths.length} archives. Multiarchive ${action} is unsupported; select exactly one archive. No archive was processed.`,true);}
 if(native){
   $('#native-notice').hidden=true;
   listen('selection',event=>receivePaths(event.payload.action,event.payload.paths,event.payload.error));
