@@ -54,9 +54,9 @@ jobs:
           rustup target add aarch64-pc-windows-msvc
           cargo +stable build --locked --release --target aarch64-pc-windows-msvc --manifest-path desktop/src-tauri/Cargo.toml
       - name: Adapter Python tests
-        run: |
-          python -m unittest discover -s desktop/scripts/tests -v
-          python -m unittest discover -s desktop/integrations/windows/tests -v
+        run: python -m unittest discover -s desktop/scripts/tests -v
+      - name: Windows adapter schema tests
+        run: python -m unittest discover -s desktop/integrations/windows/tests -v
       - name: Native notice packaging regression checks
         if: runner.os == 'Windows'
         shell: pwsh

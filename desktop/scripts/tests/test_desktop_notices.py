@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -23,6 +24,18 @@ class GraphTests(unittest.TestCase):
             "build": {"deps": []}, "dev": {"deps": []}, "transitive": {"deps": []},
         }
         self.assertEqual(module.graph(nodes, "root"), {"root", "normal", "build", "transitive"})
+
+
+class ToolOutputEncodingTests(unittest.TestCase):
+    def test_tool_stdout_is_utf8_independent_of_locale_and_stderr_is_replace_decoded(self):
+        source = "import sys; sys.stdout.buffer.write('{\"name\":\"日本語\"}'.encode('utf-8')); sys.stderr.buffer.write(b'warning \\x81')"
+        output = module.run_utf8([sys.executable, "-c", source], Path.cwd(), "encoding fixture")
+        self.assertEqual(json.loads(output), {"name": "日本語"})
+
+    def test_tool_failure_reports_bounded_replacement_decoded_stderr(self):
+        source = "import sys; sys.stderr.buffer.write(b'bad \\x81'); sys.exit(3)"
+        with self.assertRaisesRegex(ValueError, "encoding fixture failed: bad \\ufffd"):
+            module.run_utf8([sys.executable, "-c", source], Path.cwd(), "encoding fixture")
 
 
 class NoticeScanTests(unittest.TestCase):
@@ -220,7 +233,8 @@ class SupplementalCatalogTests(unittest.TestCase):
             catalog = {"records": [{"name": "sample", "version": "1.0.0", "notices": [{"license": "MIT", "path": "notice-sources/NOTICE", "sha256": module.sha256(notice)}], "repository": finding["repository"], "pinned_git_sha": finding["pinned_git_sha"], "source_mapping_status": finding["source_mapping_status"], "mapping_note": finding["mapping_note"], "source_finding": finding}]}
             (root / "desktop/notice-sources.json").write_text(json.dumps(catalog))
             metadata = {"packages": [{"id": "root", "name": "bytepleat-desktop", "version": "1.0.0", "manifest_path": str(manifest), "license": "MIT"}, {"id": "sample-id", "name": "sample", "version": "1.0.0", "manifest_path": str(package_manifest), "license": "MIT", "source": "registry+https://example.invalid", "repository": finding["repository"]}], "resolve": {"nodes": [{"id": "root", "deps": [{"pkg": "sample-id", "dep_kinds": [{"kind": None}]}]}, {"id": "sample-id", "deps": []}]}}
-            fake_process = type("Result", (), {"returncode": 0, "stdout": json.dumps(metadata), "stderr": ""})()
+            metadata["encoding_probe"] = "日本語"
+            fake_process = type("Result", (), {"returncode": 0, "stdout": json.dumps(metadata, ensure_ascii=False).encode("utf-8"), "stderr": b""})()
             with patch.object(module.subprocess, "run", return_value=fake_process), patch.object(module, "rust_runtime", return_value=([], [])):
                 report = module.collect("aarch64-apple-darwin", root / "out", root)
             entry = next(p for p in report["packages"] if p["name"] == "sample")

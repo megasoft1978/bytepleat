@@ -1,6 +1,7 @@
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -25,6 +26,7 @@ def elf_fixture(path: Path, machine: int = 62, elf_class: int = 2) -> Path:
     return path
 
 
+@unittest.skipUnless(os.name == "posix", "Linux package tests require POSIX executable modes and symlink/mtime semantics")
 class LinuxPackageTests(unittest.TestCase):
     def test_native_loader_dependencies_keep_the_required_libc_floor(self):
         for loader in ("ld-linux-aarch64.so.1", "ld-linux-x86-64.so.2"):

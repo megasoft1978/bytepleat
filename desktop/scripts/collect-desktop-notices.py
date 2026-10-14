@@ -20,6 +20,18 @@ NAMES = {"license", "licence", "copying", "notice", "copyright"}
 SKIP_DIRS = {"target", "node_modules", "third-party-licenses", "vendor", "build", "dist", "out", "coverage", ".git", ".cache", "cache", ".next", ".turbo", ".pytest_cache", "__pycache__", "results", "worker", "workers"}
 
 
+def run_utf8(command: list[str], root: Path, label: str) -> str:
+    """Run a tool whose stdout is UTF-8; tolerate arbitrary diagnostic bytes."""
+    cp = subprocess.run(command, cwd=root, capture_output=True)
+    if cp.returncode:
+        stderr = cp.stderr.decode("utf-8", errors="replace")
+        raise ValueError(f"{label} failed: {stderr[-2500:]}")
+    try:
+        return cp.stdout.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise ValueError(f"{label} returned invalid UTF-8 on stdout at byte {exc.start}") from None
+
+
 def sha256(path: Path) -> str:
     h = hashlib.sha256()
     with path.open("rb") as f:
@@ -137,8 +149,8 @@ def local_license_sources(name: str, declared_license: str, package_root: Path, 
 
 
 def rust_runtime(root: Path, target: str, out: Path) -> tuple[list[dict], list[dict]]:
-    version = subprocess.run(["rustc", "--version", "--verbose"], cwd=root, check=True, capture_output=True, text=True).stdout
-    sysroot = Path(subprocess.run(["rustc", "--print", "sysroot"], cwd=root, check=True, capture_output=True, text=True).stdout.strip())
+    version = run_utf8(["rustc", "--version", "--verbose"], root, "rustc --version --verbose")
+    sysroot = Path(run_utf8(["rustc", "--print", "sysroot"], root, "rustc --print sysroot").strip())
     commit = next((line.split(":", 1)[1].strip() for line in version.splitlines() if line.startswith("commit-hash:")), None)
     docroot = sysroot / "share/doc/rust"
     candidates = notice_files(docroot) if docroot.is_dir() else []
@@ -184,10 +196,14 @@ def collect(target: str, out: Path, root: Path = ROOT) -> dict:
     manifest = root / MANIFEST_RELATIVE
     if out.exists() and any(out.iterdir()):
         raise ValueError("output directory must be absent or empty")
-    cp = subprocess.run(["cargo", "metadata", "--locked", "--format-version", "1", "--manifest-path", str(manifest), "--filter-platform", target], cwd=root, capture_output=True, text=True)
+    cp = subprocess.run(["cargo", "metadata", "--locked", "--format-version", "1", "--manifest-path", str(manifest), "--filter-platform", target], cwd=root, capture_output=True)
     if cp.returncode:
-        raise ValueError("cargo metadata failed: " + cp.stderr[-2500:])
-    meta = json.loads(cp.stdout)
+        stderr = cp.stderr.decode("utf-8", errors="replace")
+        raise ValueError("cargo metadata failed: " + stderr[-2500:])
+    try:
+        meta = json.loads(cp.stdout)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"cargo metadata returned invalid UTF-8 JSON: {exc}") from None
     packages = {p["id"]: p for p in meta["packages"]}
     nodes = {n["id"]: n for n in meta["resolve"]["nodes"]}
     desktop_root = [p["id"] for p in meta["packages"] if p["name"] == "bytepleat-desktop" and Path(p["manifest_path"]).resolve() == manifest.resolve()]

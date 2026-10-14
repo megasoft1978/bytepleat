@@ -31,7 +31,7 @@ def launcher_text(application):
     app = desktop_quote(application)
     return (
         "[Desktop Entry]\nVersion=1.0\nType=Application\nName=Bytepleat\n"
-        "Comment=Create and extract archives with Bytepleat\n"
+        "Comment=Create and extract archives with Bytepleat\nIcon=bytepleat\n"
         f"Exec={app} --open -- %F\nTerminal=false\nCategories=Utility;Archiving;\n"
         "MimeType=application/zip;application/x-7z-compressed;"
         "application/gzip;application/zstd;application/x-lz4;\n"
