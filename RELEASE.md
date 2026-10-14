@@ -41,6 +41,8 @@ if ($actual -ne $expected) { throw 'SHA-256 mismatch' }
 
 The release may also include aggregate `SHA256SUMS` for all three archives. It is useful when you have downloaded all listed archives; do not use its all-assets check as the installation check for a single platform, because the other archive files may not be present. A checksum detects accidental corruption when compared with the sidecar; it is not a signature and does not establish who built the archive.
 
+The Windows package requires the x64 [Microsoft Visual C++ v14 runtime](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist); it is not bundled. If Windows reports `VCRUNTIME140.dll` missing, install the current x64 redistributable from Microsoft.
+
 ## Extract and run
 
 Each archive contains a top-level directory named after the archive without its final extension. For example, the macOS archive contains `bytepleat-0.5.0-aarch64-apple-darwin/`, and the executable is `bytepleat` directly inside it. The Linux archive has the analogous target-named directory and root `bytepleat`; the Windows ZIP contains `bytepleat-0.5.0-x86_64-pc-windows-msvc/bytepleat.exe`.

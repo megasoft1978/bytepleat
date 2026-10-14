@@ -28,6 +28,8 @@ Your originals stay in place. Named outputs are published after successful compl
 
 The native CI builds and executes packages on all three targets. See [release notes](RELEASE.md) for the tested runner baselines; other OS versions and architectures are not covered by those checks.
 
+The Windows package requires the x64 [Microsoft Visual C++ v14 runtime](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist); it is not bundled. If Windows reports `VCRUNTIME140.dll` missing, install the current x64 redistributable from Microsoft.
+
 Each archive extracts into a same-named directory containing `bytepleat` (or `bytepleat.exe` on Windows) at its root. Run it from that directory as `./bytepleat --help` on macOS/Linux or `.\bytepleat.exe --help` in PowerShell; to invoke `bytepleat` from any directory, add the extracted directory to your `PATH`.
 
 **Build from source** (Rust 1.93 or newer and a C compiler toolchain required):
