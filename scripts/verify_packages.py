@@ -8,12 +8,50 @@ ROOT=Path(__file__).resolve().parents[1]
 TARGETS={"aarch64-apple-darwin":("tar.gz","bytepleat"),"x86_64-unknown-linux-gnu":("tar.gz","bytepleat"),"x86_64-pc-windows-msvc":("zip","bytepleat.exe")}
 REQUIRED={"Cargo.toml","README.md","RELEASE.md","LICENSE","Cargo.lock","THIRD-PARTY.json","BUILD-INFO.json"}
 MAX_ARCHIVE=128*1024*1024;MAX_MEMBERS=4096;MAX_TOTAL=512*1024*1024;MAX_MEMBER=128*1024*1024
+MAX_DIAGNOSTIC_ITEMS=8;MAX_DIAGNOSTIC_TEXT=240
 def sha_bytes(data:bytes)->str:return hashlib.sha256(data).hexdigest()
 def sha_file(p:Path)->str:
     h=hashlib.sha256()
     with p.open("rb") as f:
         for b in iter(lambda:f.read(1<<20),b""):h.update(b)
     return h.hexdigest()
+def smoke_failure_summary(data:bytes)->str:
+    """Return a bounded, command-free summary of a failed smoke JSON report."""
+    try: report=json.loads(data[:1024*1024].decode("utf-8"))
+    except (UnicodeDecodeError,json.JSONDecodeError):return "smoke report unavailable or invalid JSON"
+    if not isinstance(report,dict):return "smoke report has invalid structure"
+    totals=report.get("totals",{}); failures=report.get("failures",[])
+    validation_summary=report.get("summary",{}); results=report.get("results",[])
+    pieces=[]
+    if isinstance(totals,dict):
+        keys=("cases","passed","failed","skipped")
+        counts=", ".join(f"{k}={totals[k]}" for k in keys if isinstance(totals.get(k),int))
+        if counts:pieces.append(counts)
+    if isinstance(failures,list):
+        for row in failures[:MAX_DIAGNOSTIC_ITEMS]:
+            if isinstance(row,dict):
+                case=str(row.get("case","unknown"))[:MAX_DIAGNOSTIC_TEXT]
+                error=str(row.get("error","failure"))[:MAX_DIAGNOSTIC_TEXT]
+                pieces.append(f"{case}: {error}")
+    if isinstance(validation_summary,dict) and isinstance(validation_summary.get("fail"),int):
+        pieces.insert(0,"archive validation: "+", ".join(f"{k}={validation_summary[k]}" for k in ("pass","fail","skipped") if isinstance(validation_summary.get(k),int)))
+    if isinstance(results,list):
+        for row in (r for r in results if isinstance(r,dict) and r.get("status")=="fail"):
+            pieces.append(f"{str(row.get('name',row.get('case','unknown')))[:MAX_DIAGNOSTIC_TEXT]}: {str(row.get('error','failure'))[:MAX_DIAGNOSTIC_TEXT]}")
+            if sum(1 for p in pieces if ": " in p)>=MAX_DIAGNOSTIC_ITEMS:break
+    return "; ".join(pieces)[:1500] or "smoke report contains no failure details"
+def run_native_check(command:list[str], report:Path, label:str, evidence_dir:Path)->None:
+    p=subprocess.run(command,capture_output=True,text=True,encoding="utf-8",errors="replace")
+    if p.returncode:
+        summary=smoke_failure_summary(report.read_bytes()) if report.is_file() else "smoke report was not produced"
+        evidence=evidence_dir/f"{label}.json"; copied=""
+        try:
+            evidence_dir.mkdir(parents=True,exist_ok=True)
+            with evidence.open("xb") as f:f.write(report.read_bytes())
+            copied=f"; evidence={evidence}"
+        except FileExistsError:copied="; evidence copy already exists"
+        except OSError:copied="; evidence copy failed"
+        raise ValueError(f"{label} failed (exit {p.returncode}): {summary}{copied}")
 def safe_name(s:str)->str:
     if "\\" in s or "\x00" in s: raise ValueError(f"unsafe archive path: {s!r}")
     pieces=s.split("/");p=PurePosixPath(s)
@@ -169,8 +207,8 @@ def main()->int:
             d=Path(td); exe_path=d/exe;exe_path.write_bytes(binary);exe_path.chmod(0o755)
             p=subprocess.run([str(exe_path),"--version"],capture_output=True,text=True,timeout=15)
             if p.returncode or p.stdout.strip()!=f"bytepleat {a.version}":ap.error("extracted binary version check failed")
-            smoke=d/"native-smoke.json";subprocess.run([sys.executable,str(ROOT/"scripts/native_smoke.py"),"--binary",str(exe_path),"--output",str(smoke),"--require-tools"],check=True)
-            validation=d/"archive-validation.json";subprocess.run([sys.executable,str(ROOT/"scripts/validate_archives.py"),"--binary",str(exe_path),"--native7z",str(a.native7z.resolve()),"--output",str(validation)],check=True)
+            smoke=d/"native-smoke.json";run_native_check([sys.executable,str(ROOT/"scripts/native_smoke.py"),"--binary",str(exe_path),"--output",str(smoke),"--require-tools"],smoke,"native-smoke",out.parent/".native-smoke")
+            validation=d/"archive-validation.json";run_native_check([sys.executable,str(ROOT/"scripts/validate_archives.py"),"--binary",str(exe_path),"--native7z",str(a.native7z.resolve()),"--output",str(validation)],validation,"archive-validation",out.parent/".archive-validation")
     out.parent.mkdir(parents=True,exist_ok=True)
     report={"schema_version":1,"archive":asset,"archive_sha256":digest,"target":a.target,"version":a.version,"revision":a.revision,"members":len(index),"binary_sha256":binary_hash,"native_execution":a.native,"status":"pass"}
     tmp=out.with_suffix(out.suffix+".tmp");tmp.write_text(json.dumps(report,indent=2,sort_keys=True)+"\n",encoding="utf8");os.replace(tmp,out);print(json.dumps(report,sort_keys=True));return 0

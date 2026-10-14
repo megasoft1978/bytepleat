@@ -18,8 +18,8 @@
   </nav></header>
   <main id="main">
     <section class="wrap hero" aria-labelledby="hero-title">
-      <div><span class="eyebrow">One command family, common file workflows</span><h1 id="hero-title">Compress files.<br><em>Pack folders.</em></h1>
-        <p class="lead">One command line for familiar formats, careful output and extraction behavior, and restoring the same file bytes.</p>
+      <div><span class="eyebrow">Familiar formats. Careful defaults.</span><h1 id="hero-title">Compress files.<br><em>Pack folders.</em></h1>
+        <p class="lead">A Rust CLI for everyday archiving. Use familiar formats, keep your originals, and check archives before you unpack.</p>
         <p class="hero-command"><span>Start with a file</span><code>bytepleat compress report.pdf</code></p>
         <div class="actions"><a class="button" href="https://github.com/megasoft1978/bytepleat/releases" data-release-link>View release status <span aria-hidden="true">↗</span></a><a class="button secondary" href="./docs/">Read the guide</a></div>
         <p class="release-note" data-release-note>Version 0.5.0 · first public release pending · source is open on GitHub</p>
@@ -28,11 +28,11 @@
     </section>
 
     <section class="section" id="formats"><div class="wrap">
-      <div class="section-head"><div><span class="eyebrow">Choose the right shape</span><h2>One file, or a whole folder.</h2></div><p class="section-intro">Use the same command family to compress a file stream or package a folder, then inspect, test, and restore supported data. Bytepleat uses established formats rather than a new proprietary stream.</p></div>
+      <div class="section-head"><div><span class="eyebrow">Choose the right shape</span><h2>One file, or a whole folder.</h2></div><p class="section-intro">Start with Zstandard for everyday files, choose gzip for broad tool compatibility, or use the throughput-oriented LZ4 codec. Package folders as compressed tar, ZIP, or 7z within the documented subsets.</p></div>
       <div style="overflow-x:auto"><table class="format-table"><thead><tr><th scope="col">Format</th><th scope="col">For</th><th scope="col">Bytepleat workflow</th></tr></thead><tbody>
         <tr><td>zstd</td><td>General files and directory archives</td><td>Compress · decompress · pack</td></tr>
         <tr><td>gzip</td><td>Broad compatibility and streams</td><td>Compress · decompress · pack</td></tr>
-        <tr><td>LZ4</td><td>Frame streams and compressed tar</td><td>Compress · decompress · pack</td></tr>
+        <tr><td>LZ4</td><td>Throughput-oriented frame streams</td><td>Compress · decompress · pack</td></tr>
         <tr><td>ZIP / 7z</td><td>Supported directory archive subsets</td><td>Pack · inspect · test · unpack</td></tr>
         <tr><td>pco</td><td>Typed raw little-endian values</td><td>Numeric streams · explicit <code>--type</code></td></tr>
       </tbody></table></div>

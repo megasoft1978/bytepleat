@@ -52,7 +52,9 @@ def main() -> int:
         if missing: report['failures'].append({'case':'required-tools','error':'missing required tools: '+', '.join(missing)}); save(); return 1
     rng=random.Random(0x4d4f5341)
     payloads={'empty':b'','random':rng.randbytes(131071),'repetitive':b'abracadabra\0'*8192}
-    with tempfile.TemporaryDirectory(prefix='bytepleat-native-smoke-',dir=out.parent) as td:
+    # Keep fixture paths short even when the report lives in a deeply nested
+    # verifier temp directory (notably on Windows). Report placement is separate.
+    with tempfile.TemporaryDirectory(prefix='bp-smoke-') as td:
         t=Path(td)
         for label,data in payloads.items():
             for fmt in ('zstd','gzip','lz4'):

@@ -12,6 +12,20 @@ TARGET="x86_64-pc-windows-msvc"; VERSION="0.5.0"; ASSET=f"bytepleat-{VERSION}-{T
 REVISION="a"*40
 
 class PackagingSafetyTests(unittest.TestCase):
+    def test_smoke_failure_summary_is_bounded_and_names_failed_case(self):
+        report={"totals":{"cases":28,"passed":27,"failed":1,"skipped":0},"failures":[{"case":"standard-tar-unpack","error":"long path rejected"}]}
+        summary=verify_packages.smoke_failure_summary(json.dumps(report).encode())
+        self.assertIn("cases=28, passed=27, failed=1, skipped=0",summary)
+        self.assertIn("standard-tar-unpack: long path rejected",summary)
+        self.assertLessEqual(len(summary),1500)
+        self.assertEqual(verify_packages.smoke_failure_summary(b"not json"),"smoke report unavailable or invalid JSON")
+        archive={"summary":{"pass":31,"fail":1,"skipped":0},"results":[{"name":"native-deflate-zip-read","status":"fail","error":"UTF-8 required"}]}
+        self.assertIn("native-deflate-zip-read: UTF-8 required",verify_packages.smoke_failure_summary(json.dumps(archive).encode()))
+        failures=[{"case":f"case-{i}","error":"x"*1000} for i in range(20)]
+        bounded=verify_packages.smoke_failure_summary(json.dumps({"failures":failures}).encode())
+        self.assertLessEqual(len(bounded),1500)
+        self.assertNotIn("case-19",bounded)
+
     def test_rejects_parent_absolute_backslash_and_dot_paths(self):
         for name in ("../escape", "/absolute", "C:/drive", "a\\..\\escape", "./dot", "a/../b", "a//b"):
             with self.subTest(name=name), self.assertRaises(ValueError): verify_packages.safe_name(name)
