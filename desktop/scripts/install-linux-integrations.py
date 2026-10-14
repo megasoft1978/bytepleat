@@ -33,7 +33,7 @@ def launcher_text(application):
         "[Desktop Entry]\nVersion=1.0\nType=Application\nName=Bytepleat\n"
         "Comment=Create and extract archives with Bytepleat\n"
         f"Exec={app} --open -- %F\nTerminal=false\nCategories=Utility;Archiving;\n"
-        "MimeType=application/zip;application/x-7z-compressed;application/x-tar;"
+        "MimeType=application/zip;application/x-7z-compressed;"
         "application/gzip;application/zstd;application/x-lz4;\n"
     )
 
@@ -41,9 +41,9 @@ def launcher_text(application):
 def service_menu_text(application):
     app = desktop_quote(application)
     return (
-        "[Desktop Entry]\nType=Service\nMimeType=all/all;\n"
+        "[Desktop Entry]\nType=Service\nMimeType=application/octet-stream;inode/directory;\n"
         "X-KDE-ServiceTypes=KonqPopupMenu/Plugin;\nActions=compress;extract;\n"
-        "X-KDE-Priority=TopLevel\n\n"
+        "X-KDE-Priority=TopLevel\nX-KDE-Protocols=file\n\n"
         "[Desktop Action compress]\nName=Compress with Bytepleat\n"
         f"Exec={app} --create -- %F\n\n"
         "[Desktop Action extract]\nName=Extract with Bytepleat\n"
@@ -79,7 +79,8 @@ def install(home, application):
     try:
         launcher, kde, nautilus, cli_args, config = targets
         _write_new_file(launcher, launcher_text(str(app))); created.append(launcher)
-        _write_new_file(kde, service_menu_text(str(app))); created.append(kde)
+        # KDE requires executable permission for user-installed service menus.
+        _write_new_file(kde, service_menu_text(str(app)), mode=0o755); created.append(kde)
         _write_new_file(nautilus, NAUTILUS_SOURCE.read_text(encoding="utf-8")); created.append(nautilus)
         _write_new_file(cli_args, (DESKTOP_DIR / "integrations/linux/nautilus/bytepleat_cli_args.py").read_text(encoding="utf-8")); created.append(cli_args)
         config_data = json.dumps({"application": str(app)}, ensure_ascii=False) + "\n"

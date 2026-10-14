@@ -2,7 +2,7 @@
 
 Compress files. Pack folders.
 
-Bytepleat is a Rust command-line archiver for files and folders. Compress, pack, inspect, test, and restore through one consistent set of commands, using familiar formats and preserving the original file bytes.
+Bytepleat is a Rust archiver for files and folders. The desktop alpha provides a modern create, browse, and extract workflow; the released CLI handles compression and archiving from scripts and terminals. Both use familiar formats and preserve file bytes within their documented limits.
 
 ```sh
 bytepleat compress report.pdf
@@ -18,7 +18,7 @@ Your originals stay in place. Named outputs are published after successful compl
 
 ## Desktop alpha
 
-A modern desktop interface and Finder, Explorer, and Linux file-manager integrations are in development. See [desktop build instructions and current limitations](desktop/README.md). This development branch does not provide a verified consumer desktop release; the downloads below remain the CLI release.
+A modern desktop interface and Finder, Explorer, and Linux file-manager integrations are in development. See [desktop build instructions and current limitations](desktop/README.md), [verified platform coverage](docs/desktop-validation.md), and [measured archive benchmarks](docs/benchmarks.md). This development branch does not provide a verified consumer desktop release; the downloads below remain the CLI release.
 
 ## Install
 

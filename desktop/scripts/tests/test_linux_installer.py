@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -56,6 +57,11 @@ class LinuxInstallerTests(unittest.TestCase):
             config = json.loads((root / installer.OWNED[-1]).read_text(encoding="utf-8"))
             self.assertEqual(config["application"], str(executable.resolve()))
             self.assertTrue((root / installer.OWNED[0]).is_file())
+            if os.name != "nt":
+                self.assertTrue(os.access(root / installer.OWNED[1], os.X_OK))
+            service = (root / installer.OWNED[1]).read_text(encoding="utf-8")
+            self.assertIn("MimeType=application/octet-stream;inode/directory;", service)
+            self.assertIn("X-KDE-Protocols=file", service)
             removed = installer.uninstall(root)
             self.assertEqual(len(removed), len(installer.OWNED))
             self.assertTrue(executable.exists())

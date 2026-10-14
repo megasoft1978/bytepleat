@@ -33,11 +33,12 @@ path recorded during installation, or checks for a neighboring `Bytepleat.app`.
 `BYTEPLEAT_APP_PATH` is an optional process environment override.
 
 To verify registration, select local files in Finder and check **Finder →
-Services** for **Compress with Bytepleat** and **Extract with Bytepleat**. Run a
-selection containing spaces, an apostrophe, Unicode, and a leading-dash name;
-confirm the launched app receives each selection and then verify output bytes
-with the CLI. This is a manual runtime check, not a result claimed by compiling
-the provider.
+Services** for **Compress with Bytepleat** and **Extract with Bytepleat**. On
+macOS 27.0.1 ARM64, the Services entries were visible. A warm Compress action
+on a selected input folder and a cold Extract action on a selected ZIP were
+verified. This does not establish general multi-selection handling or the
+provider's Open With invocation; those checks remain pending. The related GUI
+workflow evidence is summarized in [desktop validation](../../docs/desktop-validation.md).
 
 Developer signing may be used for local testing. Developer ID signing,
 Hardened Runtime, and notarization are release tasks and remain pending.
@@ -45,7 +46,10 @@ Hardened Runtime, and notarization are release tasks and remain pending.
 ## Linux file managers
 
 The Linux installer targets Ubuntu 24.04/26.04 GNOME Files and Kubuntu 26.04
-Dolphin as planned compatibility targets; runtime verification is pending. It
+Dolphin as planned compatibility targets. A GUI session on Ubuntu 24.04.5
+ARM64 with XFCE/Xorg verified archive creation, full and selected extraction,
+hashes, empty-directory restoration, and no-overwrite refusal. This does not
+verify the GNOME default shell, Nautilus actions, or Kubuntu 26.04/Dolphin. It
 requires Python 3.10+, an executable desktop app binary, and writes only these
 per-user files: `~/.local/share/applications/bytepleat.desktop`,
 `~/.local/share/kio/servicemenus/bytepleat.desktop`,
@@ -79,10 +83,13 @@ commands and selection-parameter guidance.
 
 | Platform component | Source status | Native runtime status |
 | --- | --- | --- |
-| macOS Services bundle | Implemented; Swift compile required on macOS | Pending Finder/LaunchServices verification |
-| GNOME Files / Nautilus | Implemented; Nautilus Python GI required at runtime | Pending Ubuntu 24.04/26.04 verification |
-| KDE Dolphin service menu | Implemented; desktop-entry registration handled by KDE | Pending Kubuntu 26.04 verification |
+| macOS Services bundle | Implemented; Swift compile required on macOS | Finder registration visible; warm Compress and cold Extract passed on macOS 27.0.1 ARM64. Open With invocation, multi-selection, keyboard browsing, and quit cleanup pending. |
+| GNOME Files / Nautilus | Implemented; Nautilus Python GI required at runtime | Nautilus46.4 warm Compress/cold Extract passed on Ubuntu24.04.5 ARM64 XFCE/Xorg; defaultGNOME shell unverified. |
+| KDE Dolphin service menu | Implemented; desktop-entry registration handled by KDE | Dolphin23.08.5 warm Compress/cold Extract passed on Ubuntu24.04.5 ARM64 XFCE/Xorg; Kubuntu26.04 unverified.. |
 | Thunar custom action | Documented manual configuration | Pending runtime verification |
 
-No GUI, success, native integration, or performance result is asserted by this
-source package.
+GUI correctness checks do not establish compression performance. See the
+[desktop validation record](../../docs/desktop-validation.md) for scope,
+remaining checks, and links to public CI runs.
+
+User-installed Dolphin service menus are marked executable and restricted to local file URLs, following the [KDE service-menu instructions](https://develop.kde.org/docs/apps/dolphin/service-menus/).

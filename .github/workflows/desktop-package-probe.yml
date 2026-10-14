@@ -82,6 +82,7 @@ jobs:
           ./desktop/integrations/windows/package/Build-Package.ps1
           -AppDirectory ./package-input
           -Architecture ${{ matrix.architecture }}
+          -SchemaOnly
           -OutputDirectory ./package-output
       - name: Upload unsigned schema validation artifact and provenance
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

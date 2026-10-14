@@ -22,24 +22,39 @@ The DLL uses the dynamic MSVC runtime. The package payload must contain the matc
 
 ## Package validation and signing
 
-The package script stages the manifest and the three generated PNG icons from `desktop/src-tauri/icons` into the package's required `Assets` paths. The actual app executable and COM DLL are copied from `AppDirectory` into the package so MakeAppx validates their referenced paths. This is a full MSIX package, not an external-location sparse package. It reads the PE machine type of both the app and DLL and rejects a mismatch with `-Architecture` before setting `ProcessorArchitecture`.
+The package script stages the manifest and the three generated PNG icons from `desktop/src-tauri/icons` into the package's required `Assets` paths. It copies the app executable and COM DLL from `AppDirectory`, checks their PE machine type, and rejects a mismatch with `-Architecture`. This is a full MSIX package, not an external-location sparse package.
 
-On Windows with the Windows SDK `makeappx.exe` available, run the unsigned path to make MakeAppx validate and pack the actual manifest and assets. This validates package structure/schema only; the result is unsigned, not trusted, and not installable:
+Every regular package build requires `-NoticeDirectory` pointing to the output directory from `desktop/scripts/collect-desktop-notices.py`. The report must be schema 1 for Cargo project `bytepleat-desktop` version `0.1.0`, and its target must match the package exactly: `x86_64-pc-windows-msvc` for `x64` or `aarch64-pc-windows-msvc` for `ARM64`. The packager checks each listed relative path and SHA256, rejects traversal, backslashes and symlink/reparse points, and enforces file-count and size bounds. It includes the repository `LICENSE`, only the inventoried Cargo and runtime notice files, and the unmodified `THIRD-PARTY.json` under `Notices/`. That report retains unresolved gaps and its source findings; it is an informational inventory and does not claim legal clearance or runtime verification. The packager does not recursively copy arbitrary input-directory contents.
+
+Example regular build with a previously generated matching artifact:
 
 ```powershell
-./package/Build-Package.ps1 -AppDirectory 'C:\path\to\Bytepleat' -Architecture x64
+./package/Build-Package.ps1 -AppDirectory 'C:\path\to\Bytepleat' `
+  -NoticeDirectory 'C:\path\to\windows-x64-notices' -Architecture x64
+```
+
+`-SchemaOnly` is an explicit developer probe for a historical payload that predates notice artifacts. It can omit notices, cannot be combined with `-Sign` or `-NoticeDirectory`, and prints that the result is not a distribution package. It checks MakeAppx schema and payload only; it does not validate installation or Explorer behavior. A normal build does not have this exception.
+
+MakeAppx builds into a private temporary work directory outside the staged payload. Optional signing happens there, then the completed MSIX is moved to the final output path without replacement. An existing final path causes an error. The temporary directory is removed on success or failure. The script does not create certificates, establish certificate trust, or install/register packages. Keep signing passwords in the calling environment; they are not written to a report.
+
+On Windows with the Windows SDK `makeappx.exe` available, run a regular unsigned package build with the matching notice artifact. This validates package structure/schema only; the result is unsigned, not trusted, and not installable:
+
+```powershell
+./package/Build-Package.ps1 -AppDirectory 'C:\path\to\Bytepleat' `
+  -NoticeDirectory 'C:\path\to\windows-x64-notices' -Architecture x64
 ```
 
 Signing is opt-in and requires a certificate supplied by the operator. The certificate subject must match `-Publisher`; the script neither creates a certificate nor installs trust. A signed package is still not trusted or registered automatically:
 
 ```powershell
 ./package/Build-Package.ps1 -AppDirectory 'C:\path\to\Bytepleat' `
+  -NoticeDirectory 'C:\path\to\windows-arm64-notices' `
   -Publisher 'CN=Publisher from supplied certificate' -Architecture ARM64 `
   -Sign -CertificatePath 'C:\certs\bytepleat.pfx' -CertificatePassword $env:BYTEPLEAT_PFX_PASSWORD
 ./package/Install-BytepleatPackage.ps1 -PackagePath ./package/out/Bytepleat-ARM64.msix
 ```
 
-Installation is an explicit current-user `Add-AppxPackage` operation. Remove only the exact package full name reported by Windows:
+Installation is an explicit current-user `Add-AppxPackage` operation. A successful package build alone does not establish installation or runtime behavior. Remove only the exact package full name reported by Windows:
 
 ```powershell
 Get-AppxPackage -Name Bytepleat.Desktop | Select-Object Name, PackageFullName
@@ -54,7 +69,7 @@ Uninstall checks the exact package full name and owned package identity before r
 python -m unittest discover -s integrations/windows/tests -v
 ```
 
-These Python checks cover manifest structure and packaging source only. They are not Windows SDK schema validation. No native Windows build, package validation, or Explorer interaction result is claimed until the corresponding Windows CI job provides evidence.
+These Python checks cover manifest structure and static packaging-source properties only. They are not a PowerShell runtime fixture test, Windows SDK schema validation, installation test, or Explorer interaction test. Native Windows CI can validate compilation and MakeAppx packaging on its configured runner. Actual behavior still requires installation and exercise on Windows 11; a CI package result does not establish native Explorer behavior or broad Windows compatibility. This alpha integration has no runtime verification claim unless a specific run supplies that evidence.
 
 ## Microsoft references
 

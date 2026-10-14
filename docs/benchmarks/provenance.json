@@ -1,0 +1,144 @@
+{
+  "schema": "bytepleat-public-benchmark-provenance-v1",
+  "source_run_sha256": "2e790bfb570aa99714b6596e113316ff48bdb47c5345c111e0146dfe24dc9145",
+  "source_analysis_sha256": "ef49e075bae48ad3df06f4c7849344dbde1d96c537c479369d61323d76c040f7",
+  "state": "complete; independently verified",
+  "scope": "one macOS ARM64 desktop; results do not establish other hardware, operating systems, or native OS integration",
+  "host": {
+    "cpu": "Apple M5 Max",
+    "architecture": "arm64",
+    "logical_cpu_count": 18,
+    "memory_bytes": 68719476736,
+    "macos": "27.0.1"
+  },
+  "harness_sha256": "8d540fc3237d4adc946e430cc7a6c1504f70f9ca59ecbd5995c1ca9a86857a54",
+  "corpus_manifest_sha256": "309602a9ea4767bafde6a8708cfc967b0e1fbf1f0e78a5c288393adb96bd6dc8",
+  "prepared_manifest_sha256": "a1034ad0f0a99244894f252cf9414976f5b17d2508fff7070c5d8d6222ccdd15",
+  "measurement": {
+    "warmups_per_case_method": 1,
+    "measured_repeats_per_case_method": 5,
+    "warmup_pairs": 96,
+    "measured_pairs": 480,
+    "independent_warmup_crossdecode_checks": 48,
+    "failures": 0,
+    "verified_repeats_each_row": 5,
+    "selection_in_timing": true,
+    "encode_timer": "startup plus archive creation and filesystem IO",
+    "decode_timer": "startup plus extraction IO",
+    "fsync": "after encode timer; excluded",
+    "hash_and_exact_path_verification": "outside timers",
+    "archive_size": "includes format metadata, checksums, wrappers and internal dictionary data",
+    "pipeline_rss": "sum of wait4 child peaks; upper bound, not simultaneous peak",
+    "threading": "explicit settings by method; native extraction thread defaults not universally overridden"
+  },
+  "settings": {
+    "bytepleat_zip": "Deflate levels 6 and 9",
+    "bytepleat_7z": "LZMA2 level 5, 16 MiB dictionary, solid, one thread",
+    "7zz_zip": "Deflate levels 6 and 9, one thread",
+    "7zz_7z": "LZMA2 level 5, 16 MiB dictionary, solid, one thread",
+    "bytepleat_tar_stream": "zstd level 3, gzip level 6, LZ4 default; one thread where supported",
+    "tar_pipelines": "zstd level 3 with one thread; gzip level 6; LZ4 default; two-process argv pipeline",
+    "ditto": "/usr/bin/ditto -c -k --norsrc",
+    "infozip": "/usr/bin/zip -6",
+    "rar": "RARLAB macOS ARM64 CLI 7.23; RAR5; m3 and m5; 16 MiB dictionary; solid; one thread; no encryption/recovery data"
+  },
+  "tools": {
+    "bytepleat": {
+      "version": "0.5.1",
+      "sha256": "dc6affe7d87186c1b5b1cce0ca6c2ebf7ed84cff44ebaeff018e3a7812fee2dd"
+    },
+    "7zz": {
+      "version": "26.04 arm64",
+      "sha256": "36ea959367d8f9ac51d47a56dc1f20bfb851f1cd22d6f206e85cb5cbc6ab4577"
+    },
+    "rar_evaluation_cli": {
+      "version": "7.23 macOS ARM64",
+      "sha256": "fd6c7db73c659a28b50408354f4a4845c53a67f929f37fd99df92aa77b9f5153",
+      "vendor_url": "https://www.rarlab.com/rar/rarmacos-arm-723.tar.gz",
+      "evaluation": "local comparison only; not shipped; not WinRAR GUI"
+    },
+    "ditto": {
+      "version": "system command; --version unsupported",
+      "sha256": "88933d7c96cc2c02219d61f5523b61a902dca8fdeed3b8384f24066ff48541bb"
+    },
+    "infozip_zip": {
+      "version": "3.0 Apple-modified",
+      "sha256": "aab14c5dba5af0f2fd94f7c2863edd069aae7d96051953b4a890bd610141c20b"
+    },
+    "infozip_unzip": {
+      "version": "6.00 Apple-modified",
+      "sha256": "a4abf0d63b26d8e7067b8d4a3674a3f3c0d7c0b3a6e68fba04540a405f618bb7"
+    },
+    "bsdtar": {
+      "version": "3.5.3 / libarchive 3.7.4",
+      "sha256": "ad4e73ac2e00b3d69969b2e8da466f08c7968a51f424380ecb4d9ff6779b28b9"
+    },
+    "zstd": {
+      "version": "1.5.7",
+      "sha256": "aff8169fb421bb925fb16c44a7e0143fa2c7a941dc45cce76b15062a2ce54917"
+    },
+    "lz4": {
+      "version": "1.10.0",
+      "sha256": "4fef8dd687478d1a8dcf4e2db25defd2daf76f7e0bb3478f023b738f9501f48c"
+    },
+    "gzip": {
+      "version": "Apple gzip 487.0.1",
+      "sha256": "9af5160e41fad1daebe6d9a6afe2cedd06190627fb68ecab5b5244da2f373649"
+    }
+  },
+  "workloads": [
+    {
+      "id": "lz4-source",
+      "description": "LZ4 v1.10.0 public source tree",
+      "bytes": 1674742,
+      "upstream": "https://github.com/lz4/lz4/tree/v1.10.0",
+      "license_note": "Files carry per-file BSD-2-Clause and GPL-2.0-or-later notices; preserve upstream notices."
+    },
+    {
+      "id": "mixed-public",
+      "description": "Selected files from Astropy v6.1.7, Canterbury corpus, and LZ4 v1.10.0",
+      "bytes": 576186,
+      "upstream": [
+        "https://github.com/astropy/astropy/tree/v6.1.7",
+        "https://corpus.canterbury.ac.nz/resources/cantrbry.tar.gz",
+        "https://github.com/lz4/lz4/tree/v1.10.0"
+      ],
+      "license_note": "Astropy data follow project CC-BY-4.0 policy; Canterbury does not have a verified blanket redistribution license; LZ4 files retain upstream per-file notices."
+    },
+    {
+      "id": "zstd-tar-control",
+      "description": "zstd v1.5.7 regular-file source tree in deterministic tar",
+      "bytes": 8867840,
+      "sha256": "27111f550753bfa114f03951c06d1b9c711eb3384a7d8bb86f1245d96a206aaa",
+      "upstream": "https://github.com/facebook/zstd/tree/v1.5.7",
+      "license_note": "Files retain per-file BSD-3-Clause or GPL-2.0-or-later markings; no single license applies to the whole tree."
+    },
+    {
+      "id": "jpeg-control",
+      "description": "libjpeg-turbo v3.1.0 testorig.jpg, already-compressed control",
+      "bytes": 5770,
+      "sha256": "acc6ec555d41d15b368320edaa3b20958ee6fa97cb6e4a18d1213d5ae8bec73b",
+      "upstream": "https://github.com/libjpeg-turbo/libjpeg-turbo/blob/3.1.0/testimages/testorig.jpg",
+      "license_note": "Upstream libjpeg-turbo LICENSE.md applies; kept separate as a compressed control."
+    },
+    {
+      "id": "synthetic-text-8m",
+      "description": "Generated 8 MiB repeated-text fixture",
+      "bytes": 8388608,
+      "seed": 20261014,
+      "license_note": "Generated fixture; not public corpus data."
+    },
+    {
+      "id": "synthetic-random-8m",
+      "description": "Generated 8 MiB pseudorandom fixture using Python random.Random",
+      "bytes": 8388608,
+      "seed": 20261014,
+      "license_note": "Generated fixture; not public corpus data."
+    }
+  ],
+  "recreation": {
+    "protocol": "See DESKTOP-BENCHMARK-PROTOCOL.md in the research lab for full harness invocation, corpus preparation context, and method definitions. The original full harness remains in the lab; it is not linked as a public artifact.",
+    "csv": "This sanitized summary contains one row per case/method group (96 total), with medians, five verified repetitions, and timing ranges."
+  },
+  "public_artifact_policy": "Only bounded summary fields and provenance are included; no raw logs, binaries, corpora, local absolute paths, or vendor license text."
+}
