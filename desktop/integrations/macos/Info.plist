@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleDevelopmentRegion</key><string>en</string>
+  <key>CFBundleExecutable</key><string>BytepleatServices</string>
+  <key>CFBundleIdentifier</key><string>org.bytepleat.desktop.services</string>
+  <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+  <key>CFBundleName</key><string>BytepleatServices</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleVersion</key><string>0.1</string>
+  <key>LSBackgroundOnly</key><true/>
+  <key>NSPrincipalClass</key><string>NSApplication</string>
+  <key>BytepleatApplicationPath</key><string></string>
+  <key>NSServices</key>
+  <array>
+    <dict>
+      <key>NSMenuItem</key><dict><key>default</key><string>Compress with Bytepleat</string></dict>
+      <key>NSMessage</key><string>compressWithBytepleat</string>
+      <key>NSPortName</key><string>BytepleatServices</string>
+      <key>NSSendTypes</key><array><string>NSFilenamesPboardType</string><string>public.file-url</string></array>
+      <key>NSUserData</key><string>create</string>
+    </dict>
+    <dict>
+      <key>NSMenuItem</key><dict><key>default</key><string>Extract with Bytepleat</string></dict>
+      <key>NSMessage</key><string>extractWithBytepleat</string>
+      <key>NSPortName</key><string>BytepleatServices</string>
+      <key>NSSendTypes</key><array><string>NSFilenamesPboardType</string><string>public.file-url</string></array>
+      <key>NSUserData</key><string>extract</string>
+    </dict>
+  </array>
+</dict>
+</plist>

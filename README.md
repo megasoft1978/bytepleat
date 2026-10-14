@@ -16,6 +16,10 @@ bytepleat unpack project.tar.zst -o project-restored
 
 Your originals stay in place. Named outputs are published after successful completion, and unpacking requires a new destination directory. Built for scripts and everyday file workflows, Bytepleat puts format choice and file-handling behavior in your hands.
 
+## Desktop alpha
+
+A modern desktop interface and Finder, Explorer, and Linux file-manager integrations are in development. See [desktop build instructions and current limitations](desktop/README.md). This development branch does not provide a verified consumer desktop release; the downloads below remain the CLI release.
+
 ## Install
 
 **Downloads:** [Release packages](https://github.com/megasoft1978/bytepleat/releases). Download the archive for your platform and verify its adjacent `.sha256` file; see [verification and extraction](RELEASE.md). Packages are unsigned and macOS builds are not notarized.

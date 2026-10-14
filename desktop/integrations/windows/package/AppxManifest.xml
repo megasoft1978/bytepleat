@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+ xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+ xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+ xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
+ xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+ xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+ xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
+ xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"
+ IgnorableNamespaces="uap uap5 uap10 rescap com desktop4 desktop5">
+  <!-- Development identity; the package builder supplies Publisher and architecture explicitly. -->
+  <Identity Name="Bytepleat.Desktop" Publisher="CN=Bytepleat Development" Version="0.1.0.0" ProcessorArchitecture="x64" />
+  <Properties>
+    <DisplayName>Bytepleat</DisplayName>
+    <PublisherDisplayName>Bytepleat</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+  <Dependencies><TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.26200.0" MaxVersionTested="10.0.26300.0" /></Dependencies>
+  <Resources><Resource Language="en-us" /></Resources>
+  <Applications>
+    <Application Id="Bytepleat" Executable="bytepleat-desktop.exe" uap10:TrustLevel="mediumIL" uap10:RuntimeBehavior="packagedClassicApp">
+      <uap:VisualElements DisplayName="Bytepleat" Description="Bytepleat desktop app" BackgroundColor="transparent" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" />
+      <Extensions>
+        <uap5:Extension Category="windows.appExecutionAlias"><uap5:AppExecutionAlias><uap5:ExecutionAlias Alias="bytepleat-desktop.exe" /></uap5:AppExecutionAlias></uap5:Extension>
+        <com:Extension Category="windows.comServer"><com:ComServer><com:SurrogateServer DisplayName="Bytepleat File Explorer commands">
+          <com:Class Id="6C987D21-07A4-4D7B-992C-2E2D6F5D1001" Path="BytepleatExplorerCommands.dll" ThreadingModel="STA" />
+          <com:Class Id="6C987D22-07A4-4D7B-992C-2E2D6F5D1002" Path="BytepleatExplorerCommands.dll" ThreadingModel="STA" />
+          <com:Class Id="6C987D23-07A4-4D7B-992C-2E2D6F5D1003" Path="BytepleatExplorerCommands.dll" ThreadingModel="STA" />
+          <com:Class Id="6C987D24-07A4-4D7B-992C-2E2D6F5D1004" Path="BytepleatExplorerCommands.dll" ThreadingModel="STA" />
+        </com:SurrogateServer></com:ComServer></com:Extension>
+        <desktop4:Extension Category="windows.fileExplorerContextMenus"><desktop4:FileExplorerContextMenus>
+          <desktop4:ItemType Type="*"><desktop5:Verb Id="BytepleatFiles" Clsid="6C987D21-07A4-4D7B-992C-2E2D6F5D1001" /></desktop4:ItemType>
+          <desktop4:ItemType Type="Directory"><desktop5:Verb Id="BytepleatDirectories" Clsid="6C987D21-07A4-4D7B-992C-2E2D6F5D1001" /></desktop4:ItemType>
+        </desktop4:FileExplorerContextMenus></desktop4:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+  <Capabilities><rescap:Capability Name="runFullTrust" /><rescap:Capability Name="unvirtualizedResources" /></Capabilities>
+</Package>

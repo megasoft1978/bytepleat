@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Bytepleat</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to workspace</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Job history">
+      <a class="brand" href="#main" aria-label="Bytepleat home"><span class="brand-mark" aria-hidden="true">B</span><span>bytepleat<small>DESKTOP ALPHA</small></span></a>
+      <div class="side-heading"><span>RECENT JOBS</span><span class="live-dot" aria-hidden="true"></span></div>
+      <div id="job-list" class="job-list" aria-live="polite"><p class="empty-history">Your archive jobs will appear here.</p></div>
+      <div class="sidebar-foot"><span class="engine-dot"></span><span>Local processing</span><span class="foot-badge">ALPHA</span></div>
+    </aside>
+
+    <main id="main" class="main-pane">
+      <header class="topbar">
+        <div class="breadcrumb"><span>Workspace</span><span class="crumb-sep">/</span><strong id="view-label">Create archive</strong></div>
+        <div class="top-actions"><span class="privacy-label"><span class="privacy-icon" aria-hidden="true">◈</span> Files stay on this device</span><button id="theme-toggle" class="icon-button" type="button" aria-label="Toggle color theme" title="Toggle theme">◐</button></div>
+      </header>
+
+      <div class="content-wrap">
+        <section class="page-intro" aria-labelledby="page-title">
+          <div class="eyebrow"><span class="eyebrow-line"></span> BYTEPLEAT DESKTOP <span class="eyebrow-pill">EARLY ACCESS</span></div>
+          <h1 id="page-title">Archive, <span>without the noise.</span></h1>
+          <p>Create a compact archive or unpack one to a folder. Every operation runs locally.</p>
+        </section>
+
+        <div class="work-grid">
+          <section class="workspace-card" aria-label="Archive workspace">
+            <div class="mode-tabs" role="tablist" aria-label="Archive operation">
+              <button class="mode-tab active" type="button" role="tab" aria-selected="true" data-mode="create"><span class="tab-icon" aria-hidden="true">↗</span> Create</button>
+              <button class="mode-tab" type="button" role="tab" aria-selected="false" data-mode="extract"><span class="tab-icon" aria-hidden="true">↙</span> Extract</button>
+              <button class="mode-tab" type="button" role="tab" aria-selected="false" data-mode="open"><span class="tab-icon" aria-hidden="true">▤</span> Open archive</button>
+            </div>
+
+            <div class="workspace-body">
+              <div class="section-label"><span class="step-number">01</span><div><h2 id="input-title">Choose what to archive</h2><p id="input-hint">Select files or folders from your device.</p></div></div>
+              <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Choose files or folders, or drop them here">
+                <div class="drop-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 21V5m0 0-6 6m6-6 6 6M6 19v7h20v-7"/></svg></div>
+                <div class="drop-copy"><strong>Drop files here</strong><span>or browse your device</span></div>
+                <div class="browse-actions"><button id="browse-inputs" class="button button-secondary" type="button">Browse files <span aria-hidden="true">↗</span></button><button id="browse-folder" class="button button-secondary" type="button" title="Choose one folder">Folder</button></div>
+              </div>
+              <div id="selection" class="selection-list" aria-live="polite"><div class="selection-empty"><span class="tiny-folder" aria-hidden="true">＋</span><span>No files selected yet</span></div></div>
+              <div id="selection-count" class="selection-count" aria-live="polite"></div>
+              <section id="archive-inspection" class="archive-inspection" hidden aria-label="Archive contents"><div class="inspection-heading"><strong>Archive contents</strong><span id="inspection-summary"></span></div><p>Listing only. Contents have not been integrity-tested. Selecting entries decodes the whole archive before retaining them.</p><div id="entry-list" class="entry-list"></div><button id="extract-selected" class="button button-outline" type="button" disabled>Extract selected entries</button></section>
+
+              <div id="format-section" class="configuration-section">
+                <div class="section-label compact"><span class="step-number">02</span><div><h2>Choose a format</h2><p>Pick a format based on what matters most.</p></div></div>
+                <div class="format-options" role="radiogroup" aria-label="Archive format">
+                  <label class="format-option selected"><input type="radio" name="format" value="zip" checked><span class="radio-mark"></span><span class="format-main"><strong>ZIP</strong><small>Share anywhere · broad support</small></span><span class="format-tag">SHARE</span></label>
+                  <label class="format-option"><input type="radio" name="format" value="7z"><span class="radio-mark"></span><span class="format-main"><strong>7z</strong><small>Smaller archives · slower</small></span><span class="format-tag">SMALLER</span></label>
+                  <details class="advanced-formats"><summary>Advanced formats <span aria-hidden="true">⌄</span></summary><div class="advanced-list">
+                    <label class="format-option"><input type="radio" name="format" value="tar.zst"><span class="radio-mark"></span><span class="format-main"><strong>TAR · Zstandard</strong><small>Fast compression · Unix-friendly</small></span><span class="format-tag">FAST</span></label>
+                    <label class="format-option"><input type="radio" name="format" value="tar.gz"><span class="radio-mark"></span><span class="format-main"><strong>TAR · Gzip</strong><small>Broad Unix compatibility</small></span><span class="format-tag">COMMON</span></label>
+                    <label class="format-option"><input type="radio" name="format" value="tar.lz4"><span class="radio-mark"></span><span class="format-main"><strong>TAR · LZ4</strong><small>Fast compression and decompression</small></span><span class="format-tag">FAST</span></label>
+                  </div></details>
+                </div>
+              </div>
+
+              <div id="destination-section" class="destination-row">
+                <div class="section-label compact"><span class="step-number" id="destination-step">03</span><div><h2 id="destination-title">Save archive as</h2><p id="destination-hint">Choose where the finished archive will go.</p></div></div>
+                <button id="choose-destination" class="button button-outline" type="button">Choose location <span aria-hidden="true">⌖</span></button>
+                <div id="destination-path" class="destination-path" aria-live="polite">No location chosen</div>
+              </div>
+
+              <div class="run-row"><div class="run-note"><span class="lock-icon" aria-hidden="true">⌑</span><span>1 GiB output cap · source files stay in place.</span></div><button id="run-job" class="button button-primary" type="button" disabled><span id="run-label">Create archive</span><span aria-hidden="true">→</span></button></div>
+              <div id="native-notice" class="notice" role="status" hidden>This screen is a browser preview. Start the Tauri desktop app to use native file access and archive operations.</div>
+              <div id="status-message" class="status-message" role="status" aria-live="polite"></div>
+            </div>
+          </section>
+
+          <aside class="formats-aside" aria-label="Format information">
+            <div class="aside-card format-guide"><div class="aside-kicker"><span class="spark" aria-hidden="true">✳</span> FORMAT GUIDE</div><h2>The right format<br>for the right job.</h2><p>Bytepleat uses established archive formats, so your files remain portable.</p><div class="guide-row"><span class="guide-symbol">↗</span><span><strong>ZIP or 7z</strong><small>Everyday sharing</small></span><span class="guide-arrow">→</span></div><div class="guide-row"><span class="guide-symbol">ϟ</span><span><strong>TAR · Zstandard</strong><small>Fast, compact workflows</small></span><span class="guide-arrow">→</span></div><div class="aside-divider"></div><p class="guide-foot">RAR, encrypted archives and ZIP64 are not supported in this alpha.</p></div>
+            <div class="aside-card privacy-card"><span class="privacy-orbit" aria-hidden="true">◉</span><div><strong>Private by design</strong><p>Your files are processed on this device. Nothing is uploaded.</p></div></div>
+          </aside>
+        </div>
+
+        <footer class="bottom-note"><span>BYTEPLEAT <span class="footer-dot">·</span> DESKTOP ALPHA</span><span>Built for files. Designed for clarity.</span><button id="theme-toggle-bottom" type="button">APPEARANCE: <span id="theme-label">SYSTEM</span></button></footer>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
