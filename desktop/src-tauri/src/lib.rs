@@ -145,59 +145,71 @@ fn remember_selection(state: &Broker, selection: Selection) {
 }
 
 #[tauri::command]
-fn choose_inputs(app: tauri::AppHandle) -> Result<Vec<String>, String> {
-    let selected = app
-        .dialog()
-        .file()
-        .set_title("Choose files or folders")
-        .blocking_pick_files()
-        .unwrap_or_default();
-    let paths = selected
-        .into_iter()
-        .map(|p| {
-            p.into_path()
-                .map_err(|_| "A selected item is not a local filesystem path".to_string())
-        })
-        .collect::<Result<Vec<_>, _>>()?;
-    path_strings(paths)
+async fn choose_inputs(app: tauri::AppHandle) -> Result<Vec<String>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let selected = app
+            .dialog()
+            .file()
+            .set_title("Choose files or folders")
+            .blocking_pick_files()
+            .unwrap_or_default();
+        let paths = selected
+            .into_iter()
+            .map(|p| {
+                p.into_path()
+                    .map_err(|_| "A selected item is not a local filesystem path".to_string())
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        path_strings(paths)
+    })
+    .await
+    .map_err(|e| format!("File selection task failed: {e}"))?
 }
 
 #[tauri::command]
-fn choose_input_directory(app: tauri::AppHandle) -> Result<Option<String>, String> {
-    let selected = app
-        .dialog()
-        .file()
-        .set_title("Choose a folder to archive")
-        .blocking_pick_folder()
-        .map(|p| {
-            p.into_path()
-                .map_err(|_| "The selected folder is not a local filesystem path".to_string())
-        })
-        .transpose()?;
-    selected
-        .map(|path| path_strings([path]).map(|mut paths| paths.remove(0)))
-        .transpose()
+async fn choose_input_directory(app: tauri::AppHandle) -> Result<Option<String>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let selected = app
+            .dialog()
+            .file()
+            .set_title("Choose a folder to archive")
+            .blocking_pick_folder()
+            .map(|p| {
+                p.into_path()
+                    .map_err(|_| "The selected folder is not a local filesystem path".to_string())
+            })
+            .transpose()?;
+        selected
+            .map(|path| path_strings([path]).map(|mut paths| paths.remove(0)))
+            .transpose()
+    })
+    .await
+    .map_err(|e| format!("Folder selection task failed: {e}"))?
 }
 
 #[tauri::command]
-fn choose_directory(app: tauri::AppHandle) -> Result<Option<String>, String> {
-    let selected = app
-        .dialog()
-        .file()
-        .set_title("Choose destination folder")
-        .blocking_pick_folder()
-        .map(|p| {
-            p.into_path()
-                .map_err(|_| "The selected folder is not a local filesystem path".to_string())
-        })
-        .transpose()?;
-    selected
-        .map(|path| path_strings([path]).map(|mut paths| paths.remove(0)))
-        .transpose()
+async fn choose_directory(app: tauri::AppHandle) -> Result<Option<String>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let selected = app
+            .dialog()
+            .file()
+            .set_title("Choose destination folder")
+            .blocking_pick_folder()
+            .map(|p| {
+                p.into_path()
+                    .map_err(|_| "The selected folder is not a local filesystem path".to_string())
+            })
+            .transpose()?;
+        selected
+            .map(|path| path_strings([path]).map(|mut paths| paths.remove(0)))
+            .transpose()
+    })
+    .await
+    .map_err(|e| format!("Destination selection task failed: {e}"))?
 }
 
 #[tauri::command]
-fn choose_output(app: tauri::AppHandle, format: String) -> Result<Option<String>, String> {
+async fn choose_output(app: tauri::AppHandle, format: String) -> Result<Option<String>, String> {
     let extension = match format.as_str() {
         "zip" => "zip",
         "7z" => "7z",
@@ -206,20 +218,25 @@ fn choose_output(app: tauri::AppHandle, format: String) -> Result<Option<String>
         "tar.lz4" => "tar.lz4",
         _ => return Err("Unsupported archive format".into()),
     };
-    let selected = app
-        .dialog()
-        .file()
-        .set_title("Save archive")
-        .set_file_name(format!("Archive.{extension}"))
-        .blocking_save_file()
-        .map(|p| {
-            p.into_path()
-                .map_err(|_| "The selected output is not a local filesystem path".to_string())
-        })
-        .transpose()?;
-    selected
-        .map(|path| path_strings([path]).map(|mut paths| paths.remove(0)))
-        .transpose()
+    let file_name = format!("Archive.{extension}");
+    tauri::async_runtime::spawn_blocking(move || {
+        let selected = app
+            .dialog()
+            .file()
+            .set_title("Save archive")
+            .set_file_name(file_name)
+            .blocking_save_file()
+            .map(|p| {
+                p.into_path()
+                    .map_err(|_| "The selected output is not a local filesystem path".to_string())
+            })
+            .transpose()?;
+        selected
+            .map(|path| path_strings([path]).map(|mut paths| paths.remove(0)))
+            .transpose()
+    })
+    .await
+    .map_err(|e| format!("Output selection task failed: {e}"))?
 }
 
 #[tauri::command]

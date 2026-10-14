@@ -560,7 +560,13 @@ pub fn publish(
         "decoded"
     });
     if result.output_kind == "file" {
-        File::open(&src).and_then(|f| f.sync_all()).map_err(ioerr)?;
+        // The staged artifact is owned by this operation. Open it writable for
+        // the durability flush without truncating or otherwise changing bytes.
+        fs::OpenOptions::new()
+            .write(true)
+            .open(&src)
+            .and_then(|f| f.sync_all())
+            .map_err(ioerr)?;
     }
     rename_noreplace(&src, dest).map_err(ioerr)?;
     Ok(Some(dest.clone()))

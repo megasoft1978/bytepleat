@@ -17,7 +17,7 @@ For a desktop bundle:
 CARGO_BUILD_JOBS=4 npm run tauri -- build
 ```
 
-The app and core crate have separate Cargo manifests and lockfiles. Build commands are run from this directory so Tauri resolves `src-tauri/tauri.conf.json`. No signed or notarized release is provided. Desktop behavior and installers have not been verified across Windows, macOS, and Linux; the macOS bundle minimum is set to 13.0, but this setting is not evidence of testing on that OS version.
+The app and core crate have separate Cargo manifests and lockfiles. Build commands are run from this directory so Tauri resolves `src-tauri/tauri.conf.json`. The archive engine has locked build and test evidence on macOS Apple silicon and Ubuntu 24.04 (Linux x86-64 GNU); that does not establish desktop GUI behavior. A native macOS GUI launch and initial file selection have been observed, but native dialog workflow verification is still in progress. Desktop behavior and installers have not been verified across Windows, macOS, and Linux. The macOS bundle minimum is set to 13.0, but this setting is not evidence of testing on that OS version. See the [engine release verification notes](../RELEASE.md) for runner baselines and CI evidence.
 
 ## Operation notes
 

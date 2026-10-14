@@ -54,9 +54,18 @@ int wmain(int argc, wchar_t** argv) {
     last = nullptr;
     assert(clone->Next(1, &last, nullptr) == S_FALSE);
     assert(enumerator->Skip(1) == S_OK);
-    assert(enumerator->Skip(1) == S_OK); // exactly reaches the end
+    assert(enumerator->Skip(1) == S_FALSE); // requests one item beyond the end
     assert(enumerator->Skip(0) == S_OK);
     assert(enumerator->Next(1, &last, nullptr) == S_FALSE);
+    assert(enumerator->Reset() == S_OK);
+    assert(enumerator->Next(1, &last, nullptr) == S_OK && last);
+    last->Release();
+    last = nullptr;
+    // Reset affects only this enumerator; the clone remains at the end.
+    assert(clone->Next(1, &last, nullptr) == S_FALSE);
+    assert(clone->Reset() == S_OK);
+    assert(clone->Next(1, &last, nullptr) == S_OK && last);
+    last->Release();
     commands[0]->Release(); commands[1]->Release();
     clone->Release(); enumerator->Release(); root->Release(); factory->Release();
     assert(canUnload() == S_OK);
