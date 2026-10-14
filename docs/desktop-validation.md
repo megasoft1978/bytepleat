@@ -60,8 +60,11 @@ package payload checks passed. The earlier payload run was
 These are package schema/payload checks, not Windows installation or Explorer
 interaction. A Windows 11 ARM64 VM check awaits an official ISO.
 
-Linux package-builder work is ongoing. No installer download or Linux package
-runtime result is claimed here.
+A local unsigned ARM64 Debian package built twice with identical bytes and
+installed successfully on Ubuntu 24.04.5. The installed executable matched the
+compiled ELF hash. Interactive testing of that installed copy remains pending;
+earlier GUI results used the development executable. No consumer desktop
+installer download is published.
 
 ## Remaining validation
 

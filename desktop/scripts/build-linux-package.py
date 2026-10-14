@@ -59,6 +59,8 @@ SONAME_PACKAGES = {
     "libz.so.1": "zlib1g",
     "libexpat.so.1": "libexpat1",
     "libc.so.6": "libc6",
+    "ld-linux-aarch64.so.1": "libc6",
+    "ld-linux-x86-64.so.2": "libc6",
     "libgcc_s.so.1": "libgcc-s1",
     "libstdc++.so.6": "libstdc++6",
     "libm.so.6": "libc6",

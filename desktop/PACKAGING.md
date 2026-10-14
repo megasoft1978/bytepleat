@@ -86,8 +86,9 @@ this development packager makes no legal-clearance claim.
 
 ## Scope
 
-The exact ARM package built for Ubuntu 24.04.5 has an observed GLIBC requirement
-of 2.39; installation and runtime validation on that target remain pending.
+The ARM64 development package was built twice with identical bytes and installed
+on Ubuntu 24.04.5. Its required glibc floor is 2.39. The installed executable
+matched the compiled ELF hash; installed-copy interactive testing remains pending.
 This is evidence for that package only and does not claim support for all Debian
 or Ubuntu releases, distributions, or architectures.
 

@@ -26,6 +26,10 @@ def elf_fixture(path: Path, machine: int = 62, elf_class: int = 2) -> Path:
 
 
 class LinuxPackageTests(unittest.TestCase):
+    def test_native_loader_dependencies_keep_the_required_libc_floor(self):
+        for loader in ("ld-linux-aarch64.so.1", "ld-linux-x86-64.so.2"):
+            self.assertEqual(builder.package_dependencies([loader, "libc.so.6"], "2.39"), "libc6 (>= 2.39)")
+
     def test_accepts_minimal_supported_elf_and_reads_needed_entries(self):
         with tempfile.TemporaryDirectory() as temporary:
             executable = elf_fixture(Path(temporary) / "app")

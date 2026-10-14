@@ -471,6 +471,63 @@
       "repository": "https://github.com/servo/stylo",
       "source_mapping_status": "declared_mapping_text_canonical_terms_supplemented",
       "version": "0.38.0"
+    },
+    {
+      "name": "dlopen2",
+      "version": "0.8.2",
+      "repository": "https://github.com/OpenByteDev/dlopen2",
+      "pinned_git_sha": "cc80e4a0a90d499b677fdf7743699b4b3a43a989",
+      "declared_license": "MIT",
+      "mapping_note": "dlopen2/Cargo.toml at the pinned commit directly declares MIT and version 0.8.2; .cargo_vcs_info.json identifies path_in_vcs=dlopen2. The pinned root LICENSE supplies the literal MIT terms and package copyright attribution.",
+      "source_mapping_status": "verified_source_mapping",
+      "notices": [
+        {
+          "license": "MIT",
+          "path": "notice-sources/linux-dlopen2-LICENSE",
+          "sha256": "39fa265207450e77c62e90c5594a06c085b655d8374c7ced4bf7894b6bd95dd2",
+          "source_url": "https://raw.githubusercontent.com/OpenByteDev/dlopen2/cc80e4a0a90d499b677fdf7743699b4b3a43a989/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "dlopen2_derive",
+      "version": "0.4.3",
+      "repository": "https://github.com/OpenByteDev/dlopen2",
+      "pinned_git_sha": "cc80e4a0a90d499b677fdf7743699b4b3a43a989",
+      "declared_license": "MIT",
+      "mapping_note": "dlopen2-derive/Cargo.toml at the pinned commit directly declares MIT and version 0.4.3; .cargo_vcs_info.json identifies path_in_vcs=dlopen2-derive. The pinned root LICENSE supplies the literal MIT terms and package copyright attribution.",
+      "source_mapping_status": "verified_source_mapping",
+      "notices": [
+        {
+          "license": "MIT",
+          "path": "notice-sources/linux-dlopen2-LICENSE",
+          "sha256": "39fa265207450e77c62e90c5594a06c085b655d8374c7ced4bf7894b6bd95dd2",
+          "source_url": "https://raw.githubusercontent.com/OpenByteDev/dlopen2/cc80e4a0a90d499b677fdf7743699b4b3a43a989/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "libappindicator-sys",
+      "version": "0.9.0",
+      "repository": "https://github.com/tauri-apps/libappindicator-rs",
+      "pinned_git_sha": "eafd1e3682a1247f595410266091e9684021cb6f",
+      "declared_license": "Apache-2.0 OR MIT",
+      "mapping_note": "sys/Cargo.toml at the pinned commit directly declares Apache-2.0 OR MIT and version 0.9.0; .cargo_vcs_info.json identifies path_in_vcs=sys. The root Cargo.toml has no inherited workspace license; root README describes the project and both root license texts are present at this commit. Both declared alternatives are retained.",
+      "source_mapping_status": "verified_source_mapping",
+      "notices": [
+        {
+          "license": "MIT",
+          "path": "notice-sources/linux-libappindicator-sys-LICENSE-MIT",
+          "sha256": "eb227437252b2a7a9c1fc342c93ade1f3d7ce38cc6dd754f613db07d53ceff0b",
+          "source_url": "https://raw.githubusercontent.com/tauri-apps/libappindicator-rs/eafd1e3682a1247f595410266091e9684021cb6f/LICENSE-MIT"
+        },
+        {
+          "license": "Apache-2.0",
+          "path": "notice-sources/linux-libappindicator-sys-LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "source_url": "https://raw.githubusercontent.com/tauri-apps/libappindicator-rs/eafd1e3682a1247f595410266091e9684021cb6f/LICENSE-APACHE"
+        }
+      ]
     }
   ],
   "schema_version": 1
