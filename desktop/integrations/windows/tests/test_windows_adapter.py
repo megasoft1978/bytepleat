@@ -16,7 +16,7 @@ class WindowsAdapterManifestTests(unittest.TestCase):
             'com': 'http://schemas.microsoft.com/appx/manifest/com/windows10',
         }
         classes = {x.attrib['Id'].upper() for x in root.findall('.//com:Class', ns)}
-        verbs = root.findall('.//d5:Verb', ns)
+        verbs = root.findall('.//d4:Verb', ns)
         self.assertTrue(verbs)
         self.assertTrue(all(v.attrib['Clsid'].upper() in classes for v in verbs))
         self.assertEqual({x.attrib['Type'] for x in root.findall('.//d4:ItemType', ns)}, {'*', 'Directory'})
