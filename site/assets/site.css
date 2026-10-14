@@ -5,4 +5,4 @@
 @media(max-width:560px){.restore-line{display:grid;justify-content:center;text-align:center;white-space:normal;gap:.35rem}.restore-line:before,.restore-line:after{display:none}}
 #install-commands{margin-top:1rem}#install-commands pre{overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;padding:1rem;background:var(--ink);color:var(--paper);border-radius:8px}#install-commands .copy{background:var(--teal-dark);color:white;border-color:var(--teal-dark)}#install-commands p{margin:.8rem 0 .4rem}#download-details{overflow-wrap:anywhere;color:var(--muted)}
 
-.docs-nav{flex-wrap:wrap}.hero-command{flex-wrap:wrap}
+.docs-nav{flex-wrap:wrap}.install-alt code{overflow-wrap:anywhere}
