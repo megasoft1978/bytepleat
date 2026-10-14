@@ -1,4 +1,4 @@
-use arqlet::{
+use bytepleat::{
     archive::{self, ArchiveLimits},
     archive_safety::ReadLimits,
     archive_sevenz, archive_zip, codecs, file_io, DecodeOptions, EncodeOptions, Format,
@@ -15,17 +15,17 @@ use std::{
 
 #[derive(Parser)]
 #[command(
-    name = "arqlet",
+    name = "bytepleat",
     version,
     about = "Compress, inspect, and unpack files with established formats",
-    long_about = "Arqlet preserves input bytes using established compression and archive formats. It does not define a proprietary compression format. Resource limits apply to decoding and archive input; raise them only when needed.",
+    long_about = "Bytepleat preserves input bytes using established compression and archive formats. It does not define a proprietary compression format. Resource limits apply to decoding and archive input; raise them only when needed.",
     after_help = "Examples:
-  arqlet compress notes.txt --format zstd
-  cat notes.txt | arqlet compress - -o notes.zst
-  arqlet decompress notes.zst -o restored-notes.txt
-  arqlet compress samples.f64le --format pco --type f64
-  arqlet pack ./folder -o folder.tar.zst
-  arqlet unpack folder.tar.zst --output ./restored
+  bytepleat compress notes.txt --format zstd
+  cat notes.txt | bytepleat compress - -o notes.zst
+  bytepleat decompress notes.zst -o restored-notes.txt
+  bytepleat compress samples.f64le --format pco --type f64
+  bytepleat pack ./folder -o folder.tar.zst
+  bytepleat unpack folder.tar.zst --output ./restored
 
 Decode output, archive input, entry-count, and depth caps are configurable. See each subcommand's help for defaults and format-specific limits."
 )]
@@ -76,7 +76,7 @@ impl From<Fmt> for Format {
 enum Command {
     /// Compress a byte stream as Zstandard, gzip, LZ4, or typed Pco.
     #[command(
-        long_about = "Compress a file or stdin. Output defaults to INPUT with the selected format suffix; use -o - to write stdout. Pco requires an explicit numeric --type (i32, u32, i64, u64, f32, or f64). Examples: `arqlet compress input.bin --format zstd`; `cat values.f64le | arqlet compress - -o values.pco --format pco --type f64`."
+        long_about = "Compress a file or stdin. Output defaults to INPUT with the selected format suffix; use -o - to write stdout. Pco requires an explicit numeric --type (i32, u32, i64, u64, f32, or f64). Examples: `bytepleat compress input.bin --format zstd`; `cat values.f64le | bytepleat compress - -o values.pco --format pco --type f64`."
     )]
     Compress {
         /// Input file path, or `-` for stdin.
@@ -112,7 +112,7 @@ enum Command {
     },
     /// Decompress a supported stream to a file or stdout.
     #[command(
-        long_about = "Decode Zstandard, gzip, LZ4, or Pco streams. Pco requires the matching --type. The default maximum decoded output is 1 GiB; --max-output changes that cap. Examples: `arqlet decompress input.zst`; `cat input.gz | arqlet decompress - -o -`."
+        long_about = "Decode Zstandard, gzip, LZ4, or Pco streams. Pco requires the matching --type. The default maximum decoded output is 1 GiB; --max-output changes that cap. Examples: `bytepleat decompress input.zst`; `cat input.gz | bytepleat decompress - -o -`."
     )]
     Decompress {
         /// Compressed file path, or `-` for stdin.
@@ -143,7 +143,7 @@ enum Command {
     },
     /// Decode and validate a stream or supported archive.
     #[command(
-        long_about = "Read the full stream and validate its decoding/checksums without writing extracted output. The default decoded output cap is 1 GiB; archive dictionary and header caps are separate. Example: `arqlet test backup.7z`."
+        long_about = "Read the full stream and validate its decoding/checksums without writing extracted output. The default decoded output cap is 1 GiB; archive dictionary and header caps are separate. Example: `bytepleat test backup.7z`."
     )]
     Test {
         /// Stream or archive path, or `-` for stdin.
@@ -181,7 +181,7 @@ enum Command {
     },
     /// Report detected format and available metadata.
     #[command(
-        long_about = "Inspect stream or archive metadata. Stream sizes may be unknown, and inspection does not validate stream integrity. Archive input spooling, dictionary, and header caps are format-specific. Example: `arqlet info backup.zip --json`."
+        long_about = "Inspect stream or archive metadata. Stream sizes may be unknown, and inspection does not validate stream integrity. Archive input spooling, dictionary, and header caps are format-specific. Example: `bytepleat info backup.zip --json`."
     )]
     Info {
         /// Stream or archive path, or `-` for stdin.
@@ -204,7 +204,7 @@ enum Command {
     },
     /// Compute a SHA-256 checksum of a file or stdin.
     #[command(
-        long_about = "Compute SHA-256 over the complete input without modifying it. Use `-` to read stdin. Example: `arqlet checksum archive.7z`."
+        long_about = "Compute SHA-256 over the complete input without modifying it. Use `-` to read stdin. Example: `bytepleat checksum archive.7z`."
     )]
     Checksum {
         /// File path, or `-` for stdin.
@@ -214,7 +214,7 @@ enum Command {
     },
     /// Pack a directory using tar, ZIP, or 7z.
     #[command(
-        long_about = "Pack a directory with tar plus Zstandard/gzip/LZ4, or with ZIP/7z. Pco is a typed numeric stream and cannot encode directory archives. The default input/output byte cap is 1 GiB. Example: `arqlet pack ./project --format zip -o project.zip`."
+        long_about = "Pack a directory with tar plus Zstandard/gzip/LZ4, or with ZIP/7z. Pco is a typed numeric stream and cannot encode directory archives. The default input/output byte cap is 1 GiB. Example: `bytepleat pack ./project --format zip -o project.zip`."
     )]
     Pack {
         /// Directory whose regular files and directories will be archived.
@@ -269,7 +269,7 @@ enum Command {
     },
     /// Safely unpack a supported tar stream, ZIP, or 7z archive.
     #[command(
-        long_about = "Unpack into a new destination directory. Existing destinations are rejected. Entry-count, depth, decoded-byte, compressed-input, dictionary, and header limits vary by archive format. Directory publication moves children one at a time and rolls back moved children after an error; it is not atomic. Example: `arqlet unpack project.zip --output ./project-restored`."
+        long_about = "Unpack into a new destination directory. Existing destinations are rejected. Entry-count, depth, decoded-byte, compressed-input, dictionary, and header limits vary by archive format. Directory publication moves children one at a time and rolls back moved children after an error; it is not atomic. Example: `bytepleat unpack project.zip --output ./project-restored`."
     )]
     Unpack {
         input: String,
@@ -527,7 +527,7 @@ fn run() -> io::Result<()> {
                     ..ReadLimits::default()
                 };
                 let data = if kind == ArchiveKind::Rar {
-                    serde_json::json!({"format":"rar","supported":false,"integrity_validated":false,"reason":"RAR extraction is available through external UnRAR/7-Zip, not integrated into Arqlet"})
+                    serde_json::json!({"format":"rar","supported":false,"integrity_validated":false,"reason":"RAR extraction is available through external UnRAR/7-Zip, not integrated into Bytepleat"})
                 } else {
                     with_archive_input(&src, source, &limits, |path| match kind {
                         ArchiveKind::Zip => archive_zip::info(path, &limits),
@@ -628,7 +628,7 @@ fn run() -> io::Result<()> {
                 x.push(format!(".{suffix}"));
                 PathBuf::from(x)
             });
-            let encode = |f: &mut File| -> io::Result<arqlet::Stats> {
+            let encode = |f: &mut File| -> io::Result<bytepleat::Stats> {
                 match format {
                     ArchiveFmt::Zip => {
                         if threads != 1 {
@@ -765,7 +765,7 @@ fn run() -> io::Result<()> {
     }
     Ok(())
 }
-fn stats(verb: &str, s: arqlet::Stats, quiet: bool) {
+fn stats(verb: &str, s: bytepleat::Stats, quiet: bool) {
     if !quiet {
         eprintln!(
             "{verb}: {} input bytes, {} output bytes",
@@ -776,7 +776,7 @@ fn stats(verb: &str, s: arqlet::Stats, quiet: bool) {
 fn main() {
     if let Err(e) = run() {
         if e.kind() != io::ErrorKind::BrokenPipe {
-            eprintln!("arqlet: {e}")
+            eprintln!("bytepleat: {e}")
         }
         std::process::exit(1)
     }

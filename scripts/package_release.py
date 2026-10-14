@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Create a deterministic, create-only Arqlet release archive."""
+"""Create a deterministic, create-only Bytepleat release archive."""
 from __future__ import annotations
 import argparse, gzip, hashlib, json, os, platform, re, shutil, stat, subprocess, sys, tarfile, tempfile, zipfile
 from pathlib import Path, PurePosixPath
 
 ROOT = Path(__file__).resolve().parents[1]
-TARGETS = {"aarch64-apple-darwin": ("tar.gz", "arqlet"), "x86_64-unknown-linux-gnu": ("tar.gz", "arqlet"), "x86_64-pc-windows-msvc": ("zip", "arqlet.exe")}
+TARGETS = {"aarch64-apple-darwin": ("tar.gz", "bytepleat"), "x86_64-unknown-linux-gnu": ("tar.gz", "bytepleat"), "x86_64-pc-windows-msvc": ("zip", "bytepleat.exe")}
 SOURCE_REQUIRED = ("Cargo.toml", "README.md", "RELEASE.md", "LICENSE", "Cargo.lock")
 
 def sha(path: Path) -> str:
@@ -34,11 +34,11 @@ def main() -> int:
     manifest = (root / "Cargo.toml").read_text(encoding="utf-8")
     m = re.search(r'^version\s*=\s*"([^"]+)"', manifest, re.M)
     if not m or m.group(1) != a.version: ap.error("requested version does not match Cargo.toml")
-    if not re.search(r'^name\s*=\s*"arqlet"$', manifest, re.M): ap.error("Cargo.toml package identity is not arqlet")
+    if not re.search(r'^name\s*=\s*"bytepleat"$', manifest, re.M): ap.error("Cargo.toml package identity is not bytepleat")
     if not binary.is_file() or binary.is_symlink(): ap.error("binary must be a regular file")
     try: identity = subprocess.run([str(binary), "--version"], check=True, capture_output=True, text=True, timeout=15).stdout.strip()
     except (OSError, subprocess.SubprocessError) as e: ap.error(f"cannot query release binary identity: {e}")
-    if identity != f"arqlet {a.version}": ap.error(f"binary identity mismatch: expected 'arqlet {a.version}', got {identity!r}")
+    if identity != f"bytepleat {a.version}": ap.error(f"binary identity mismatch: expected 'bytepleat {a.version}', got {identity!r}")
     if not (root / "third-party-licenses").is_dir(): ap.error("missing third-party-licenses")
     for name in SOURCE_REQUIRED + ("THIRD-PARTY.json",):
         if not (root / name).is_file(): ap.error(f"missing required source file: {name}")
@@ -47,7 +47,7 @@ def main() -> int:
     try:
         inv = json.loads(bom.read_text(encoding="utf-8"))
         if not isinstance(inv,dict) or not isinstance(inv.get("project"),dict): ap.error("invalid target inventory structure")
-        if inv.get("project") != {"name":"arqlet","version":a.version}: ap.error("inventory project identity/version mismatch")
+        if inv.get("project") != {"name":"bytepleat","version":a.version}: ap.error("inventory project identity/version mismatch")
         if inv.get("target") != a.target: ap.error("inventory target mismatch")
         if inv.get("unresolved_gaps"): ap.error("inventory contains unresolved bundled dependency notice gaps")
         if any(isinstance(x,dict) and x.get("notice_status")=="unresolved" for x in inv.get("packages",[])): ap.error("inventory contains unresolved bundled dependency notices")
@@ -67,19 +67,19 @@ def main() -> int:
             src=bom.parent.joinpath(*pp.parts)
             if not src.is_file() or src.is_symlink() or sha(src)!=notice.get("sha256"): ap.error(f"notice source missing or hash mismatch: {rel}")
             notice_paths[pp.as_posix()]=src
-    ext, exe = TARGETS[a.target]; asset = f"arqlet-{a.version}-{a.target}.{ext}"
+    ext, exe = TARGETS[a.target]; asset = f"bytepleat-{a.version}-{a.target}.{ext}"
     checksum = asset + ".sha256"
     # Check every output before creating the output directory or any staging path.
     try: check_create_only(out,asset,checksum)
     except ValueError as e: ap.error(str(e))
     out.mkdir(parents=True, exist_ok=True)
-    staging = Path(tempfile.mkdtemp(prefix=".arqlet-package-", dir=out))
+    staging = Path(tempfile.mkdtemp(prefix=".bytepleat-package-", dir=out))
     try:
-        top = f"arqlet-{a.version}-{a.target}"; stage = staging / top; stage.mkdir()
+        top = f"bytepleat-{a.version}-{a.target}"; stage = staging / top; stage.mkdir()
         shutil.copyfile(binary, stage / exe); (stage / exe).chmod((stage / exe).stat().st_mode | stat.S_IXUSR)
         for name in SOURCE_REQUIRED + ("THIRD-PARTY.json",): shutil.copyfile(root / name, stage / name)
         shutil.copyfile(bom,stage/f"THIRD-PARTY-{a.target}.json")
-        (stage / "BUILD-INFO.json").write_text(json.dumps({"schema_version":1,"project":"arqlet","version":a.version,"target":a.target,"revision":a.revision,"binary_sha256":sha(binary)},sort_keys=True,indent=2)+"\n",encoding="utf-8")
+        (stage / "BUILD-INFO.json").write_text(json.dumps({"schema_version":1,"project":"bytepleat","version":a.version,"target":a.target,"revision":a.revision,"binary_sha256":sha(binary)},sort_keys=True,indent=2)+"\n",encoding="utf-8")
         for rel,src in sorted(notice_paths.items()):
             dest=stage/rel;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(src,dest)
         members = sorted((p for p in stage.rglob("*") if p.is_file()), key=lambda p: p.relative_to(staging).as_posix())

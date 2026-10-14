@@ -433,7 +433,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "arqlet"
+name = "bytepleat"
 version = "0.5.0"
 dependencies = [
  "better_io",

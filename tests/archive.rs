@@ -1,4 +1,4 @@
-use arqlet::{
+use bytepleat::{
     archive::{self, ArchiveLimits},
     DecodeOptions, EncodeOptions, Format,
 };
@@ -12,7 +12,7 @@ use std::{
 fn temp() -> PathBuf {
     static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
     let p = std::env::temp_dir().join(format!(
-        "arqlet-archive-test-{}-{}",
+        "bytepleat-archive-test-{}-{}",
         std::process::id(),
         SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -324,18 +324,18 @@ fn rejects_missing_tar_end_marker() {
         .unwrap();
     let raw = builder.into_inner().unwrap();
     let mut encoded = Vec::new();
-    arqlet::codecs::compress(
+    bytepleat::codecs::compress(
         std::io::Cursor::new(&raw[..1024]),
         &mut encoded,
-        &arqlet::EncodeOptions::default(),
+        &bytepleat::EncodeOptions::default(),
     )
     .unwrap();
     let dest = td.path().join("output");
-    assert!(arqlet::archive::unpack(
+    assert!(bytepleat::archive::unpack(
         std::io::Cursor::new(encoded),
         &dest,
-        &arqlet::DecodeOptions::default(),
-        &arqlet::archive::ArchiveLimits::default()
+        &bytepleat::DecodeOptions::default(),
+        &bytepleat::archive::ArchiveLimits::default()
     )
     .is_err());
     assert!(!dest.exists());

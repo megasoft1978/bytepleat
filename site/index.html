@@ -4,38 +4,39 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f8f6ef">
-  <meta name="description" content="Arqlet is a Rust command-line tool for compressing files and packaging directories with established formats, with exact byte restoration.">
-  <title>Arqlet — files in, bytes back</title>
+  <meta name="description" content="One command line to compress files, pack folders, inspect archives, test supported data, and restore the same file bytes.">
+  <title>Compress files. Pack folders. · Bytepleat</title>
   <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./assets/site.css">
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
   <header class="site-header"><nav class="wrap nav" aria-label="Main navigation">
-    <a class="brand" href="./" aria-label="Arqlet home"><img src="./assets/arqlet-mark.svg" alt=""><span>arqlet</span></a>
+    <a class="brand" href="./" aria-label="Bytepleat home"><img src="./assets/bytepleat-mark.svg" alt=""><span>bytepleat</span></a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
-    <div class="nav-links" id="nav-links"><a href="#formats">Formats</a><a href="#install">Install</a><a href="#guide">Guide</a><a class="github" href="https://github.com/megasoft1978/arqlet">GitHub ↗</a></div>
+    <div class="nav-links" id="nav-links"><a href="#formats">Formats</a><a href="#install">Install</a><a href="#guide">Guide</a><a class="github" href="https://github.com/megasoft1978/bytepleat">GitHub ↗</a></div>
   </nav></header>
   <main id="main">
     <section class="wrap hero" aria-labelledby="hero-title">
-      <div><span class="eyebrow">A small, clear command line</span><h1 id="hero-title">Files in.<br><em>Bytes back.</em></h1>
-        <p class="lead">Arqlet is a Rust tool for compressing individual files and packaging directories with established formats. It is built around a simple promise: restore the original file bytes exactly.</p>
-        <div class="actions"><a class="button" href="https://github.com/megasoft1978/arqlet/releases" data-release-link>View release status <span aria-hidden="true">↗</span></a><a class="button secondary" href="./docs/">Read the guide</a></div>
+      <div><span class="eyebrow">One command family, common file workflows</span><h1 id="hero-title">Compress files.<br><em>Pack folders.</em></h1>
+        <p class="lead">One command line for familiar formats, careful output and extraction behavior, and restoring the same file bytes.</p>
+        <p class="hero-command"><span>Start with a file</span><code>bytepleat compress report.pdf</code></p>
+        <div class="actions"><a class="button" href="https://github.com/megasoft1978/bytepleat/releases" data-release-link>View release status <span aria-hidden="true">↗</span></a><a class="button secondary" href="./docs/">Read the guide</a></div>
         <p class="release-note" data-release-note>Version 0.5.0 · first public release pending · source is open on GitHub</p>
       </div>
-      <div class="visual" aria-hidden="true"><div class="archive-art"><div class="sheet one"></div><div class="sheet two"></div><div class="sheet three"><span class="tag">ARQLET / ARCHIVE</span><strong>source → intact</strong><div class="sheet-lines"><i></i><i></i><i></i></div></div><span class="float-label label-a">format: standard</span><span class="float-label label-b">restore: exact bytes</span></div></div>
+      <div class="visual" aria-hidden="true"><div class="archive-art"><div class="sheet one"></div><div class="sheet two"></div><div class="sheet three"><span class="tag">BYTEPLEAT / ARCHIVE</span><strong>source → intact</strong><div class="sheet-lines"><i></i><i></i><i></i></div></div><span class="float-label label-a">format: standard</span><span class="float-label label-b">restore: exact bytes</span></div></div>
     </section>
 
     <section class="section" id="formats"><div class="wrap">
-      <div class="section-head"><div><span class="eyebrow">Choose the right shape</span><h2>One file, or a whole folder.</h2></div><p class="section-intro">Arqlet uses familiar, documented formats instead of a new proprietary compression stream. Pick a format that fits the data and the tools around it.</p></div>
-      <div style="overflow-x:auto"><table class="format-table"><thead><tr><th scope="col">Format</th><th scope="col">For</th><th scope="col">Arqlet workflow</th></tr></thead><tbody>
+      <div class="section-head"><div><span class="eyebrow">Choose the right shape</span><h2>One file, or a whole folder.</h2></div><p class="section-intro">Use the same command family to compress a file stream or package a folder, then inspect, test, and restore supported data. Bytepleat uses established formats rather than a new proprietary stream.</p></div>
+      <div style="overflow-x:auto"><table class="format-table"><thead><tr><th scope="col">Format</th><th scope="col">For</th><th scope="col">Bytepleat workflow</th></tr></thead><tbody>
         <tr><td>zstd</td><td>General files and directory archives</td><td>Compress · decompress · pack</td></tr>
         <tr><td>gzip</td><td>Broad compatibility and streams</td><td>Compress · decompress · pack</td></tr>
-        <tr><td>LZ4</td><td>Fast, widely supported streams</td><td>Compress · decompress · pack</td></tr>
+        <tr><td>LZ4</td><td>Frame streams and compressed tar</td><td>Compress · decompress · pack</td></tr>
         <tr><td>ZIP / 7z</td><td>Supported directory archive subsets</td><td>Pack · inspect · test · unpack</td></tr>
         <tr><td>pco</td><td>Typed raw little-endian values</td><td>Numeric streams · explicit <code>--type</code></td></tr>
       </tbody></table></div>
-      <p class="note">Pco reads typed raw values; it does not parse CSV. Compression results depend on data and settings, and no format is best for every file.</p>
+      <p class="note">Pco reads typed raw values; it does not parse CSV. For Zstandard and gzip, choose <code>--preset fast</code>, <code>balanced</code> (default), or <code>compact</code>; to select codec levels. Time and size depend on your files. LZ4 has one level. See the <a href="./docs/">guide</a> for details.</p>
       <div class="usecases" aria-label="Example uses"><span>Package project folders</span><span>Compress individual files</span><span>Move archives between tools</span><span>Keep numeric data typed</span></div>
     </div></section>
 
@@ -46,35 +47,36 @@
       <p id="download-details" hidden></p>
       <div id="install-commands" hidden><p><strong>Verify SHA-256</strong></p><pre><code id="checksum-command"></code></pre><button class="copy" type="button" id="copy-checksum" data-copy="">Copy checksum command</button><p><strong>Extract and run</strong></p><pre><code id="extract-command"></code></pre><button class="copy" type="button" id="copy-install" data-copy="">Copy install command</button></div>
       <div class="target-list"><div class="target"><strong>macOS · Apple silicon</strong><code>aarch64-apple-darwin</code><small data-target-status="mac">Release pending</small></div><div class="target"><strong>Linux · x86-64</strong><code>x86_64-unknown-linux-gnu</code><small data-target-status="linux">Release pending</small></div><div class="target"><strong>Windows · x86-64</strong><code>x86_64-pc-windows-msvc</code><small data-target-status="windows">Release pending</small></div></div>
-      <p class="install-alt">If you have Rust installed, source installation is available after the <code>v0.5.0</code> tag is published: <code>cargo install --locked --git https://github.com/megasoft1978/arqlet --tag v0.5.0</code>. See the <a href="https://github.com/megasoft1978/arqlet/releases">GitHub releases list</a> for current availability.</p>
+      <p class="install-alt">If you have Rust installed, source installation is available after the <code>v0.5.0</code> tag is published: <code>cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.0</code>. See the <a href="https://github.com/megasoft1978/bytepleat/releases">GitHub releases list</a> for current availability.</p>
     </div></section>
 
     <section class="section" id="guide"><div class="wrap">
       <div class="section-head"><div><span class="eyebrow">A short tour</span><h2>Pack. Check. Unpack.</h2></div><p class="section-intro">These examples show the shape of the workflow: make an archive, inspect it, then restore it to a chosen directory.</p></div>
       <div class="commands">
-        <div><div class="command"><div class="command-head"><span>Package a directory</span><button class="copy" type="button" data-copy="arqlet pack ./project --format zstd -o project.tar.zst">Copy command</button></div><pre><code>arqlet pack ./project --format zstd -o project.tar.zst</code></pre></div><p class="command-explain">Creates a standard compressed tar archive from the folder.</p></div>
-        <div><div class="command"><div class="command-head"><span>Check the archive</span><button class="copy" type="button" data-copy="arqlet test project.tar.zst">Copy command</button></div><pre><code>arqlet test project.tar.zst</code></pre></div><p class="command-explain">Tests the stream or archive for decode and integrity errors supported by its format.</p></div>
-        <div><div class="command"><div class="command-head"><span>Restore a directory</span><button class="copy" type="button" data-copy="arqlet unpack project.tar.zst --output ./restored-project">Copy command</button></div><pre><code>arqlet unpack project.tar.zst --output ./restored-project</code></pre></div><p class="command-explain">Writes the archived entries into a new destination directory.</p></div>
-        <div><div class="command"><div class="command-head"><span>Compress a single file</span><button class="copy" type="button" data-copy="arqlet compress ./notes.txt --format gzip">Copy command</button></div><pre><code>arqlet compress ./notes.txt --format gzip</code></pre></div><p class="command-explain">Creates a gzip stream beside the input; decompression detects the stream format.</p></div>
+        <div><div class="command"><div class="command-head"><span>Package a directory</span><button class="copy" type="button" data-copy="bytepleat pack ./project --format zstd -o project.tar.zst">Copy command</button></div><pre><code>bytepleat pack ./project --format zstd -o project.tar.zst</code></pre></div><p class="command-explain">Creates a standard compressed tar archive from the folder.</p></div>
+        <div><div class="command"><div class="command-head"><span>Check the archive</span><button class="copy" type="button" data-copy="bytepleat test project.tar.zst">Copy command</button></div><pre><code>bytepleat test project.tar.zst</code></pre></div><p class="command-explain">Tests the stream or archive for decode and integrity errors supported by its format.</p></div>
+        <div><div class="command"><div class="command-head"><span>Restore a directory</span><button class="copy" type="button" data-copy="bytepleat unpack project.tar.zst --output ./restored-project">Copy command</button></div><pre><code>bytepleat unpack project.tar.zst --output ./restored-project</code></pre></div><p class="command-explain">Writes the archived entries into a new destination directory.</p></div>
+        <div><div class="command"><div class="command-head"><span>Compress a single file</span><button class="copy" type="button" data-copy="bytepleat compress ./notes.txt --format gzip">Copy command</button></div><pre><code>bytepleat compress ./notes.txt --format gzip</code></pre></div><p class="command-explain">Creates a gzip stream beside the input; decompression detects the stream format.</p></div>
       </div>
       <p class="status" id="copy-status" role="status" aria-live="polite"></p>
       <div class="restore-line"><span>the same bytes out</span><strong>input = restored output</strong><span>by design</span></div>
-      <p class="note">Examples assume Arqlet is installed and that output paths do not already exist. See <a href="./docs/">the guide</a> for options and safety details.</p>
+      <p class="note">Examples assume Bytepleat is installed and that output paths do not already exist. See <a href="./docs/">the guide</a> for options and safety details.</p>
     </div></section>
 
     <section class="section"><div class="wrap">
-      <div class="section-head"><div><span class="eyebrow">Careful by default</span><h2>Archives deserve a second look.</h2></div><p class="section-intro">Compression is one part of file handling. Arqlet also makes archive extraction an explicit step with limits and path checks.</p></div>
-      <div class="honesty"><div><strong>Review before restoring</strong><p>Inspect archive contents and unpack only trusted files into a new directory you control.</p></div><div><strong>Integrity has limits</strong><p>Checksums detect changes; they do not prove who created a file or that it is safe.</p></div><div><strong>Exact means bytes</strong><p>Lossless file workflows restore input bytes. Paths and filesystem attributes are separate metadata.</p></div><div><strong>Release status</strong><p data-release-status>First public release pending. macOS and Linux native CI passed; Windows installer fix is pending.</p></div></div>
+      <div class="section-head"><div><span class="eyebrow">Know what each command checks</span><h2>Inspect. Test. Then unpack.</h2></div><p class="section-intro"><code>info</code> reads bounded metadata. <code>test</code> decodes supported content and checks format integrity and available checksums without extracting files. Neither can establish who sent an archive or whether its contents are safe.</p></div>
+      <div class="honesty"><div><strong>Review before restoring</strong><p>Inspect archive contents and unpack only trusted files into a new directory you control.</p></div><div><strong>Integrity has limits</strong><p>Checksums detect changes; they do not prove who created a file or that it is safe.</p></div><div><strong>Exact means bytes</strong><p>Lossless file workflows restore input bytes. Paths and filesystem attributes are separate metadata.</p></div><div><strong>Release status</strong><p data-release-status>First public release pending. macOS and Linux CI passed. Windows checks and smoke cases pass; archive interoperability remains unresolved.</p></div></div>
     </div></section>
 
     <section class="section"><div class="wrap faq"><span class="eyebrow">Good to know</span><h2>Questions, plainly answered.</h2>
-      <details><summary>Does Arqlet invent its own compression format?</summary><p>No. Its file and archive workflows use established formats such as zstd, gzip, LZ4, ZIP, and 7z. Pco is available for typed numeric data.</p></details>
+      <details><summary>Does Bytepleat invent its own compression format?</summary><p>No. Its file and archive workflows use established formats such as zstd, gzip, LZ4, ZIP, and 7z. Pco is available for typed numeric data.</p></details>
       <details><summary>Will every file get smaller?</summary><p>No. Compressed, encrypted, or already optimized files may not shrink and can grow slightly. Choose a format based on compatibility and the kind of data you have.</p></details>
+      <details><summary>How do I choose a compression setting?</summary><p>For Zstandard or gzip, <code>fast</code>, <code>balanced</code>, and <code>compact</code> choose codec levels. Time and size depend on your files. Compressed, encrypted, or already optimized files may not shrink and can grow slightly.</p></details>
       <details><summary>Is the 0.5.0 download available now?</summary><p data-release-faq>The initial public release is pending. Check the release list for current availability.</p></details>
-      <details><summary>How can I contribute?</summary><p>Read <a href="https://github.com/megasoft1978/arqlet/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> or <a href="https://github.com/megasoft1978/arqlet/issues">open an issue</a>.</p></details>
+      <details><summary>How can I contribute?</summary><p>Read <a href="https://github.com/megasoft1978/bytepleat/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> or <a href="https://github.com/megasoft1978/bytepleat/issues">open an issue</a>.</p></details>
     </div></section>
   </main>
-  <footer class="footer"><div class="wrap footer-inner"><div><a class="brand" href="./"><img src="./assets/arqlet-mark.svg" alt=""><span>arqlet</span></a><small>Rust · open source · version 0.5.0</small></div><div class="footer-links"><a href="./docs/">Guide</a><a href="https://github.com/megasoft1978/arqlet">Source ↗</a><a href="https://github.com/megasoft1978/arqlet/releases">Releases ↗</a><a href="https://github.com/megasoft1978/arqlet/blob/main/SECURITY.md">Security ↗</a><a href="https://github.com/megasoft1978/arqlet/blob/main/CONTRIBUTING.md">Contributing ↗</a></div></div></footer>
+  <footer class="footer"><div class="wrap footer-inner"><div><a class="brand" href="./"><img src="./assets/bytepleat-mark.svg" alt=""><span>bytepleat</span></a><small>Rust · open source · version 0.5.0</small></div><div class="footer-links"><a href="./docs/">Guide</a><a href="https://github.com/megasoft1978/bytepleat">Source ↗</a><a href="https://github.com/megasoft1978/bytepleat/releases">Releases ↗</a><a href="https://github.com/megasoft1978/bytepleat/blob/main/SECURITY.md">Security ↗</a><a href="https://github.com/megasoft1978/bytepleat/blob/main/CONTRIBUTING.md">Contributing ↗</a></div></div></footer>
   <script src="./assets/site.js" defer></script>
 </body>
 </html>

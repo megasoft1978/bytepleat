@@ -1,4 +1,4 @@
-use arqlet::{codecs, DecodeOptions, EncodeOptions, Format};
+use bytepleat::{codecs, DecodeOptions, EncodeOptions, Format};
 use std::io::{self, Cursor, Read, Write};
 
 fn options(format: Format) -> EncodeOptions {

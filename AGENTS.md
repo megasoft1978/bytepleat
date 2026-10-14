@@ -1,6 +1,6 @@
-# Arqlet contributor instructions
+# Bytepleat contributor instructions
 
-Arqlet is a Rust CLI using standard byte and archive formats. Keep the documented compatibility and lossless byte-restoration contract.
+Bytepleat is a Rust CLI using standard byte and archive formats. Keep the documented compatibility and lossless byte-restoration contract.
 
 - Read the relevant src/ module and tests/ before changing it.
 - Use scoped rg searches; exclude target/, .ci-results/ and dependency source unless needed.

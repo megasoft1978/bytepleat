@@ -1,4 +1,4 @@
-use arqlet::{
+use bytepleat::{
     archive::ArchiveLimits,
     archive_safety::ReadLimits,
     archive_sevenz::{self, PackOptions},
@@ -15,7 +15,7 @@ use std::{
 fn temp() -> PathBuf {
     static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
     let p = std::env::temp_dir().join(format!(
-        "arqlet-7z-test-{}-{}",
+        "bytepleat-7z-test-{}-{}",
         std::process::id(),
         SystemTime::now()
             .duration_since(UNIX_EPOCH)

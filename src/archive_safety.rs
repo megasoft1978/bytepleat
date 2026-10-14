@@ -223,7 +223,7 @@ pub fn stage(dest: &Path) -> io::Result<tempfile::TempDir> {
         return Err(invalid("destination parent must be a real directory"));
     }
     tempfile::Builder::new()
-        .prefix(".arqlet-extract-")
+        .prefix(".bytepleat-extract-")
         .tempdir_in(parent)
 }
 pub fn write_entry(

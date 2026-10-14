@@ -363,7 +363,7 @@ pub fn unpack<R: Read>(
         ));
     }
     let stage = tempfile::Builder::new()
-        .prefix(".arqlet-extract-")
+        .prefix(".bytepleat-extract-")
         .tempdir_in(parent)?;
     let stage_path = stage.path().to_path_buf();
     let stats = codecs::decode_with(input, opts, |decoded| {

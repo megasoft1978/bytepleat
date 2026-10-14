@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generated-fixture independent ZIP/7z interoperability checks for Arqlet."""
+"""Generated-fixture independent ZIP/7z interoperability checks for Bytepleat."""
 from __future__ import annotations
 import argparse, hashlib, json, os, platform, random, shutil, struct, subprocess, sys, tempfile, time, zipfile
 from pathlib import Path
@@ -61,7 +61,7 @@ def main():
     results=[]; commands=[]; started=time.time()
     binary_version=run([binary,'--version'])
     commands.append(binary_version)
-    with tempfile.TemporaryDirectory(prefix='arqlet-archive-validation-') as td:
+    with tempfile.TemporaryDirectory(prefix='bytepleat-archive-validation-') as td:
         t=Path(td); source=t/'source'; source.mkdir(); fixture(source); expected=snapshot(source)
         native_version=run([native,'i'])
         commands.append(native_version)
@@ -126,7 +126,7 @@ def main():
             return {'input_archive_sha256':sha(pyzip),'restored':got,'integrity_validated':False}
         record(results,'python-deflate-zip-read',python_zip_read)
         native_zip=t/'native-deflate.zip'
-        # Arqlet accepts ASCII names or UTF-8-flagged UTF-8 names; force 7-Zip
+        # Bytepleat accepts ASCII names or UTF-8-flagged UTF-8 names; force 7-Zip
         # to encode non-ASCII ZIP names as UTF-8 instead of the Windows codepage.
         native_args=['a','-tzip','-mm=Deflate','-mx=6','-mmt=1','-mcu=on',native_zip,*[p.relative_to(source) for p in sorted(source.iterdir())]]
         np=subprocess.run([str(native),*map(str,native_args)],cwd=source,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -229,7 +229,7 @@ def main():
         ex=t/'existing';ex.mkdir();(ex/'sentinel').write_bytes(b'unchanged')
         c=run([binary,'unpack',pyzip,'-o',ex]);commands.append(c)
         record(results,'existing-destination-untouched',lambda:{'rejected':c['exit_code']!=0,'sentinel_sha256':sha(ex/'sentinel')} if c['exit_code'] and sha(ex/'sentinel')==hashlib.sha256(b'unchanged').hexdigest() else (_ for _ in ()).throw(RuntimeError('existing destination changed or accepted')))
-    payload={'schema':'arqlet-archive-validation-v1','timestamp_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'platform':platform.platform(),'machine':platform.machine(),'binary':str(binary),'binary_sha256':sha(binary),'binary_version':binary_version['stdout'].strip(),'native7z':str(native),'native7z_sha256':sha(native),'native7z_version':native_version['stdout'].splitlines()[1:3],'suite_sha256':sha(Path(__file__)),'commands':commands,'results':results,'summary':{'pass':sum(r['status']=='pass' for r in results),'fail':sum(r['status']=='fail' for r in results),'skipped':sum(r['status']=='skipped' for r in results),'duration_seconds':round(time.time()-started,3)}}
+    payload={'schema':'bytepleat-archive-validation-v1','timestamp_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'platform':platform.platform(),'machine':platform.machine(),'binary':str(binary),'binary_sha256':sha(binary),'binary_version':binary_version['stdout'].strip(),'native7z':str(native),'native7z_sha256':sha(native),'native7z_version':native_version['stdout'].splitlines()[1:3],'suite_sha256':sha(Path(__file__)),'commands':commands,'results':results,'summary':{'pass':sum(r['status']=='pass' for r in results),'fail':sum(r['status']=='fail' for r in results),'skipped':sum(r['status']=='skipped' for r in results),'duration_seconds':round(time.time()-started,3)}}
     out.parent.mkdir(parents=True,exist_ok=True); out.write_text(json.dumps(payload,indent=2)+'\n')
     print(json.dumps(payload['summary'],indent=2)); return 1 if payload['summary']['fail'] else 0
 if __name__=='__main__': raise SystemExit(main())

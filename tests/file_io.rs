@@ -1,4 +1,4 @@
-use arqlet::{file_io::atomic_output, Stats};
+use bytepleat::{file_io::atomic_output, Stats};
 use std::{
     fs,
     io::{self, Write},

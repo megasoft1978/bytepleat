@@ -1,4 +1,4 @@
-name: Release Arqlet
+name: Release Bytepleat
 on:
   push:
     tags: ["v*"]
@@ -33,9 +33,9 @@ jobs:
           from pathlib import Path
           p=Path('release-assets')
           expected={
-            'arqlet-0.5.0-aarch64-apple-darwin.tar.gz',
-            'arqlet-0.5.0-x86_64-unknown-linux-gnu.tar.gz',
-            'arqlet-0.5.0-x86_64-pc-windows-msvc.zip',
+            'bytepleat-0.5.0-aarch64-apple-darwin.tar.gz',
+            'bytepleat-0.5.0-x86_64-unknown-linux-gnu.tar.gz',
+            'bytepleat-0.5.0-x86_64-pc-windows-msvc.zip',
           }
           actual={x.name for x in p.iterdir() if x.suffix in {'.gz','.zip'}}
           if actual != expected: raise SystemExit(f'asset name mismatch: expected {sorted(expected)}, found {sorted(actual)}')
@@ -45,7 +45,7 @@ jobs:
               raise SystemExit(f'asset checksum sidecar invalid: {asset}')
           PY
           cd release-assets
-          sha256sum arqlet-0.5.0-aarch64-apple-darwin.tar.gz arqlet-0.5.0-x86_64-unknown-linux-gnu.tar.gz arqlet-0.5.0-x86_64-pc-windows-msvc.zip > SHA256SUMS
+          sha256sum bytepleat-0.5.0-aarch64-apple-darwin.tar.gz bytepleat-0.5.0-x86_64-unknown-linux-gnu.tar.gz bytepleat-0.5.0-x86_64-pc-windows-msvc.zip > SHA256SUMS
           test -f THIRD-PARTY-aarch64-apple-darwin.json
           test -f THIRD-PARTY-x86_64-unknown-linux-gnu.json
           test -f THIRD-PARTY-x86_64-pc-windows-msvc.json
@@ -56,8 +56,8 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
           cat > release-notes.md <<'EOF'
-          Arqlet 0.5.0 is a byte-preserving command-line archiver using established formats. These packages were built and executed on their named native GitHub Actions runners.
+          Bytepleat 0.5.0 is a byte-preserving command-line archiver using established formats. These packages were built and executed on their named native GitHub Actions runners.
 
           Packages are unsigned; macOS packages are not notarized. SHA256SUMS detects accidental corruption and is not a signature. Target dependency inventories are included per platform; they are informational and are not formal legal certification.
           EOF
-          gh release create "$RELEASE_TAG" release-assets/arqlet-0.5.0-aarch64-apple-darwin.tar.gz release-assets/arqlet-0.5.0-aarch64-apple-darwin.tar.gz.sha256 release-assets/arqlet-0.5.0-x86_64-unknown-linux-gnu.tar.gz release-assets/arqlet-0.5.0-x86_64-unknown-linux-gnu.tar.gz.sha256 release-assets/arqlet-0.5.0-x86_64-pc-windows-msvc.zip release-assets/arqlet-0.5.0-x86_64-pc-windows-msvc.zip.sha256 release-assets/THIRD-PARTY-aarch64-apple-darwin.json release-assets/THIRD-PARTY-x86_64-unknown-linux-gnu.json release-assets/THIRD-PARTY-x86_64-pc-windows-msvc.json release-assets/SHA256SUMS --verify-tag --title "Arqlet 0.5.0" --notes-file release-notes.md
+          gh release create "$RELEASE_TAG" release-assets/bytepleat-0.5.0-aarch64-apple-darwin.tar.gz release-assets/bytepleat-0.5.0-aarch64-apple-darwin.tar.gz.sha256 release-assets/bytepleat-0.5.0-x86_64-unknown-linux-gnu.tar.gz release-assets/bytepleat-0.5.0-x86_64-unknown-linux-gnu.tar.gz.sha256 release-assets/bytepleat-0.5.0-x86_64-pc-windows-msvc.zip release-assets/bytepleat-0.5.0-x86_64-pc-windows-msvc.zip.sha256 release-assets/THIRD-PARTY-aarch64-apple-darwin.json release-assets/THIRD-PARTY-x86_64-unknown-linux-gnu.json release-assets/THIRD-PARTY-x86_64-pc-windows-msvc.json release-assets/SHA256SUMS --verify-tag --title "Bytepleat 0.5.0" --notes-file release-notes.md

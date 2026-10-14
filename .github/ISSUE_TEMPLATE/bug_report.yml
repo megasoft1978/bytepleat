@@ -1,12 +1,12 @@
 name: Bug report
-description: Report a reproducible Arqlet problem
+description: Report a reproducible Bytepleat problem
 title: ""
 labels: [bug]
 body:
   - type: input
     id: version
     attributes:
-      label: Arqlet version
+      label: Bytepleat version
       placeholder: "0.5.0"
     validations:
       required: true

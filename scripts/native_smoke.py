@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Portable generated-fixture smoke and interoperability checks for Arqlet."""
+"""Portable generated-fixture smoke and interoperability checks for Bytepleat."""
 from __future__ import annotations
 import argparse, hashlib, io, json, os, platform, random, shutil, subprocess, sys, tarfile, tempfile, time
 from pathlib import Path
@@ -52,7 +52,7 @@ def main() -> int:
         if missing: report['failures'].append({'case':'required-tools','error':'missing required tools: '+', '.join(missing)}); save(); return 1
     rng=random.Random(0x4d4f5341)
     payloads={'empty':b'','random':rng.randbytes(131071),'repetitive':b'abracadabra\0'*8192}
-    with tempfile.TemporaryDirectory(prefix='arqlet-native-smoke-',dir=out.parent) as td:
+    with tempfile.TemporaryDirectory(prefix='bytepleat-native-smoke-',dir=out.parent) as td:
         t=Path(td)
         for label,data in payloads.items():
             for fmt in ('zstd','gzip','lz4'):
@@ -100,11 +100,11 @@ def main() -> int:
             def tar_case():
                 root=t/'tree'; (root/'unicode-東京').mkdir(parents=True); (root/'unicode-東京'/'hello.txt').write_bytes(b'hello\n'); (root/('long-'+'n'*110)).write_bytes(b'long')
                 plain=t/'tree.tar'; run([tarpath,'-cf',plain,'-C',root,'.'])
-                # Native tar consumes Arqlet's standard gzip stream.
-                arqlet_arc=t/'tree.tar.gz'; cli('compress',str(plain),'-o',str(arqlet_arc),'--format','gzip','--quiet')
-                native_out=t/'native-out'; native_out.mkdir(); decompressed=run([tools['gzip'],'-d','-c',arqlet_arc]) if tools['gzip'] else cli('decompress',str(arqlet_arc),'-o','-','--quiet')
+                # Native tar consumes Bytepleat's standard gzip stream.
+                bytepleat_arc=t/'tree.tar.gz'; cli('compress',str(plain),'-o',str(bytepleat_arc),'--format','gzip','--quiet')
+                native_out=t/'native-out'; native_out.mkdir(); decompressed=run([tools['gzip'],'-d','-c',bytepleat_arc]) if tools['gzip'] else cli('decompress',str(bytepleat_arc),'-o','-','--quiet')
                 decoded=t/'decoded.tar'; decoded.write_bytes(decompressed); run([tarpath,'-xf',decoded,'-C',native_out]); assert (native_out/'./unicode-東京'/'hello.txt').read_bytes()==b'hello\n'
-                # Arqlet consumes a native tar archive after native gzip encoding.
+                # Bytepleat consumes a native tar archive after native gzip encoding.
                 native_gz=t/'native.tar.gz'; native_gz.write_bytes(run([tools['gzip'],'-n','-c'],data=plain.read_bytes()) if tools['gzip'] else cli('compress',str(plain),'-o','-','--format','gzip','--quiet'))
                 dest=t/'extract'; cli('unpack',str(native_gz),'-o',str(dest)); assert (dest/'unicode-東京'/'hello.txt').read_bytes()==b'hello\n'
                 return {'tar_tool':tarpath,'unicode_and_long_names':True,'bidirectional':True}

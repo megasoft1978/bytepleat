@@ -1,5 +1,5 @@
 (() => {
-  const repo = 'https://github.com/megasoft1978/arqlet';
+  const repo = 'https://github.com/megasoft1978/bytepleat';
   const releases = `${repo}/releases`;
   const menu = document.querySelector('.menu-toggle');
   const nav = document.querySelector('#nav-links');
@@ -38,8 +38,8 @@
     try {
       const url = new URL(value);
       if (url.protocol !== 'https:' || url.origin !== 'https://github.com' || url.username || url.password || url.search || url.hash) return null;
-      if (url.pathname === '/megasoft1978/arqlet/releases' || /^\/megasoft1978\/arqlet\/releases\/tag\/[A-Za-z0-9._-]+$/.test(url.pathname)) return url.href;
-      if (/^\/megasoft1978\/arqlet\/releases\/download\/[A-Za-z0-9._-]+\/[A-Za-z0-9._+-]+$/.test(url.pathname)) return url.href;
+      if (url.pathname === '/megasoft1978/bytepleat/releases' || /^\/megasoft1978\/bytepleat\/releases\/tag\/[A-Za-z0-9._-]+$/.test(url.pathname)) return url.href;
+      if (/^\/megasoft1978\/bytepleat\/releases\/download\/[A-Za-z0-9._-]+\/[A-Za-z0-9._+-]+$/.test(url.pathname)) return url.href;
     } catch (_) { return null; }
     return null;
   };
@@ -107,8 +107,8 @@
           })()
           : selected === 'windows' ? `Get-FileHash .\\${file} -Algorithm SHA256` : `${unixHash} ./${file}`;
       const extractCmd = selected === 'windows'
-        ? `Expand-Archive -LiteralPath .\\${file} -DestinationPath .\\arqlet; .\\arqlet\\${stem}\\arqlet.exe --help`
-        : `mkdir -p ./arqlet && tar -xzf '${file}' -C ./arqlet && chmod +x ./arqlet/${stem}/arqlet && ./arqlet/${stem}/arqlet --help`;
+        ? `Expand-Archive -LiteralPath .\\${file} -DestinationPath .\\bytepleat; .\\bytepleat\\${stem}\\bytepleat.exe --help`
+        : `mkdir -p ./bytepleat && tar -xzf '${file}' -C ./bytepleat && chmod +x ./bytepleat/${stem}/bytepleat && ./bytepleat/${stem}/bytepleat --help`;
       copyCommands(hashCmd, extractCmd);
     }
   };

@@ -1,6 +1,6 @@
 use std::io::Cursor;
 
-use arqlet::{numeric, DecodeOptions, EncodeOptions, Format, NumericType};
+use bytepleat::{numeric, DecodeOptions, EncodeOptions, Format, NumericType};
 
 fn roundtrip(t: NumericType, bytes: &[u8]) {
     let enc = EncodeOptions {

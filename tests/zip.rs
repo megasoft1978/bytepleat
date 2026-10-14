@@ -1,4 +1,4 @@
-use arqlet::{
+use bytepleat::{
     archive::ArchiveLimits,
     archive_safety::ReadLimits,
     archive_zip::{self, PackOptions},

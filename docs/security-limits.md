@@ -1,6 +1,6 @@
 # Security and limits
 
-Arqlet processes compressed data and archive-controlled metadata. Keep it current, review the limits below, and use private vulnerability reporting as described in [SECURITY.md](../SECURITY.md). These controls reduce accepted input scope; they do not establish an aggregate memory quota, formal security proof, or security certification.
+Bytepleat processes compressed data and archive-controlled metadata. Keep it current, review the limits below, and use private vulnerability reporting as described in [SECURITY.md](../SECURITY.md). These controls reduce accepted input scope; they do not establish an aggregate memory quota, formal security proof, or security certification.
 
 ## Defaults
 
@@ -23,6 +23,6 @@ Archives preserve file bytes and relative paths, not complete filesystem metadat
 
 ## Format-specific boundaries
 
-ZIP support is classic Stored/Deflate only. ZIP64, encryption, split volumes, SFX, and unsupported methods are rejected. 7z support is unencrypted, single-volume, with a bounded set of decoder methods; it is not arbitrary 7z compatibility. RAR is not decoded by Arqlet. Pco requires a correct explicit numeric type.
+ZIP support is classic Stored/Deflate only. ZIP64, encryption, split volumes, SFX, and unsupported methods are rejected. 7z support is unencrypted, single-volume, with a bounded set of decoder methods; it is not arbitrary 7z compatibility. RAR is not decoded by Bytepleat. Pco requires a correct explicit numeric type.
 
 Frame checksums can detect accidental corruption. They do not authenticate data or protect against malicious replacement. `info` inspects metadata and does not validate complete payload integrity; use `test` or extraction to decode and validate.

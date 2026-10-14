@@ -8,7 +8,7 @@ sys.path.insert(0,str(SCRIPTS))
 import verify_packages
 import package_release
 
-TARGET="x86_64-pc-windows-msvc"; VERSION="0.5.0"; ASSET=f"arqlet-{VERSION}-{TARGET}.zip"; ROOT=ASSET[:-4]
+TARGET="x86_64-pc-windows-msvc"; VERSION="0.5.0"; ASSET=f"bytepleat-{VERSION}-{TARGET}.zip"; ROOT=ASSET[:-4]
 REVISION="a"*40
 
 class PackagingSafetyTests(unittest.TestCase):
@@ -30,23 +30,23 @@ class PackagingSafetyTests(unittest.TestCase):
         if target is None:self.skipTest("host is outside package helper native target set")
         with tempfile.TemporaryDirectory() as td:
             temp=Path(td);source=temp/"src";source.mkdir();(source/"third-party-licenses").mkdir()
-            (source/"Cargo.toml").write_text('[package]\nname = "arqlet"\nversion = "0.5.0"\n')
-            (source/"Cargo.lock").write_text('version = 4\n\n[[package]]\nname = "arqlet"\nversion = "0.5.0"\n')
+            (source/"Cargo.toml").write_text('[package]\nname = "bytepleat"\nversion = "0.5.0"\n')
+            (source/"Cargo.lock").write_text('version = 4\n\n[[package]]\nname = "bytepleat"\nversion = "0.5.0"\n')
             for name in ("README.md","RELEASE.md","LICENSE"):(source/name).write_text(name+"\n")
-            (source/"THIRD-PARTY.json").write_text(json.dumps({"project":{"name":"arqlet","version":"0.5.0"},"packages":[],"runtime_components":[]})+'\n')
+            (source/"THIRD-PARTY.json").write_text(json.dumps({"project":{"name":"bytepleat","version":"0.5.0"},"packages":[],"runtime_components":[]})+'\n')
             original_inventory=(source/"THIRD-PARTY.json").read_bytes()
-            bomdir=temp/"bom";bomdir.mkdir();(bomdir/"THIRD-PARTY.json").write_text(json.dumps({"project":{"name":"arqlet","version":"0.5.0"},"target":target,"cargo_lock_sha256":hashlib.sha256((source/"Cargo.lock").read_bytes()).hexdigest(),"packages":[],"runtime_components":[],"unresolved_gaps":[]}))
-            binary=temp/"arqlet";binary.write_text(f'#!{sys.executable}\nimport sys\nprint("arqlet 0.5.0")\n');binary.chmod(0o755)
+            bomdir=temp/"bom";bomdir.mkdir();(bomdir/"THIRD-PARTY.json").write_text(json.dumps({"project":{"name":"bytepleat","version":"0.5.0"},"target":target,"cargo_lock_sha256":hashlib.sha256((source/"Cargo.lock").read_bytes()).hexdigest(),"packages":[],"runtime_components":[],"unresolved_gaps":[]}))
+            binary=temp/"bytepleat";binary.write_text(f'#!{sys.executable}\nimport sys\nprint("bytepleat 0.5.0")\n');binary.chmod(0o755)
             outputs=[]
             for n in ("one","two"):
                 out=temp/n
                 cmd=[sys.executable,str(SCRIPTS/"package_release.py"),"--binary",str(binary),"--target",target,"--version","0.5.0","--revision",REVISION,"--output-dir",str(out),"--source-root",str(source),"--bom",str(bomdir/"THIRD-PARTY.json")]
                 done=subprocess.run(cmd,capture_output=True,text=True)
-                self.assertEqual(done.returncode,0,done.stderr);asset=next(out.glob("arqlet-0.5.0-*"+(".zip" if target.endswith("msvc") else ".tar.gz")))
+                self.assertEqual(done.returncode,0,done.stderr);asset=next(out.glob("bytepleat-0.5.0-*"+(".zip" if target.endswith("msvc") else ".tar.gz")))
                 self.assertEqual((out/(asset.name+".sha256")).read_text().split()[0],hashlib.sha256(asset.read_bytes()).hexdigest())
                 outputs.append((asset,target))
             self.assertEqual(outputs[0][0].read_bytes(),outputs[1][0].read_bytes())
-            member=f"arqlet-0.5.0-{target}/THIRD-PARTY.json"
+            member=f"bytepleat-0.5.0-{target}/THIRD-PARTY.json"
             if outputs[0][0].suffix==".zip":
                 with zipfile.ZipFile(outputs[0][0]) as z:self.assertEqual(z.read(member),original_inventory)
             else:
@@ -56,13 +56,13 @@ class PackagingSafetyTests(unittest.TestCase):
 
     def archive(self, folder: Path, mutations=(), duplicate=False):
         notice=b"MIT notice\n"; notice_path="third-party-licenses/demo/LICENSE"
-        inventory={"project":{"name":"arqlet","version":VERSION},"target":TARGET,"cargo_lock_sha256":"0"*64,"packages":[{"name":"demo","version":"1","notices":[{"path":notice_path,"sha256":hashlib.sha256(notice).hexdigest()}]}],"runtime_components":[],"unresolved_gaps":[]}
+        inventory={"project":{"name":"bytepleat","version":VERSION},"target":TARGET,"cargo_lock_sha256":"0"*64,"packages":[{"name":"demo","version":"1","notices":[{"path":notice_path,"sha256":hashlib.sha256(notice).hexdigest()}]}],"runtime_components":[],"unresolved_gaps":[]}
         files={f"{ROOT}/{name}":b"payload" for name in ("README.md","RELEASE.md","LICENSE","Cargo.lock")}
-        files[f"{ROOT}/Cargo.toml"]=f'[package]\nname = "arqlet"\nversion = "{VERSION}"\n'.encode()
-        files[f"{ROOT}/Cargo.lock"]=f'name = "arqlet"\nversion = "{VERSION}"\n'.encode()
+        files[f"{ROOT}/Cargo.toml"]=f'[package]\nname = "bytepleat"\nversion = "{VERSION}"\n'.encode()
+        files[f"{ROOT}/Cargo.lock"]=f'name = "bytepleat"\nversion = "{VERSION}"\n'.encode()
         inventory["cargo_lock_sha256"]=hashlib.sha256(files[f"{ROOT}/Cargo.lock"]).hexdigest()
-        files[f"{ROOT}/THIRD-PARTY.json"]=json.dumps(inventory).encode();files[f"{ROOT}/THIRD-PARTY-{TARGET}.json"]=json.dumps(inventory).encode();files[f"{ROOT}/arqlet.exe"]=b"synthetic executable";files[f"{ROOT}/{notice_path}"]=notice
-        files[f"{ROOT}/BUILD-INFO.json"]=json.dumps({"schema_version":1,"project":"arqlet","version":VERSION,"target":TARGET,"revision":REVISION,"binary_sha256":hashlib.sha256(files[f"{ROOT}/arqlet.exe"]).hexdigest()}).encode()
+        files[f"{ROOT}/THIRD-PARTY.json"]=json.dumps(inventory).encode();files[f"{ROOT}/THIRD-PARTY-{TARGET}.json"]=json.dumps(inventory).encode();files[f"{ROOT}/bytepleat.exe"]=b"synthetic executable";files[f"{ROOT}/{notice_path}"]=notice
+        files[f"{ROOT}/BUILD-INFO.json"]=json.dumps({"schema_version":1,"project":"bytepleat","version":VERSION,"target":TARGET,"revision":REVISION,"binary_sha256":hashlib.sha256(files[f"{ROOT}/bytepleat.exe"]).hexdigest()}).encode()
         for key,value in mutations: files[key]=value
         path=folder/ASSET
         with zipfile.ZipFile(path,"w",zipfile.ZIP_STORED) as z:
@@ -150,7 +150,7 @@ class PackagingSafetyTests(unittest.TestCase):
             result=self.invoke(folder,archive);self.assertNotEqual(result.returncode,0)
 
     def test_rejects_malicious_tar_member(self):
-        target="x86_64-unknown-linux-gnu";asset=f"arqlet-{VERSION}-{target}.tar.gz"
+        target="x86_64-unknown-linux-gnu";asset=f"bytepleat-{VERSION}-{target}.tar.gz"
         with tempfile.TemporaryDirectory() as td:
             folder=Path(td);archive=folder/asset
             with tarfile.open(archive,"w:gz") as t:
@@ -174,7 +174,7 @@ class PackagingSafetyTests(unittest.TestCase):
                 result=self.invoke(folder,archive);self.assertNotEqual(result.returncode,0)
 
     def test_rejects_lock_version_and_inventory_identity_mismatch(self):
-        for mutation in ((f"{ROOT}/Cargo.lock",b'name = "arqlet"\nversion = "0.4.0"\n'),):
+        for mutation in ((f"{ROOT}/Cargo.lock",b'name = "bytepleat"\nversion = "0.4.0"\n'),):
             with tempfile.TemporaryDirectory() as td:
                 folder=Path(td);archive=self.archive(folder,[mutation]);result=self.invoke(folder,archive)
                 self.assertNotEqual(result.returncode,0);self.assertIn("Cargo.lock",result.stderr)
@@ -183,7 +183,7 @@ class PackagingSafetyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             folder=Path(td);archive=self.archive(folder)
             with zipfile.ZipFile(archive) as z: files={n:z.read(n) for n in z.namelist()}
-            inventory=json.loads(files[f"{ROOT}/THIRD-PARTY.json"]);inventory["project"]["name"]="mosaic-byte";files[f"{ROOT}/THIRD-PARTY.json"]=json.dumps(inventory).encode()
+            inventory=json.loads(files[f"{ROOT}/THIRD-PARTY.json"]);inventory["project"]["name"]="wrong-project-name";files[f"{ROOT}/THIRD-PARTY.json"]=json.dumps(inventory).encode()
             archive.unlink()
             with zipfile.ZipFile(archive,"w") as z:
                 for name,data in files.items():z.writestr(name,data)
@@ -192,12 +192,12 @@ class PackagingSafetyTests(unittest.TestCase):
 
     def test_rejects_build_revision_or_binary_hash_mismatch(self):
         with tempfile.TemporaryDirectory() as td:
-            folder=Path(td);archive=self.archive(folder,[(f"{ROOT}/BUILD-INFO.json",json.dumps({"schema_version":1,"project":"arqlet","version":VERSION,"target":TARGET,"revision":"b"*40,"binary_sha256":hashlib.sha256(b"synthetic executable").hexdigest()}).encode())])
+            folder=Path(td);archive=self.archive(folder,[(f"{ROOT}/BUILD-INFO.json",json.dumps({"schema_version":1,"project":"bytepleat","version":VERSION,"target":TARGET,"revision":"b"*40,"binary_sha256":hashlib.sha256(b"synthetic executable").hexdigest()}).encode())])
             result=self.invoke(folder,archive);self.assertNotEqual(result.returncode,0);self.assertIn("build identity",result.stderr.lower())
 
     def test_rejects_manifest_source_version_mismatch(self):
         with tempfile.TemporaryDirectory() as td:
-            folder=Path(td);archive=self.archive(folder,[(f"{ROOT}/Cargo.toml",b'[package]\nname = "arqlet"\nversion = "0.4.0"\n')])
+            folder=Path(td);archive=self.archive(folder,[(f"{ROOT}/Cargo.toml",b'[package]\nname = "bytepleat"\nversion = "0.4.0"\n')])
             result=self.invoke(folder,archive);self.assertNotEqual(result.returncode,0);self.assertIn("Cargo.toml",result.stderr)
 
     def test_rejects_invalid_sidecar_before_archive_processing(self):

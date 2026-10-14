@@ -5,7 +5,7 @@ use std::{
 #[test]
 fn explicit_stdout_and_archive_pipeline() {
     let td = tempfile::tempdir().unwrap();
-    let exe = env!("CARGO_BIN_EXE_arqlet");
+    let exe = env!("CARGO_BIN_EXE_bytepleat");
     let payload = b"binary\0pipeline";
     for format in ["zstd", "gzip", "lz4"] {
         let mut child = Command::new(exe)

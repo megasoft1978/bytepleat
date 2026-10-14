@@ -1,16 +1,16 @@
 [package]
-name = "arqlet"
+name = "bytepleat"
 version = "0.5.0"
 edition = "2021"
 rust-version = "1.93"
-homepage = "https://megasoft1978.github.io/arqlet/"
-repository = "https://github.com/megasoft1978/arqlet"
-documentation = "https://megasoft1978.github.io/arqlet/"
+homepage = "https://megasoft1978.github.io/bytepleat/"
+repository = "https://github.com/megasoft1978/bytepleat"
+documentation = "https://megasoft1978.github.io/bytepleat/"
 license = "MIT"
 description = "Streaming compression CLI using established formats"
 
 [[bin]]
-name = "arqlet"
+name = "bytepleat"
 path = "src/main.rs"
 
 [dependencies]

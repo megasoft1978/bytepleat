@@ -8,7 +8,7 @@ fn zip_sevenz_named_file_and_pipe_workflows_preserve_bytes() {
     let t = tempfile::tempdir().unwrap();
     let source = t.path().join("input.bin");
     fs::write(&source, b"bytes\0\xffbytes").unwrap();
-    let cli = env!("CARGO_BIN_EXE_arqlet");
+    let cli = env!("CARGO_BIN_EXE_bytepleat");
     for format in ["zip", "7z"] {
         let output = Command::new(cli)
             .args([

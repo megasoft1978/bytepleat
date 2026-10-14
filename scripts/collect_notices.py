@@ -29,10 +29,10 @@ def main()->int:
     p=subprocess.run(["cargo","metadata","--locked","--format-version","1","--filter-platform",a.target],cwd=root,capture_output=True,text=True)
     if p.returncode:ap.error("cargo metadata failed: "+p.stderr[-3000:])
     meta=json.loads(p.stdout);packages={x["id"]:x for x in meta["packages"]};nodes={x["id"]:x for x in meta["resolve"]["nodes"]}
-    roots=[x["id"] for x in meta["packages"] if x.get("name")=="arqlet"]
+    roots=[x["id"] for x in meta["packages"] if x.get("name")=="bytepleat"]
     # Select the package manifest at this checkout root, not an unrelated workspace package.
     roots=[pid for pid in roots if Path(packages[pid]["manifest_path"]).resolve()==(root/"Cargo.toml").resolve()]
-    if len(roots)!=1:ap.error("could not identify unique arqlet package in Cargo metadata")
+    if len(roots)!=1:ap.error("could not identify unique bytepleat package in Cargo metadata")
     reached=release_reachable(nodes,roots[0])
     oldpkgs={(x["name"],x["version"]):x for x in old.get("packages",[])};result=[];missing=[]
     for pid in sorted(reached):
@@ -97,7 +97,7 @@ def main()->int:
         if len(found)<2 and not runtime: missing.append({"component":"Rust standard library","reason":"No applicable Rust license texts found in bounded sysroot paths or official matching commit source; no notices fabricated."})
     out.mkdir(parents=True,exist_ok=True)
     systems={"aarch64-apple-darwin":"Apple macOS system libraries are provided by the operating system and are not bundled.","x86_64-unknown-linux-gnu":"GNU/Linux system libraries, including the GNU C library, are provided by the operating system and are not bundled.","x86_64-pc-windows-msvc":"Windows system libraries and the Universal C Runtime are provided by Windows and are not bundled."}
-    report={"schema_version":1,"generated_by":"scripts/collect_notices.py","project":{"name":"arqlet","version":packages[roots[0]]["version"]},"target":a.target,"cargo_metadata_filter_platform":a.target,"cargo_lock_sha256":digest(root/"Cargo.lock"),"packages":result,"runtime_components":runtime,"system_libraries":{"status":"not bundled","description":systems.get(a.target,"Target OS system libraries are not bundled.")},"unresolved_gaps":missing,"legal_clearance":"Literal license provenance inventory; no formal legal review performed."}
+    report={"schema_version":1,"generated_by":"scripts/collect_notices.py","project":{"name":"bytepleat","version":packages[roots[0]]["version"]},"target":a.target,"cargo_metadata_filter_platform":a.target,"cargo_lock_sha256":digest(root/"Cargo.lock"),"packages":result,"runtime_components":runtime,"system_libraries":{"status":"not bundled","description":systems.get(a.target,"Target OS system libraries are not bundled.")},"unresolved_gaps":missing,"legal_clearance":"Literal license provenance inventory; no formal legal review performed."}
     (out/"THIRD-PARTY.json").write_text(json.dumps(report,indent=2,sort_keys=True)+"\n",encoding="utf-8")
     print(json.dumps({"target":a.target,"packages":len(result),"unresolved_gaps":len(missing)},sort_keys=True));return 0
 if __name__=="__main__":

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Validate Arqlet release archives before extraction or native execution."""
+"""Validate Bytepleat release archives before extraction or native execution."""
 from __future__ import annotations
 import argparse, hashlib, json, os, re, shutil, stat, struct, subprocess, sys, tarfile, tempfile, zipfile
 from pathlib import Path, PurePosixPath
 
 ROOT=Path(__file__).resolve().parents[1]
-TARGETS={"aarch64-apple-darwin":("tar.gz","arqlet"),"x86_64-unknown-linux-gnu":("tar.gz","arqlet"),"x86_64-pc-windows-msvc":("zip","arqlet.exe")}
+TARGETS={"aarch64-apple-darwin":("tar.gz","bytepleat"),"x86_64-unknown-linux-gnu":("tar.gz","bytepleat"),"x86_64-pc-windows-msvc":("zip","bytepleat.exe")}
 REQUIRED={"Cargo.toml","README.md","RELEASE.md","LICENSE","Cargo.lock","THIRD-PARTY.json","BUILD-INFO.json"}
 MAX_ARCHIVE=128*1024*1024;MAX_MEMBERS=4096;MAX_TOTAL=512*1024*1024;MAX_MEMBER=128*1024*1024
 def sha_bytes(data:bytes)->str:return hashlib.sha256(data).hexdigest()
@@ -71,7 +71,7 @@ def main()->int:
     ap.add_argument("--archive",required=True,type=Path);ap.add_argument("--target",required=True,choices=sorted(TARGETS));ap.add_argument("--version",required=True);ap.add_argument("--revision",required=True)
     ap.add_argument("--native",action="store_true",help="required to execute the archive binary on this runner")
     ap.add_argument("--native7z",type=Path);ap.add_argument("--output",type=Path,required=True)
-    a=ap.parse_args();archive=a.archive.resolve();out=a.output.resolve();ext,exe=TARGETS[a.target];asset=f"arqlet-{a.version}-{a.target}.{ext}";root=f"arqlet-{a.version}-{a.target}"
+    a=ap.parse_args();archive=a.archive.resolve();out=a.output.resolve();ext,exe=TARGETS[a.target];asset=f"bytepleat-{a.version}-{a.target}.{ext}";root=f"bytepleat-{a.version}-{a.target}"
     if not re.fullmatch(r"\d+\.\d+\.\d+",a.version) or not re.fullmatch(r"[0-9a-f]{40,64}",a.revision):ap.error("invalid requested version or revision")
     if archive.name!=asset:ap.error("archive filename does not match requested version and target")
     if out.exists():ap.error("refusing to overwrite verification report")
@@ -142,33 +142,33 @@ def main()->int:
     try:inventory=json.loads(index[f"{root}/THIRD-PARTY.json"])
     except (KeyError,json.JSONDecodeError):ap.error("missing or invalid THIRD-PARTY.json")
     if not isinstance(inventory,dict) or not isinstance(inventory.get("project"),dict):ap.error("invalid source inventory structure")
-    if inventory["project"]!={"name":"arqlet","version":a.version}:ap.error("source inventory identity/version mismatch")
+    if inventory["project"]!={"name":"bytepleat","version":a.version}:ap.error("source inventory identity/version mismatch")
     try:target_inventory=json.loads(index[f"{root}/THIRD-PARTY-{a.target}.json"])
     except (KeyError,json.JSONDecodeError):ap.error("missing or invalid target dependency inventory")
-    if not isinstance(target_inventory,dict) or target_inventory.get("target")!=a.target or target_inventory.get("project")!={"name":"arqlet","version":a.version} or target_inventory.get("unresolved_gaps") or any(isinstance(x,dict) and x.get("notice_status")=="unresolved" for x in target_inventory.get("packages",[])):
+    if not isinstance(target_inventory,dict) or target_inventory.get("target")!=a.target or target_inventory.get("project")!={"name":"bytepleat","version":a.version} or target_inventory.get("unresolved_gaps") or any(isinstance(x,dict) and x.get("notice_status")=="unresolved" for x in target_inventory.get("packages",[])):
         ap.error("target dependency inventory identity or notice status invalid")
     if target_inventory.get("cargo_lock_sha256")!=sha_bytes(index[f"{root}/Cargo.lock"]):ap.error("target inventory Cargo.lock SHA-256 mismatch")
     try:build=json.loads(index[f"{root}/BUILD-INFO.json"])
     except (KeyError,json.JSONDecodeError):ap.error("missing or invalid BUILD-INFO.json")
-    if build!={"schema_version":1,"project":"arqlet","version":a.version,"target":a.target,"revision":a.revision,"binary_sha256":sha_bytes(index[f"{root}/{exe}"])}:ap.error("build identity or binary digest mismatch")
+    if build!={"schema_version":1,"project":"bytepleat","version":a.version,"target":a.target,"revision":a.revision,"binary_sha256":sha_bytes(index[f"{root}/{exe}"])}:ap.error("build identity or binary digest mismatch")
     expected_files={f"{root}/{x}" for x in REQUIRED}|{f"{root}/{exe}",f"{root}/THIRD-PARTY-{a.target}.json"}
     for notice in iter_notices(target_inventory):expected_files.add(f"{root}/{safe_name(notice['path'])}")
     if set(index)!=expected_files:ap.error(f"archive member set mismatch (missing={sorted(expected_files-set(index))}, extra={sorted(set(index)-expected_files)})")
     lock=index[f"{root}/Cargo.lock"].decode("utf-8")
     if target_inventory.get("cargo_lock_sha256")!=sha_bytes(index[f"{root}/Cargo.lock"]):ap.error("target inventory Cargo.lock SHA-256 mismatch")
-    if not re.search(r'^name = "arqlet"\nversion = "'+re.escape(a.version)+r'"$',lock,re.M):ap.error("Cargo.lock version mismatch")
+    if not re.search(r'^name = "bytepleat"\nversion = "'+re.escape(a.version)+r'"$',lock,re.M):ap.error("Cargo.lock version mismatch")
     manifest=index[f"{root}/Cargo.toml"].decode("utf-8")
-    if not re.search(r'^name\s*=\s*"arqlet"$',manifest,re.M) or not re.search(r'^version\s*=\s*"'+re.escape(a.version)+r'"$',manifest,re.M):ap.error("Cargo.toml source identity/version mismatch")
+    if not re.search(r'^name\s*=\s*"bytepleat"$',manifest,re.M) or not re.search(r'^version\s*=\s*"'+re.escape(a.version)+r'"$',manifest,re.M):ap.error("Cargo.toml source identity/version mismatch")
     binary=index[f"{root}/{exe}"];binary_hash=sha_bytes(binary)
     # Validate all notice payload bytes against the inventory before writing anything.
     for notice in iter_notices(target_inventory):
         p=safe_name(notice["path"]);data=index[f"{root}/{p}"]
         if sha_bytes(data)!=notice.get("sha256"):ap.error(f"license notice digest mismatch: {p}")
     if a.native:
-        with tempfile.TemporaryDirectory(prefix="arqlet-verified-") as td:
+        with tempfile.TemporaryDirectory(prefix="bytepleat-verified-") as td:
             d=Path(td); exe_path=d/exe;exe_path.write_bytes(binary);exe_path.chmod(0o755)
             p=subprocess.run([str(exe_path),"--version"],capture_output=True,text=True,timeout=15)
-            if p.returncode or p.stdout.strip()!=f"arqlet {a.version}":ap.error("extracted binary version check failed")
+            if p.returncode or p.stdout.strip()!=f"bytepleat {a.version}":ap.error("extracted binary version check failed")
             smoke=d/"native-smoke.json";subprocess.run([sys.executable,str(ROOT/"scripts/native_smoke.py"),"--binary",str(exe_path),"--output",str(smoke),"--require-tools"],check=True)
             validation=d/"archive-validation.json";subprocess.run([sys.executable,str(ROOT/"scripts/validate_archives.py"),"--binary",str(exe_path),"--native7z",str(a.native7z.resolve()),"--output",str(validation)],check=True)
     out.parent.mkdir(parents=True,exist_ok=True)

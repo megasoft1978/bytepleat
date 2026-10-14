@@ -1,0 +1,3 @@
+# Release inventories hash source and license files byte-for-byte.
+# Preserve committed bytes on every platform, including Windows.
+* -text

@@ -1,7 +1,7 @@
 use std::{fs, process::Command};
 use tempfile::tempdir;
 fn cli() -> Command {
-    Command::new(env!("CARGO_BIN_EXE_arqlet"))
+    Command::new(env!("CARGO_BIN_EXE_bytepleat"))
 }
 #[test]
 fn roundtrip_formats_and_numeric() {

@@ -1,7 +1,7 @@
 {
   "cargo_lock": {
     "path": "Cargo.lock",
-    "sha256": "5a5acb436169f6e09f302d40e69cc54386d891162e01c1c3da8b9c798366990f"
+    "sha256": "d2a934456203c8cccd5fd265b2262c36ba65e327360adf0ce953c444a37b58ff"
   },
   "catalog_scope": "Locked cross-target Cargo dependency catalog. Conditional entries such as UEFI r-efi are not built for shipping macOS/Linux/Windows targets. Per-target package inventories resolve the actual normal/build graph and collect compiler runtime notices from each build runner.",
   "generated_by": "Reviewed source catalog; scripts/collect_notices.py generates target build inventories",
@@ -2153,7 +2153,7 @@
     }
   ],
   "project": {
-    "name": "arqlet",
+    "name": "bytepleat",
     "version": "0.5.0"
   },
   "runtime_components": [],

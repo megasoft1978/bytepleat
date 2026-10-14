@@ -2,7 +2,7 @@
 """Locate an installed 7-Zip and invoke the portable archive interop suite."""
 import argparse, os, shutil, subprocess, sys
 from pathlib import Path
-p=argparse.ArgumentParser(description='Run Arqlet interoperability checks with native 7-Zip');p.add_argument('--binary',required=True);p.add_argument('--output',required=True);p.add_argument('--native7z');a=p.parse_args()
+p=argparse.ArgumentParser(description='Run Bytepleat interoperability checks with native 7-Zip');p.add_argument('--binary',required=True);p.add_argument('--output',required=True);p.add_argument('--native7z');a=p.parse_args()
 native=a.native7z or shutil.which('7zz') or shutil.which('7z')
 if not native and sys.platform=='win32':
  for key in ('ProgramFiles','ProgramFiles(x86)'):

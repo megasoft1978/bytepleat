@@ -1,6 +1,6 @@
 # Supported formats
 
-“Supported” describes the bounded subset Arqlet implements. A format label alone does not guarantee that every file of that type is accepted.
+“Supported” describes the bounded subset Bytepleat implements. A format label alone does not guarantee that every file of that type is accepted.
 
 | Format | Write | Read / validate | Important boundary |
 |---|---|---|---|
@@ -21,11 +21,11 @@ The byte commands preserve arbitrary input bytes. Compression defaults to Zstand
 
 ### tar with a byte codec
 
-Arqlet writes ordinary tar streams carried by Zstandard, gzip, or LZ4. `pack` accepts a directory; `unpack` extracts regular files and directories. UTF-8, portable path names are required. Links, special and sparse files, unsafe paths, and path aliases are rejected. Extraction validates into staging before publication. Multi-file publication is best-effort and may expose partial files briefly if publication fails.
+Bytepleat writes ordinary tar streams carried by Zstandard, gzip, or LZ4. `pack` accepts a directory; `unpack` extracts regular files and directories. UTF-8, portable path names are required. Links, special and sparse files, unsafe paths, and path aliases are rejected. Extraction validates into staging before publication. Multi-file publication is best-effort and may expose partial files briefly if publication fails.
 
 ### ZIP
 
-Arqlet reads and writes classic ZIP using Stored or Deflate. ZIP64, encrypted entries, AES, multi-disk archives, self-extracting prefixes, trailing payloads, unsupported compression methods, and legacy non-UTF-8 codepages are outside the supported subset or rejected. Entry count is capped at 65,534; compressed input is capped at 1 GiB. Names must be UTF-8-flagged for non-ASCII, or ASCII. `info` reports bounded metadata, not full payload integrity; use `test` or extraction to decode entries and check them.
+Bytepleat reads and writes classic ZIP using Stored or Deflate. ZIP64, encrypted entries, AES, multi-disk archives, self-extracting prefixes, trailing payloads, unsupported compression methods, and legacy non-UTF-8 codepages are outside the supported subset or rejected. Entry count is capped at 65,534; compressed input is capped at 1 GiB. Names must be UTF-8-flagged for non-ASCII, or ASCII. `info` reports bounded metadata, not full payload integrity; use `test` or extraction to decode entries and check them.
 
 ### 7z
 
@@ -35,7 +35,7 @@ The reader accepts bounded unencrypted single-volume archives using implemented 
 
 ## Typed Pco buffers
 
-Pco mode reads little-endian fixed-width words with an explicitly supplied type: `i32`, `u32`, `i64`, `u64`, `f32`, or `f64`. Input must end on a complete word. It uses the existing standalone Pco stream, with no Arqlet envelope, CSV parsing, or automatic type inference. Decode and test require the matching type. Float bit patterns are retained by the typed conversion path.
+Pco mode reads little-endian fixed-width words with an explicitly supplied type: `i32`, `u32`, `i64`, `u64`, `f32`, or `f64`. Input must end on a complete word. It uses the existing standalone Pco stream, with no Bytepleat envelope, CSV parsing, or automatic type inference. Decode and test require the matching type. Float bit patterns are retained by the typed conversion path.
 
 ## Preservation boundaries
 

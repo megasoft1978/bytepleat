@@ -1,8 +1,8 @@
 $ErrorActionPreference = 'Stop'
 
 # Keep native comparators in the runner's temporary workspace. They are CI tools,
-# not Arqlet package contents.
-$toolRoot = Join-Path $env:RUNNER_TEMP 'arqlet-native-tools'
+# not Bytepleat package contents.
+$toolRoot = Join-Path $env:RUNNER_TEMP 'bytepleat-native-tools'
 $lz4Dir = Join-Path $toolRoot 'lz4-1.10.0-win64'
 $archive = Join-Path $env:RUNNER_TEMP 'lz4_win64_v1_10_0.zip'
 $lz4Url = 'https://github.com/lz4/lz4/releases/download/v1.10.0/lz4_win64_v1_10_0.zip'
