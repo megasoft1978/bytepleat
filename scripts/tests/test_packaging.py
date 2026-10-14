@@ -8,7 +8,7 @@ sys.path.insert(0,str(SCRIPTS))
 import verify_packages
 import package_release
 
-TARGET="x86_64-pc-windows-msvc"; VERSION="0.5.0"; ASSET=f"bytepleat-{VERSION}-{TARGET}.zip"; ROOT=ASSET[:-4]
+TARGET="x86_64-pc-windows-msvc"; VERSION="0.5.1"; ASSET=f"bytepleat-{VERSION}-{TARGET}.zip"; ROOT=ASSET[:-4]
 REVISION="a"*40
 
 class PackagingSafetyTests(unittest.TestCase):
@@ -44,28 +44,28 @@ class PackagingSafetyTests(unittest.TestCase):
         if target is None:self.skipTest("host is outside package helper native target set")
         with tempfile.TemporaryDirectory() as td:
             temp=Path(td);source=temp/"src";source.mkdir();(source/"third-party-licenses").mkdir()
-            (source/"Cargo.toml").write_text('[package]\nname = "bytepleat"\nversion = "0.5.0"\n')
-            (source/"Cargo.lock").write_text('version = 4\n\n[[package]]\nname = "bytepleat"\nversion = "0.5.0"\n')
+            (source/"Cargo.toml").write_text('[package]\nname = "bytepleat"\nversion = "0.5.1"\n')
+            (source/"Cargo.lock").write_text('version = 4\n\n[[package]]\nname = "bytepleat"\nversion = "0.5.1"\n')
             for name in ("README.md","RELEASE.md","LICENSE"):(source/name).write_text(name+"\n")
-            (source/"THIRD-PARTY.json").write_text(json.dumps({"project":{"name":"bytepleat","version":"0.5.0"},"packages":[],"runtime_components":[]})+'\n')
+            (source/"THIRD-PARTY.json").write_text(json.dumps({"project":{"name":"bytepleat","version":"0.5.1"},"packages":[],"runtime_components":[]})+'\n')
             original_inventory=(source/"THIRD-PARTY.json").read_bytes()
-            bomdir=temp/"bom";bomdir.mkdir();(bomdir/"THIRD-PARTY.json").write_text(json.dumps({"project":{"name":"bytepleat","version":"0.5.0"},"target":target,"cargo_lock_sha256":hashlib.sha256((source/"Cargo.lock").read_bytes()).hexdigest(),"packages":[],"runtime_components":[],"unresolved_gaps":[]}))
-            binary=temp/"bytepleat";binary.write_text(f'#!{sys.executable}\nimport sys\nprint("bytepleat 0.5.0")\n');binary.chmod(0o755)
+            bomdir=temp/"bom";bomdir.mkdir();(bomdir/"THIRD-PARTY.json").write_text(json.dumps({"project":{"name":"bytepleat","version":"0.5.1"},"target":target,"cargo_lock_sha256":hashlib.sha256((source/"Cargo.lock").read_bytes()).hexdigest(),"packages":[],"runtime_components":[],"unresolved_gaps":[]}))
+            binary=temp/"bytepleat";binary.write_text(f'#!{sys.executable}\nimport sys\nprint("bytepleat 0.5.1")\n');binary.chmod(0o755)
             outputs=[]
             for n in ("one","two"):
                 out=temp/n
-                cmd=[sys.executable,str(SCRIPTS/"package_release.py"),"--binary",str(binary),"--target",target,"--version","0.5.0","--revision",REVISION,"--output-dir",str(out),"--source-root",str(source),"--bom",str(bomdir/"THIRD-PARTY.json")]
+                cmd=[sys.executable,str(SCRIPTS/"package_release.py"),"--binary",str(binary),"--target",target,"--version","0.5.1","--revision",REVISION,"--output-dir",str(out),"--source-root",str(source),"--bom",str(bomdir/"THIRD-PARTY.json")]
                 done=subprocess.run(cmd,capture_output=True,text=True)
-                self.assertEqual(done.returncode,0,done.stderr);asset=next(out.glob("bytepleat-0.5.0-*"+(".zip" if target.endswith("msvc") else ".tar.gz")))
+                self.assertEqual(done.returncode,0,done.stderr);asset=next(out.glob("bytepleat-0.5.1-*"+(".zip" if target.endswith("msvc") else ".tar.gz")))
                 self.assertEqual((out/(asset.name+".sha256")).read_text().split()[0],hashlib.sha256(asset.read_bytes()).hexdigest())
                 outputs.append((asset,target))
             self.assertEqual(outputs[0][0].read_bytes(),outputs[1][0].read_bytes())
-            member=f"bytepleat-0.5.0-{target}/THIRD-PARTY.json"
+            member=f"bytepleat-0.5.1-{target}/THIRD-PARTY.json"
             if outputs[0][0].suffix==".zip":
                 with zipfile.ZipFile(outputs[0][0]) as z:self.assertEqual(z.read(member),original_inventory)
             else:
                 with tarfile.open(outputs[0][0],"r:gz") as t:self.assertEqual(t.extractfile(member).read(),original_inventory)
-            verify=subprocess.run([sys.executable,str(SCRIPTS/"verify_packages.py"),"--archive",str(outputs[0][0]),"--target",target,"--version","0.5.0","--revision",REVISION,"--output",str(temp/"verified.json")],capture_output=True,text=True)
+            verify=subprocess.run([sys.executable,str(SCRIPTS/"verify_packages.py"),"--archive",str(outputs[0][0]),"--target",target,"--version","0.5.1","--revision",REVISION,"--output",str(temp/"verified.json")],capture_output=True,text=True)
             self.assertEqual(verify.returncode,0,verify.stderr)
 
     def archive(self, folder: Path, mutations=(), duplicate=False):

@@ -1,9 +1,9 @@
 # Changelog
 
-## 0.5.0 — initial public Bytepleat release
+## 0.5.1 — clean initial supported release
 
-Bytepleat 0.5.0 is the first public release of the reviewed stable 0.3.1 product line under its new name. This release changes product branding, command-line identity, packaging, and release documentation. It adds no compression algorithm or codec.
+Bytepleat 0.5.1 is the clean initial supported release from the reviewed source export. It has the same product behavior and codecs as 0.5.0; no new compression algorithm or codec is introduced. A source-export guard now rejects tracked build output, nested release workspaces, and common private-path or credential patterns before CI builds begin. Native CI is pending for all release targets.
 
-Supported behavior remains the established-format functionality described in the [format guide](docs/formats.md): byte streams, tar-based folder archives, classic ZIP, bounded 7z, and explicitly typed standalone Pco. See [security and limits](docs/security-limits.md) for archive and metadata constraints.
+## 0.5.0 — withdrawn
 
-Native macOS Apple silicon, Linux x86-64 GNU, and Windows x86-64 MSVC CI builds, tests, and package execution passed. Release packages include checksums and target dependency inventories. Packages are unsigned; macOS builds are not notarized.
+Version 0.5.0 was withdrawn after the source export was found to contain nested build caches. Its public release and tag were withdrawn; use 0.5.1. The current release uses a clean source tree and fresh native verification.

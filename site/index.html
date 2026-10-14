@@ -22,7 +22,7 @@
         <p class="lead">A Rust CLI for everyday archiving. Use familiar formats, keep your originals, and check archives before you unpack.</p>
         <p class="hero-command"><span>Start with a file</span><code>bytepleat compress report.pdf</code></p>
         <div class="actions"><a class="button" href="https://github.com/megasoft1978/bytepleat/releases" data-release-link>View release status <span aria-hidden="true">↗</span></a><a class="button secondary" href="./docs/">Read the guide</a></div>
-        <p class="release-note" data-release-note>Version 0.5.0 · first public release pending · source is open on GitHub</p>
+        <p class="release-note" data-release-note>Version 0.5.1 · 0.5.1 release pending · source is open on GitHub</p>
       </div>
       <div class="visual" aria-hidden="true"><div class="archive-art"><div class="sheet one"></div><div class="sheet two"></div><div class="sheet three"><span class="tag">BYTEPLEAT / ARCHIVE</span><strong>source → intact</strong><div class="sheet-lines"><i></i><i></i><i></i></div></div><span class="float-label label-a">format: standard</span><span class="float-label label-b">restore: exact bytes</span></div></div>
     </section>
@@ -48,7 +48,7 @@
       <div id="install-commands" hidden><p><strong>Verify SHA-256</strong></p><pre><code id="checksum-command"></code></pre><button class="copy" type="button" id="copy-checksum" data-copy="">Copy checksum command</button><p><strong>Extract and run</strong></p><pre><code id="extract-command"></code></pre><button class="copy" type="button" id="copy-install" data-copy="">Copy install command</button></div>
       <div class="target-list"><div class="target"><strong>macOS · Apple silicon</strong><code>aarch64-apple-darwin</code><small data-target-status="mac">Release pending</small></div><div class="target"><strong>Linux · x86-64</strong><code>x86_64-unknown-linux-gnu</code><small data-target-status="linux">Release pending</small></div><div class="target"><strong>Windows · x86-64</strong><code>x86_64-pc-windows-msvc</code><small data-target-status="windows">Release pending</small></div></div>
       <p class="note">Windows packages need the x64 <a href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist">Microsoft Visual C++ v14 runtime</a>. It is not bundled. Packages are unsigned; macOS builds are not notarized.</p>
-      <p class="install-alt">If you have Rust installed, source installation is available after the <code>v0.5.0</code> tag is published: <code>cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.0</code>. See the <a href="https://github.com/megasoft1978/bytepleat/releases">GitHub releases list</a> for current availability.</p>
+      <p class="install-alt">If you have Rust installed, source installation is available after the <code>v0.5.1</code> tag is published: <code>cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.1</code>. See the <a href="https://github.com/megasoft1978/bytepleat/releases">GitHub releases list</a> for current availability.</p>
     </div></section>
 
     <section class="section" id="guide"><div class="wrap">
@@ -66,18 +66,18 @@
 
     <section class="section"><div class="wrap">
       <div class="section-head"><div><span class="eyebrow">Know what each command checks</span><h2>Inspect. Test. Then unpack.</h2></div><p class="section-intro"><code>info</code> reads bounded metadata. <code>test</code> decodes supported content and checks format integrity and available checksums without extracting files. Neither can establish who sent an archive or whether its contents are safe.</p></div>
-      <div class="honesty"><div><strong>Review before restoring</strong><p>Inspect archive contents and unpack only trusted files into a new directory you control.</p></div><div><strong>Integrity has limits</strong><p>Checksums detect changes; they do not prove who created a file or that it is safe.</p></div><div><strong>Exact means bytes</strong><p>Lossless file workflows restore input bytes. Paths and filesystem attributes are separate metadata.</p></div><div><strong>Release status</strong><p data-release-status>Native package checks passed on macOS Apple silicon, Linux x86-64, and Windows x86-64. The first public release is pending publication.</p></div></div>
+      <div class="honesty"><div><strong>Review before restoring</strong><p>Inspect archive contents and unpack only trusted files into a new directory you control.</p></div><div><strong>Integrity has limits</strong><p>Checksums detect changes; they do not prove who created a file or that it is safe.</p></div><div><strong>Exact means bytes</strong><p>Lossless file workflows restore input bytes. Paths and filesystem attributes are separate metadata.</p></div><div><strong>Release status</strong><p data-release-status>Fresh native CI is pending for macOS Apple silicon, Linux x86-64, and Windows x86-64. Release availability is pending.</p></div></div>
     </div></section>
 
     <section class="section"><div class="wrap faq"><span class="eyebrow">Good to know</span><h2>Questions, plainly answered.</h2>
       <details><summary>Does Bytepleat invent its own compression format?</summary><p>No. Its file and archive workflows use established formats such as zstd, gzip, LZ4, ZIP, and 7z. Pco is available for typed numeric data.</p></details>
       <details><summary>Will every file get smaller?</summary><p>No. Compressed, encrypted, or already optimized files may not shrink and can grow slightly. Choose a format based on compatibility and the kind of data you have.</p></details>
       <details><summary>How do I choose a compression setting?</summary><p>For Zstandard or gzip, <code>fast</code>, <code>balanced</code>, and <code>compact</code> choose codec levels. Time and size depend on your files. Compressed, encrypted, or already optimized files may not shrink and can grow slightly.</p></details>
-      <details><summary>Is the 0.5.0 download available now?</summary><p data-release-faq>The initial public release is pending. Check the release list for current availability.</p></details>
+      <details><summary>Is the 0.5.1 download available now?</summary><p data-release-faq>The clean 0.5.1 release is pending native CI and publication. Check the release list for current availability.</p></details>
       <details><summary>How can I contribute?</summary><p>Read <a href="https://github.com/megasoft1978/bytepleat/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> or <a href="https://github.com/megasoft1978/bytepleat/issues">open an issue</a>.</p></details>
     </div></section>
   </main>
-  <footer class="footer"><div class="wrap footer-inner"><div><a class="brand" href="./"><img src="./assets/bytepleat-mark.svg" alt=""><span>bytepleat</span></a><small>Rust · open source · version 0.5.0</small></div><div class="footer-links"><a href="./docs/">Guide</a><a href="https://github.com/megasoft1978/bytepleat">Source ↗</a><a href="https://github.com/megasoft1978/bytepleat/releases">Releases ↗</a><a href="https://github.com/megasoft1978/bytepleat/blob/main/SECURITY.md">Security ↗</a><a href="https://github.com/megasoft1978/bytepleat/blob/main/CONTRIBUTING.md">Contributing ↗</a></div></div></footer>
+  <footer class="footer"><div class="wrap footer-inner"><div><a class="brand" href="./"><img src="./assets/bytepleat-mark.svg" alt=""><span>bytepleat</span></a><small>Rust · open source · version 0.5.1</small></div><div class="footer-links"><a href="./docs/">Guide</a><a href="https://github.com/megasoft1978/bytepleat">Source ↗</a><a href="https://github.com/megasoft1978/bytepleat/releases">Releases ↗</a><a href="https://github.com/megasoft1978/bytepleat/blob/main/SECURITY.md">Security ↗</a><a href="https://github.com/megasoft1978/bytepleat/blob/main/CONTRIBUTING.md">Contributing ↗</a></div></div></footer>
   <script src="./assets/site.js" defer></script>
 </body>
 </html>

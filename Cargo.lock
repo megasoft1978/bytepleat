@@ -434,7 +434,7 @@ dependencies = [
 
 [[package]]
 name = "bytepleat"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "better_io",
  "clap",

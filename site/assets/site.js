@@ -58,7 +58,7 @@
     const row = config?.targets?.find(item => item?.triple === fallback.triple);
     return { ...fallback, status: row?.status || 'planned', asset: validAsset(row?.asset) };
   };
-  const prettyStatus = value => ({ passed: 'Native CI passed', verified: 'Native CI passed', pending: 'Native CI pending', planned: 'Planned target', failed: 'Native CI failed' }[value] || 'Status unavailable');
+  const prettyStatus = value => ({ passed: 'Native CI passed', verified: 'Native CI passed', partial: 'Fresh 0.5.1 native CI pending', pending: 'Native CI pending', planned: 'Planned target', failed: 'Native CI failed' }[value] || 'Status unavailable');
   const copyCommands = (checksum, extraction) => {
     if (shaCommand) shaCommand.textContent = checksum;
     if (extractCommand) extractCommand.textContent = extraction;
@@ -85,13 +85,13 @@
       details.textContent = available ? `Selected build: ${item.asset.filename}${item.asset.sha256 ? ` · SHA-256 ${item.asset.sha256}` : ''}${item.asset.checksumUrl ? ` · Checksums: ${item.asset.checksumUrl}` : ''}` : '';
     }
     if (config?.release_status === 'available') {
-      if (releaseNote) releaseNote.textContent = `Version ${config.version || '0.5.0'} · first public release available · source is open on GitHub`;
-      if (releaseStatus) releaseStatus.textContent = `First public release available. Native CI: ${config.native_ci_status || 'status unavailable'}.`;
-      if (releaseFaq) releaseFaq.textContent = 'The first public release is available. Choose a platform above to see its published asset and checksum details.';
+      if (releaseNote) releaseNote.textContent = `Version ${config.version || '0.5.1'} · 0.5.1 release available · source is open on GitHub`;
+      if (releaseStatus) releaseStatus.textContent = `0.5.1 release available. Native CI: ${config.native_ci_status || 'status unavailable'}.`;
+      if (releaseFaq) releaseFaq.textContent = 'The 0.5.1 release is available. Choose a platform above to see its published asset and checksum details.';
       if (installSummary) installSummary.textContent = 'Choose a target to view its published package, checksum, and installation commands.';
     } else if (config?.release_status === 'pending') {
-      if (releaseNote) releaseNote.textContent = `Version ${config.version || '0.5.0'} · first public release pending · source is open on GitHub`;
-      if (installSummary) installSummary.textContent = 'The first public release is pending. Target CI status is shown below; no package is downloadable until an asset is published.';
+      if (releaseNote) releaseNote.textContent = `Version ${config.version || '0.5.1'} · 0.5.1 release pending · source is open on GitHub`;
+      if (installSummary) installSummary.textContent = 'The 0.5.1 release is pending. Target CI status is shown below; no package is downloadable until an asset is published.';
     }
     if (commands) commands.hidden = !available;
     if (available) {

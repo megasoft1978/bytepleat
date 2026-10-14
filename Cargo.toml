@@ -1,6 +1,6 @@
 [package]
 name = "bytepleat"
-version = "0.5.0"
+version = "0.5.1"
 edition = "2021"
 rust-version = "1.93"
 homepage = "https://megasoft1978.github.io/bytepleat/"

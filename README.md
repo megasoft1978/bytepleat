@@ -20,13 +20,13 @@ Your originals stay in place. Named outputs are published after successful compl
 
 **Downloads:** [Release packages](https://github.com/megasoft1978/bytepleat/releases). Download the archive for your platform and verify its adjacent `.sha256` file; see [verification and extraction](RELEASE.md). Packages are unsigned and macOS builds are not notarized.
 
-| Tested target | Package |
+| Release target (native CI pending) | Package |
 | --- | --- |
-| macOS Apple silicon | `bytepleat-0.5.0-aarch64-apple-darwin.tar.gz` |
-| Linux x86-64 GNU | `bytepleat-0.5.0-x86_64-unknown-linux-gnu.tar.gz` |
-| Windows x86-64 MSVC | `bytepleat-0.5.0-x86_64-pc-windows-msvc.zip` |
+| macOS Apple silicon | `bytepleat-0.5.1-aarch64-apple-darwin.tar.gz` |
+| Linux x86-64 GNU | `bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz` |
+| Windows x86-64 MSVC | `bytepleat-0.5.1-x86_64-pc-windows-msvc.zip` |
 
-The native CI builds and executes packages on all three targets. See [release notes](RELEASE.md) for the tested runner baselines; other OS versions and architectures are not covered by those checks.
+Fresh native CI must build and execute packages on all three targets before release support is confirmed. See [release notes](RELEASE.md) for platform status. A single runner does not establish support for every OS version or architecture.
 
 The Windows package requires the x64 [Microsoft Visual C++ v14 runtime](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist); it is not bundled. If Windows reports `VCRUNTIME140.dll` missing, install the current x64 redistributable from Microsoft.
 
@@ -45,7 +45,7 @@ The executable is `target/release/bytepleat` (`target/release/bytepleat.exe` on 
 **Install from the Git tag** (Rust 1.93 or newer and a C compiler toolchain required):
 
 ```sh
-cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.0
+cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.1
 ```
 
 ## Quick start
