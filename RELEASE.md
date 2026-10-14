@@ -49,7 +49,7 @@ Each archive contains a top-level directory named after the archive without its 
 
 Extract using Finder/Archive Utility, your Linux archive manager or `tar -xzf <archive>`, or File Explorer/`Expand-Archive` on Windows. From the extracted directory, run `./bytepleat --help` on macOS/Linux or `./bytepleat.exe --help` in PowerShell. The package preserves the executable bit on Unix files. To run `bytepleat` without a directory prefix, add the extracted directory (the one containing the executable) to your `PATH`.
 
-Fresh native CI for 0.5.1 is pending on macOS Apple silicon, Linux x86-64, and Windows x86-64 MSVC. Platform support and package execution status will be updated after those checks complete.
+Native package execution passed on macOS Apple silicon, Linux x86-64 GNU, and Windows x86-64 MSVC. The tested runner baselines were macOS 26.6.2 arm64, Ubuntu 24.04 with glibc 2.39, and Windows Server 2025 x86-64. Rust 1.93 locked checks and tests also passed on Linux. These checks do not establish compatibility with every OS version; older GNU/Linux systems may need a source build. [Native CI evidence](https://github.com/megasoft1978/bytepleat/actions/runs/38604581388).
 
 Packages are unsigned, and the macOS build is not notarized.
 

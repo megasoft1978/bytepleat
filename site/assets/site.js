@@ -85,7 +85,7 @@
       details.textContent = available ? `Selected build: ${item.asset.filename}${item.asset.sha256 ? ` · SHA-256 ${item.asset.sha256}` : ''}${item.asset.checksumUrl ? ` · Checksums: ${item.asset.checksumUrl}` : ''}` : '';
     }
     if (config?.release_status === 'available') {
-      if (releaseNote) releaseNote.textContent = `Version ${config.version || '0.5.1'} · 0.5.1 release available · source is open on GitHub`;
+      if (releaseNote) releaseNote.textContent = `Version ${config.version || '0.5.1'} · release available · source is open on GitHub`;
       if (releaseStatus) releaseStatus.textContent = `0.5.1 release available. Native CI: ${config.native_ci_status || 'status unavailable'}.`;
       if (releaseFaq) releaseFaq.textContent = 'The 0.5.1 release is available. Choose a platform above to see its published asset and checksum details.';
       if (installSummary) installSummary.textContent = 'Choose a target to view its published package, checksum, and installation commands.';
@@ -150,5 +150,5 @@
     if (!data || !Array.isArray(data.targets) || !['pending', 'available'].includes(data.release_status)) throw new Error('Invalid configuration');
     config = data;
     render();
-  }).catch(() => { /* Static pending content remains usable without configuration. */ });
+  }).catch(() => { /* The static release links remain usable without configuration. */ });
 })();

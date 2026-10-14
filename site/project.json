@@ -3,26 +3,44 @@
   "version": "0.5.1",
   "repository": "https://github.com/megasoft1978/bytepleat",
   "pages": "https://megasoft1978.github.io/bytepleat/",
-  "release_status": "pending",
+  "release_status": "available",
   "native_ci_status": "passed",
   "targets": [
     {
-      "label": "macOS \u00b7 Apple silicon",
+      "label": "macOS · Apple silicon",
       "triple": "aarch64-apple-darwin",
       "status": "passed",
-      "asset": null
+      "asset": {
+        "available": true,
+        "filename": "bytepleat-0.5.1-aarch64-apple-darwin.tar.gz",
+        "url": "https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-aarch64-apple-darwin.tar.gz",
+        "sha256": "6db85206c31c15ae4f57ec855544c0f7ec47a0950f7d74f3b424964a69118cfc",
+        "checksum_url": "https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-aarch64-apple-darwin.tar.gz.sha256"
+      }
     },
     {
-      "label": "Linux \u00b7 x86-64",
+      "label": "Linux · x86-64",
       "triple": "x86_64-unknown-linux-gnu",
       "status": "passed",
-      "asset": null
+      "asset": {
+        "available": true,
+        "filename": "bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz",
+        "url": "https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz",
+        "sha256": "affec47bd8c77a817441f4d65095c741fdeafc66a73fc322c8e675876abc062b",
+        "checksum_url": "https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz.sha256"
+      }
     },
     {
-      "label": "Windows \u00b7 x86-64",
+      "label": "Windows · x86-64",
       "triple": "x86_64-pc-windows-msvc",
       "status": "passed",
-      "asset": null
+      "asset": {
+        "available": true,
+        "filename": "bytepleat-0.5.1-x86_64-pc-windows-msvc.zip",
+        "url": "https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-x86_64-pc-windows-msvc.zip",
+        "sha256": "a042877cad44a8e0fe406a0a11c0a06e105e91287469a67275ba50d2ecff26f4",
+        "checksum_url": "https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-x86_64-pc-windows-msvc.zip.sha256"
+      }
     }
   ]
 }

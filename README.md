@@ -20,13 +20,13 @@ Your originals stay in place. Named outputs are published after successful compl
 
 **Downloads:** [Release packages](https://github.com/megasoft1978/bytepleat/releases). Download the archive for your platform and verify its adjacent `.sha256` file; see [verification and extraction](RELEASE.md). Packages are unsigned and macOS builds are not notarized.
 
-| Release target (native CI pending) | Package |
+| Tested release target | Package |
 | --- | --- |
 | macOS Apple silicon | `bytepleat-0.5.1-aarch64-apple-darwin.tar.gz` |
 | Linux x86-64 GNU | `bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz` |
 | Windows x86-64 MSVC | `bytepleat-0.5.1-x86_64-pc-windows-msvc.zip` |
 
-Fresh native CI must build and execute packages on all three targets before release support is confirmed. See [release notes](RELEASE.md) for platform status. A single runner does not establish support for every OS version or architecture.
+Native CI builds, tests, and package execution passed on all three targets. See [release notes](RELEASE.md) for the tested runner baselines. Other OS versions and architectures are outside that verification.
 
 The Windows package requires the x64 [Microsoft Visual C++ v14 runtime](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist); it is not bundled. If Windows reports `VCRUNTIME140.dll` missing, install the current x64 redistributable from Microsoft.
 
