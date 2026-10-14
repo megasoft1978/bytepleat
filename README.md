@@ -18,11 +18,19 @@ Your originals stay in place. Named outputs are published after successful compl
 
 ## Install
 
-**Downloads:** [Bytepleat releases](https://github.com/megasoft1978/bytepleat/releases) — v0.5.0 assets are pending publication. The planned packages are `bytepleat-0.5.0-aarch64-apple-darwin.tar.gz` (macOS Apple silicon), `bytepleat-0.5.0-x86_64-unknown-linux-gnu.tar.gz` (Linux x86-64), and `bytepleat-0.5.0-x86_64-pc-windows-msvc.zip` (Windows x86-64). Choose the matching package and verify it with its adjacent `.sha256` file; see [release verification and extraction](RELEASE.md). Hosted macOS and Linux CI have passed. Windows compiler checks, tests, and 28 smoke cases pass, but archive interoperability is unresolved; Windows is not yet verified. Packages are unsigned and macOS builds are not notarized.
+**Downloads:** [Release packages](https://github.com/megasoft1978/bytepleat/releases). Download the archive for your platform and verify its adjacent `.sha256` file; see [verification and extraction](RELEASE.md). Packages are unsigned and macOS builds are not notarized.
+
+| Tested target | Package |
+| --- | --- |
+| macOS Apple silicon | `bytepleat-0.5.0-aarch64-apple-darwin.tar.gz` |
+| Linux x86-64 GNU | `bytepleat-0.5.0-x86_64-unknown-linux-gnu.tar.gz` |
+| Windows x86-64 MSVC | `bytepleat-0.5.0-x86_64-pc-windows-msvc.zip` |
+
+The native CI builds and executes packages on all three targets. See [release notes](RELEASE.md) for the tested runner baselines; other OS versions and architectures are not covered by those checks.
 
 Each archive extracts into a same-named directory containing `bytepleat` (or `bytepleat.exe` on Windows) at its root. Run it from that directory as `./bytepleat --help` on macOS/Linux or `.\bytepleat.exe --help` in PowerShell; to invoke `bytepleat` from any directory, add the extracted directory to your `PATH`.
 
-**Build from source** (Rust 1.93 or newer required):
+**Build from source** (Rust 1.93 or newer and a C compiler toolchain required):
 
 ```sh
 git clone https://github.com/megasoft1978/bytepleat.git
@@ -32,7 +40,7 @@ cargo build --release --locked
 
 The executable is `target/release/bytepleat` (`target/release/bytepleat.exe` on Windows).
 
-**Install from the Git tag** once v0.5.0 is published (Rust 1.93 or newer required):
+**Install from the Git tag** (Rust 1.93 or newer and a C compiler toolchain required):
 
 ```sh
 cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.0

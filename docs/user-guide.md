@@ -2,7 +2,7 @@
 
 ## Install and invoke
 
-See the [README](../README.md) for source builds, planned release packages, and installation. Run `bytepleat --help` or `bytepleat <command> --help` for the options available in your installed build.
+See the [README](../README.md) for source builds, release packages, and installation. Run `bytepleat --help` or `bytepleat <command> --help` for the options available in your installed build.
 
 ## Byte streams
 

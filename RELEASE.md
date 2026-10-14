@@ -4,7 +4,7 @@ Bytepleat 0.5.0 is the first public release, based on reviewed stable 0.3.1. The
 
 ## Download and verify
 
-Release assets are pending publication. The planned assets are:
+The release workflow publishes these packages after native execution checks:
 
 | Platform | Archive | Individual checksum sidecar |
 | --- | --- | --- |
@@ -47,20 +47,22 @@ Each archive contains a top-level directory named after the archive without its 
 
 Extract using Finder/Archive Utility, your Linux archive manager or `tar -xzf <archive>`, or File Explorer/`Expand-Archive` on Windows. From the extracted directory, run `./bytepleat --help` on macOS/Linux or `./bytepleat.exe --help` in PowerShell. The package preserves the executable bit on Unix files. To run `bytepleat` without a directory prefix, add the extracted directory (the one containing the executable) to your `PATH`.
 
-The hosted native CI checks cover macOS Apple silicon and Linux x86-64 and have passed. The Windows x86-64 MSVC job is still being repaired after a compiler failure; Windows CI and runtime are not yet verified. These target checks do not establish support on every OS version or machine. Packages are unsigned, and the macOS build is not notarized.
+Native package execution passed on macOS Apple silicon, Linux x86-64, and Windows x86-64 MSVC. The verified runner baselines were macOS 26.6.2 arm64, Ubuntu 24.04 with glibc 2.39, and Windows Server 2025 x86-64. These results do not establish compatibility with every OS version; older GNU/Linux systems may need a source build. Rust 1.93 locked checks and tests also passed on Linux. [Native CI evidence](https://github.com/megasoft1978/bytepleat/actions/runs/38601762226).
+
+Packages are unsigned, and the macOS build is not notarized.
 
 ## Build from source
 
-With a Rust toolchain installed, build the checked-out release source using the lockfile:
+With Rust 1.93 or newer and a C compiler toolchain installed, build the checked-out release source using the lockfile:
 
 ```sh
 cargo build --release --locked
 ```
 
-The binary is `target/release/bytepleat` (or `target/release/bytepleat.exe` on Windows). Once the `v0.5.0` tag is published, install from the repository with the locked dependency versions:
+The binary is `target/release/bytepleat` (or `target/release/bytepleat.exe` on Windows). Install the tagged source with the locked dependency versions:
 
 ```sh
 cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.0
 ```
 
-The tag and install are not available until publication. Rust 1.93 or newer is required. The release adds no compression codec; Bytepleat continues to read and write established formats.
+Rust 1.93 or newer and a C compiler toolchain are required. The release adds no compression codec; Bytepleat continues to read and write established formats.
