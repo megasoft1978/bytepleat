@@ -2,7 +2,12 @@
 
 **Compress files. Pack folders. Restore the same bytes.**
 
-Bytepleat is a Rust archiver built around familiar formats and careful file handling. The released command-line tool works in scripts and terminals. A desktop alpha is being developed for browsing, creating, inspecting, and extracting archives with native file dialogs.
+Bytepleat is a Rust archiver built around familiar formats and careful file handling. Everything runs on your device; inputs are never moved or removed.
+
+| | Status | Get it |
+| --- | --- | --- |
+| **Command-line tool 0.5.1** | Released. Native CI passed on macOS Apple silicon, Linux x86-64 and Windows x86-64. | [Install](#install) |
+| **Desktop app** | Alpha, in development. No consumer installer is published. | [Build and try it](#desktop-app-alpha) |
 
 ```sh
 bytepleat compress report.pdf
@@ -16,9 +21,33 @@ bytepleat unpack project.tar.zst -o project-restored
 
 Your originals stay in place. Named outputs are published after successful completion, and unpacking requires a new destination directory. Bytepleat uses established codecs and archive formats; it does not introduce a proprietary archive format.
 
-## Desktop app in development
+## Desktop app (alpha)
 
-The desktop app is not part of the verified consumer download yet. See [desktop build instructions and current limitations](desktop/README.md) and [verified platform coverage](docs/desktop-validation.md) for the development status. The packages below are the CLI release.
+A calm desktop window for everyday archive work, built on the same bounded archive engine as the CLI. It uses your system's file dialogs and has three views:
+
+- **Create:** choose files or a folder, pick a format, and save a new archive.
+- **Extract:** unpack one archive into a new folder. An existing destination is refused, never overwritten.
+- **Inspect:** list an archive's entries without extracting. Listing does not verify file contents. Extracting selected entries still decodes the whole archive before keeping the ones you chose.
+
+There is no desktop installer yet; the packages under [Install](#install) are the CLI release. To try the alpha, build it from source (Rust 1.93 or newer, Node.js/npm and the [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/)):
+
+```sh
+cd desktop
+npm install --ignore-scripts
+npm run tauri -- dev
+```
+
+Desktop operations are capped at 1 GiB of output and 100,000 entries; listings preview up to 5,000 entries. ZIP is classic Stored/Deflate only, 7z is a bounded subset, and compressed tar uses Zstandard, gzip or LZ4. RAR, password-protected archives and ZIP64 are not supported. See [supported formats](docs/formats.md).
+
+**Platform evidence.** Platform validation is incomplete. This summarizes [desktop validation](docs/desktop-validation.md), which has the exact scope, versions and open items:
+
+| Platform | What has been checked |
+| --- | --- |
+| macOS 27.0.1 · Apple silicon | Interactive GUI runs of create, inspect, selected and full extraction, overwrite refusal, cancellation, and selected Finder handoffs. Unsigned local build; not notarized. macOS 13 (the bundle minimum) is unverified. |
+| Ubuntu 24.04.5 · ARM64 | Interactive runs in XFCE/Xorg and GNOME/Xorg, including Nautilus and Dolphin handoffs. Some GNOME checks still need repeating on the latest package. Wayland and Kubuntu are unverified. |
+| Windows | Native CI tests and MSIX package validation only. Installed GUI and Explorer behavior are unverified. |
+
+These are results from specific sessions, not a claim of support for every OS version or architecture. See [desktop/README.md](desktop/README.md) for build notes and limitations.
 
 ## Install
 
