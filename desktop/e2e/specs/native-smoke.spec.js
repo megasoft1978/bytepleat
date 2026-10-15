@@ -42,11 +42,19 @@ describe('Bytepleat native Tauri smoke', () => {
     await extractSelected.waitForEnabled({
       timeout: 10000, timeoutMsg: 'Extract selected did not enable after the checkbox change'
     });
-    // The button is below the fold on small native runner displays. Scroll before
-    // the WebDriver click so the real WebView click handler remains under test.
+    // The embedded driver can return from a button click without invoking its
+    // handler. Scroll, then activate the real DOM button in the WebView.
     console.info('Native smoke: scrolling to and clicking Extract selected');
     await extractSelected.scrollIntoView({ block: 'center', inline: 'nearest' });
-    await extractSelected.click();
+    const reviewState = await browser.execute(() => {
+      document.querySelector('#extract-selected').click();
+      return {
+        hidden: document.querySelector('#selected-review').hidden,
+        selectedEntryText: document.querySelector('#review-list').innerText
+      };
+    });
+    assert.equal(reviewState.hidden, false, 'Selected extraction review remained hidden after the DOM click');
+    assert.match(reviewState.selectedEntryText, /keep\.txt/);
     console.info('Native smoke: waiting for selected extraction review');
     const review = await $('#selected-review');
     await review.waitForDisplayed({
