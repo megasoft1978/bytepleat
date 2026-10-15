@@ -26,13 +26,13 @@ describe('Bytepleat native Tauri smoke', () => {
   it('inspects a generated ZIP in the real webview and captures an actual app screenshot', async () => {
     await $('#run-job').click();
     await $('#entry-list [data-entry]').waitForExist({ timeout: 30000 });
-    await expect($('#entry-list').getText()).toContain('keep.txt');
-    await expect($('#entry-list').getText()).toContain('skip.txt');
+    await expect($('#entry-list')).toHaveTextContaining('keep.txt');
+    await expect($('#entry-list')).toHaveTextContaining('skip.txt');
     await browser.saveScreenshot(path.join(screenshots, '01-native-inspect.png'));
     await $('#entry-list [data-entry="0"]').click();
     await $('#extract-selected').click();
     await expect($('#selected-review')).toBeDisplayed();
-    await expect($('#review-list').getText()).toContain('keep.txt');
+    await expect($('#review-list')).toHaveTextContaining('keep.txt');
     await browser.saveScreenshot(path.join(screenshots, '02-selective-extract-review.png'));
   });
 
