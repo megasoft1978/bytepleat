@@ -209,10 +209,10 @@ as an installed GNOME package remains pending.
 
 ## Current automated baseline · 2026-10-15
 
-At commit `d7018cf8b8206d4c609ba2c930ff076f4a7b7fcd`, all three GitHub Actions
-workflows passed: [native UI smoke run 38730012396](https://github.com/megasoft1978/bytepleat/actions/runs/38730012396),
-[desktop alpha checks run 38730012107](https://github.com/megasoft1978/bytepleat/actions/runs/38730012107),
-and [native Rust CI run 38730012453](https://github.com/megasoft1978/bytepleat/actions/runs/38730012453).
+At commit `8a346a777b166610bce9f2b37381740097215cc9`, all three GitHub Actions
+workflows passed: [native UI smoke run 38732829088](https://github.com/megasoft1978/bytepleat/actions/runs/38732829088),
+[desktop alpha checks run 38732829095](https://github.com/megasoft1978/bytepleat/actions/runs/38732829095),
+and [native Rust CI run 38732829104](https://github.com/megasoft1978/bytepleat/actions/runs/38732829104).
 
 The native UI workflow built and launched the Tauri app on GitHub-hosted
 macOS ARM64, Ubuntu Linux x64 and ARM64, Windows x64, and Windows 11 ARM64
@@ -226,12 +226,15 @@ command-level checks exercised native builds but did not use the operating
 system file dialogs or shell context menus.
 
 The desktop build workflow also passed formatting, Clippy, and tests on macOS
-ARM64, Linux x64, and Windows x64; cross-compiled a Windows ARM64 desktop
-executable; and validated unsigned Windows x64/ARM64 MSIX package schemas and
-payloads. The native Rust workflow passed on macOS ARM64, Linux x64, and Windows
-x64. These runs verify app behavior in CI runners and package construction; they
-do not verify installed-app behavior, Finder/Explorer/Nautilus/Dolphin handoffs,
-signed distribution, or behavior on every OS version.
+ARM64, Linux x64, and Windows x64; built the Windows x64 desktop app and
+cross-compiled Windows ARM64; rebuilt the Linux development package; and
+validated unsigned Windows x64/ARM64 MSIX package schemas and payloads. Native
+Explorer COM and quoting tests passed on Windows x64; the ARM64 adapter compiled,
+but its native tests were skipped. The native Rust workflow passed on macOS
+ARM64, Linux x64, and Windows x64. These runs verify app behavior in CI runners
+and package construction; they do not verify installed-app behavior,
+Finder/Explorer/Nautilus/Dolphin handoffs, signed distribution, or behavior on
+every OS version.
 
 ## Remaining validation
 
@@ -240,10 +243,12 @@ signed distribution, or behavior on every OS version.
 - Verify installed Windows app behavior and Explorer interaction on x64 and
   ARM64. Native WebView E2E now passes on the GitHub-hosted x64 and Windows 11
   ARM64 runners, but does not test installation or Explorer handoff.
-- Re-run GNOME inspection cancellation, no-overwrite, and selective extraction
-  against the later v10 activation package; these passed on the earlier
-  installed v6 package. Wayland remains unverified. Package validation covers
-  Ubuntu 24.04.5 ARM64, not other distributions or architectures.
+- Install the latest Linux development package in GNOME and re-run inspection
+  cancellation, no-overwrite, and selective extraction; those flows passed on
+  the earlier installed v6 package. The current source was rebuilt and packaged
+  in CI, but has not received this installed runtime check. Wayland remains
+  unverified. Package validation covers Ubuntu 24.04.5 ARM64, not other
+  distributions or architectures.
 - Qualify signed packages, including Developer ID/notarized macOS distribution
   and appropriate Windows signing.
 - Expand interactive coverage across supported operating systems and archive

@@ -54,9 +54,10 @@ Dolphin as planned compatibility targets. On Ubuntu 24.04.5 ARM64 with
 XFCE/Xorg, archive creation, full and selected extraction, hashes,
 empty-directory restoration, no-overwrite refusal, and Nautilus and Dolphin
 context actions were verified. A separate Ubuntu 24.04.5 ARM64 GNOME/Xorg run
-tested Nautilus Open With, Extract, and Compress on the installed v10 package;
-a later startup-argument change has not yet been rebuilt and tested as a Linux
-package. Wayland and Kubuntu 26.04/Dolphin remain unverified. The installer
+tested Nautilus Open With, Extract, and Compress on the installed v10 package.
+The latest source has since been rebuilt and packaged in CI, but has not been
+installed for a fresh GNOME runtime test. Wayland and Kubuntu 26.04/Dolphin
+remain unverified. The installer
 requires Python 3.10+, an executable desktop app binary, and writes only these
 per-user files: `~/.local/share/applications/bytepleat.desktop`,
 `~/.local/share/kio/servicemenus/bytepleat.desktop`,
@@ -91,7 +92,7 @@ commands and selection-parameter guidance.
 | Platform component | Source status | Native runtime status |
 | --- | --- | --- |
 | macOS Finder Services and Open With | Implemented; Swift compile required on macOS | On macOS 27.0.1 ARM64, Services registration, warm Compress, cold Extract, two-file Services selection, cold Open With listing, and file-picker keyboard navigation passed. 7z was listed only; Dock Quit cleanup remains unverified. |
-| GNOME Files / Nautilus | Implemented; Nautilus Python GI required at runtime | Nautilus 46.4 context Compress/Extract passed on Ubuntu 24.04.5 ARM64 XFCE/Xorg. On GNOME/Xorg, Open With and one cold Extract and Compress passed on installed v10; the later startup-argument change still needs a Linux package rebuild and retest. |
+| GNOME Files / Nautilus | Implemented; Nautilus Python GI required at runtime | Nautilus 46.4 context Compress/Extract passed on Ubuntu 24.04.5 ARM64 XFCE/Xorg. On GNOME/Xorg, Open With and one cold Extract and Compress passed on installed v10. Latest source was rebuilt and packaged in CI, but has not been installed for runtime validation; cancellation, no-overwrite, and selected extraction still need repeating on the current package. |
 | KDE Dolphin service menu | Implemented; desktop-entry registration handled by KDE | Dolphin 23.08.5 warm Compress and cold Extract passed on Ubuntu 24.04.5 ARM64 XFCE/Xorg. Kubuntu 26.04 remains unverified. |
 | Windows File Explorer | `IExplorerCommand` source and MSIX packaging implemented | x64 native adapter tests passed; ARM64 adapter is compile-only. x64/ARM64 MSIX schema and payload validation passed in CI; installed-package and Explorer behavior remain unverified. |
 | Thunar custom action | Documented manual configuration | Pending runtime verification |
