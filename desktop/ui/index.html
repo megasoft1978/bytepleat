@@ -51,14 +51,14 @@
               <section id="archive-inspection" class="archive-inspection" hidden aria-labelledby="inspection-title">
                 <div class="inspection-heading"><h3 id="inspection-title" tabindex="-1">Archive contents</h3><span id="inspection-summary"></span></div>
                 <p class="caveat"><strong>Listing only.</strong> File contents have not been checked. Extracting selected entries still decodes the whole archive before keeping them.</p>
-                <div id="entry-list" class="entry-list"></div>
+                <div id="entry-list" class="entry-list" role="group" aria-labelledby="inspection-title"></div>
                 <p id="entry-hint" class="entry-hint" aria-live="polite"></p>
                 <button id="extract-selected" class="button button-secondary" type="button" disabled>Extract selected…</button>
               </section>
               <section id="selected-review" class="archive-inspection selected-review" hidden aria-labelledby="review-title">
                 <div class="inspection-heading"><h3 id="review-title" tabindex="-1">Entries to extract</h3><span id="review-summary"></span></div>
                 <p class="review-note">Chosen from the listing you inspected. If the archive has changed since, inspect it again; extraction stops if a chosen entry is missing. Bytepleat still decodes the whole archive before keeping only these.</p>
-                <ul id="review-list" class="review-list"></ul>
+                <ul id="review-list" class="review-list" tabindex="0" aria-label="Entries chosen for extraction"></ul>
                 <div class="review-actions"><button id="review-change" class="button button-secondary" type="button">Change selection</button><button id="review-clear" class="button button-quiet" type="button">Extract everything instead</button></div>
               </section>
 

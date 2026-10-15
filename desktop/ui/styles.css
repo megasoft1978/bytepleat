@@ -248,4 +248,6 @@ h3[tabindex="-1"]:focus{outline:none}
   .progress-track{border:1px solid CanvasText;background:Canvas}
   .progress-track span{forced-color-adjust:none;background:Highlight}
   .format-option.selected{outline:2px solid Highlight}
+  .pleat-edge,.mode-tab.active::after,.format-option.selected .radio-mark::after{forced-color-adjust:none;background:Highlight}
+  .drop-zone.drag-over{outline:2px solid Highlight}
 }
