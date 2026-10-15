@@ -33,6 +33,18 @@ review app executable SHA-256 is
 validates those workflows on macOS 27.0.1 ARM64 only and is not release-signing
 or notarization evidence.
 
+A separate Finder **Open With → Bytepleat** smoke check used a two-file 7z
+archive created with the installed 7-Zip 17.05 CLI. Finder forwarded the file
+and the UI listed both expected paths and sizes (35 B and 8.2 KB). The archive
+SHA-256 was
+`f27a3033438e9a03dc96651efd9153a27be0d9762747f3252b7106f1f064d6ca`; `7z t`
+reported the fixture valid independently. Bytepleat's UI explicitly described
+the view as listing only; it did not verify payload integrity. Selecting one
+entry moved the UI to the extraction workflow, but no extraction job completed
+and no extracted output was verified. This is format-opening/listing and Finder
+handoff evidence only, not 7z extraction support evidence or a performance
+result.
+
 Finder Open With cold launch passed with the generated ZIP. Finder Services
 also forwarded a two-file selection to Create with both exact paths. The native
 file picker accepted a generated input via keyboard Go to Folder navigation.
@@ -133,6 +145,18 @@ but its native COM tests were skipped, so this is compile-only evidence. The
 x64 and ARM64 MSIX jobs passed package schema/payload validation and reported
 notices. The CI does not establish Windows installation or runtime behavior,
 Explorer interaction in an installed app, or ARM64 runtime behavior.
+
+The current source revision `d85dddacbfbf2d70b54745885d74fbcc48f3a435` also
+passed all jobs in [Desktop alpha native checks run
+38699179705](https://github.com/megasoft1978/bytepleat/actions/runs/38699179705).
+Core and desktop app formatting, Clippy, tests, and executable builds passed on
+macOS ARM64, Ubuntu 24.04 x64, and Windows x64. The Windows x64 runner also
+cross-compiled the desktop executable for Windows ARM64. Native Explorer COM
+and quoting tests passed on x64; the ARM64 adapter compiled, but its native
+tests were skipped. Unsigned x64 and ARM64 MSIX packages passed MakeAppx
+payload/schema validation. These CI checks are headless build, test, and package
+evidence: they do not establish installed Windows GUI behavior, Explorer
+handoff, Windows ARM64 runtime behavior, or signing.
 
 The local unsigned ARM64 Debian development package v6 was built twice with
 identical bytes (SHA-256
