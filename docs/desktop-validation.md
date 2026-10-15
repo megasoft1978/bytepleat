@@ -255,9 +255,10 @@ action: Compress received `--create -- <fixture-path>` and Extract received
 spaces and a leading dash. The recorder replaced the desktop app: these checks
 verify extension loading, menu activation, and argument handoff only. They did
 not run compression or extraction, and do not establish behavior in an
-interactive GNOME Shell session, on Wayland, or on other distributions. A
-The PR adds a GitHub Actions job to repeat this isolated smoke; its first hosted
-run is pending.
+interactive GNOME Shell session, on Wayland, or on other distributions. The
+first hosted Nautilus runtime job passed in [GitHub Actions run
+38762493952](https://github.com/megasoft1978/bytepleat/actions/runs/38762493952).
+A subsequent validation run is in progress.
 
 ## Windows ARM64 packaged integration smoke
 

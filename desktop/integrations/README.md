@@ -61,8 +61,10 @@ were also tested in an isolated Ubuntu 24.04 ARM64 container with Nautilus
 the exact Compress and Extract argument handoffs three consecutive times each.
 This smoke substitutes a recorder for the desktop app, so it verifies neither
 archive operation; it also does not establish interactive GNOME Shell or
-Wayland behavior. The matching GitHub Actions job is added, with its first
-hosted run pending. Kubuntu 26.04/Dolphin remains unverified. The installer
+Wayland behavior. The first matching GitHub Actions job passed in [run
+38762493952](https://github.com/megasoft1978/bytepleat/actions/runs/38762493952);
+a subsequent validation run is in progress. Kubuntu 26.04/Dolphin remains
+unverified. The installer
 requires Python 3.10+, an executable desktop app binary, and writes only these
 per-user files: `~/.local/share/applications/bytepleat.desktop`,
 `~/.local/share/kio/servicemenus/bytepleat.desktop`,
