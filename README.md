@@ -76,7 +76,7 @@ A desktop window for everyday archive work, built on the same bounded archive en
 
 - **Create:** choose files or a folder, pick a format, and save a new archive.
 - **Extract:** unpack one archive into a new folder. The desktop app never overwrites an existing file or folder; the CLI does so only with `--force` on a named output file.
-- **Inspect:** list an archive's entries without extracting. Listing does not verify file contents. ZIP and 7z are listed from their metadata; a compressed tar can only be listed by fully decoding it into private temporary staging, which is removed afterwards. Extracting selected entries decodes the whole archive again before keeping the ones you chose.
+- **Inspect:** list an archive's entries without extracting, then tick entries and choose **Extract selected** to carry them to the Extract tab. Listing does not verify file contents. ZIP and 7z are listed from their metadata; a compressed tar can only be listed by fully decoding it into private temporary staging, which is removed afterwards. Extracting selected entries decodes the whole archive again before keeping the ones you chose.
 
 There is no desktop installer yet; the packages under [Install](#install) are the CLI release. To try the alpha, build it from source (Rust 1.93 or newer, Node.js/npm and the [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/)):
 
@@ -90,9 +90,9 @@ Desktop operations are capped at 1 GiB of output and 100,000 entries; listings p
 
 ### Desktop validation
 
-At commit `8a346a7`, native WebView and app-command checks passed on macOS ARM64, Linux x64/ARM64, and Windows x64/ARM64 in [GitHub Actions](https://github.com/megasoft1978/bytepleat/actions/runs/38732829088). The checks cover archive inspection, selected-extraction review, create, selected extraction, and overwrite preservation. They do not establish installed-app or shell-integration support. The [desktop validation record](docs/desktop-validation.md) links the matching build, package, and Rust CI runs.
+Platform validation is incomplete. These are desktop results from specific sessions, not a claim of support for every OS version or architecture; the [desktop validation record](docs/desktop-validation.md) has the exact scope, versions, open items, and the matching build, package, and Rust CI runs.
 
-Platform validation is incomplete. These are desktop results from specific sessions, not a claim of support for every OS version or architecture; [desktop validation](docs/desktop-validation.md) has the exact scope, versions and open items.
+At commit `8a346a7`, native WebView and app-command checks passed on macOS ARM64, Linux x64/ARM64, and Windows x64/ARM64 in [GitHub Actions](https://github.com/megasoft1978/bytepleat/actions/runs/38732829088). The checks cover archive inspection, selected-extraction review, create, selected extraction, and overwrite preservation. They do not establish installed-app or shell-integration support. Per-platform detail:
 
 | Platform | What has been checked |
 | --- | --- |

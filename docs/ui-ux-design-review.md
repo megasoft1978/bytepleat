@@ -52,11 +52,27 @@ Calculated from the sRGB hex values with the WCAG contrast formula, the sampled 
 - **Limits beside controls.** The 1 GiB output cap, 100,000-entry limit and 5,000-entry preview sit in each tab's source hint instead of one generic line, and the sidebar note follows the active tab.
 - **TAR listing disclosed before Inspect.** When the chosen file name ends in .tar.zst, .tar.gz or .tar.lz4, a note says listing fully decodes into private temporary staging. The note is based on the file name only; the engine still detects the format from content.
 
+## Follow-up polish (screenshot review of baseline `20b5129`)
+
+Evidence: hosted-CI native screenshots (macOS ARM64, Linux x64/ARM64, Windows x64/ARM64; fixture ZIP, window about 1024 px wide) plus headless website and README captures. The macOS, Windows and Linux x64 captures compared look the same apart from path style and fonts, so these changes are not platform-specific. No Finder, Explorer or GNOME context-menu interaction and no assistive-technology run was captured.
+
+- **One next step after a listing.** With a listing shown, Inspect archive used to stay the filled primary button below a disabled secondary Extract selected…. The run button now reads Inspect again and steps back to secondary; Extract selected… becomes the primary action. The element IDs are unchanged.
+- **No focus ring on the hand-off heading.** The Entries to extract heading takes programmatic focus so screen readers announce it, but showed a blue box in the native captures. Headings with `tabindex="-1"` no longer draw a ring; controls keep theirs.
+- **Less repeated text on hand-off.** The Extract tab showed the same "choose a destination folder" instruction twice (status line and Run hint). The status text is now announced through the live region only.
+- **Placeholder is not a path.** “No location chosen yet.” was set in the monospace face reserved for paths. It now uses the body face in the muted colour.
+- **Terms.** The listing summary says “entries” (as the Extract review and the limits already did) instead of “items”; the selection count says “1 archive selected” in Extract and Inspect and keeps “items” for Create. The website illustration says “4 entries”. The entry hint no longer says to choose a destination “on the Extract tab” before the user has left the Inspect tab.
+- **Failure recovery.** A failed job's note now adds “Check the message above, adjust your choices, and run it again” to the unchanged-originals line. It makes no claim about partial output.
+- **Website.** Each platform-status card leads with its verdict label, so the label is read first on a 390 px screen instead of after a long paragraph. The hero note drops the release facts already in the pill and buttons.
+- **README.** The Inspect bullet says how to carry entries to Extract, and the two overlapping validation paragraphs are merged.
+
+Not changed: the native captures are cropped mid-scroll CI fixtures with temporary paths, so they were not added to the README or website. Provenance mismatch to be aware of: the brief names baseline `20b5129`, but `capture-metadata.json` for the website and README captures records commit `b1e36fe`, and the native captures were taken at `38e945b`.
+
 ## Recommendations deferred
 
 - **Windows Explorer verbs.** Modern Explorer commands need `IExplorerCommand` and package identity; that is packaging and backend work outside this change.
 - **Finder and Dolphin menus.** Existing handoffs are unchanged. Richer contextual menus are not part of the UI surface.
 - **Per-phase determinate progress.** The bar only appears for phases where the backend reports a trustworthy total; changing the worker's reporting was out of scope.
+- **Select all / clear in the entry list.** Lists can hold up to 5,000 entries; ticking many by hand is slow, but Extract everything instead covers the common case and a bulk control was not requested.
 - **Dismissing finished jobs and multi-job queues.** The engine runs one job at a time, so a queue UI would be speculative.
 - **Auto-activating tabs on arrow keys.** Deferred so keyboard browsing cannot clear a selection.
 - **Screenshots and a product preview image.** None added; they would need real captures from a verified build.
