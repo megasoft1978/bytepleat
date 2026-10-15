@@ -176,35 +176,54 @@ def main() -> None:
             if not selected:
                 raise RuntimeError("Nautilus accessibility tree did not expose the selected fixture")
 
-            # The isolated 1280x1024 Xvfb display and a fresh Nautilus window
-            # place its first selected icon at (282,138). GTK4's AT-SPI extents
-            # omit the icon-view origin, so they cannot drive this right-click.
-            subprocess.run(
-                ["xdotool", "mousemove", "--sync", "282", "138", "click", "3"],
-                check=True,
-            )
-            time.sleep(0.5)
-            # Nautilus 46 presents Open first, followed by the standard file
-            # actions; nine Down presses focus the installed Compress action.
-            subprocess.run(
-                ["xdotool", "key", "--repeat", "9", "--delay", "50", "Down"],
-                check=True,
-            )
-            subprocess.run(["xdotool", "key", "Return"], check=True)
-
-            deadline = time.monotonic() + 10
-            while time.monotonic() < deadline and not capture.is_file():
-                time.sleep(0.1)
-            if not capture.is_file():
-                raise RuntimeError(
-                    "activating the visible Nautilus Compress action did not launch the installed target; "
-                    f"Nautilus log tail: {nautilus_log.read_text(encoding='utf-8')[-2000:]}"
+            def activate_and_check(action: str, down_presses: int, expected: list[str]) -> None:
+                # The isolated 1280x1024 Xvfb display and fresh Nautilus
+                # window place the first selected icon at (282,138). GTK4's
+                # AT-SPI extents omit the icon-view origin, so they cannot
+                # drive this right-click.
+                subprocess.run(
+                    ["xdotool", "mousemove", "--sync", "282", "138", "click", "3"],
+                    check=True,
                 )
-            argv = json.loads(capture.read_text(encoding="utf-8"))
-            expected = ["--create", "--", str(fixture)]
-            if argv != expected:
-                raise RuntimeError(f"installed action passed unexpected argv: {argv!r}")
-            print(f"PASS: Nautilus context action launched with argv {argv!r}", flush=True)
+                time.sleep(0.5)
+                # Nautilus 46 presents Open first. The two installed actions
+                # follow the standard file actions and focus at offsets 9/10.
+                subprocess.run(
+                    [
+                        "xdotool",
+                        "key",
+                        "--repeat",
+                        str(down_presses),
+                        "--delay",
+                        "50",
+                        "Down",
+                    ],
+                    check=True,
+                )
+                subprocess.run(["xdotool", "key", "Return"], check=True)
+
+                deadline = time.monotonic() + 10
+                while time.monotonic() < deadline and not capture.is_file():
+                    time.sleep(0.1)
+                if not capture.is_file():
+                    raise RuntimeError(
+                        f"activating the visible Nautilus {action} action did not launch the installed target; "
+                        f"Nautilus log tail: {nautilus_log.read_text(encoding='utf-8')[-2000:]}"
+                    )
+                argv = json.loads(capture.read_text(encoding="utf-8"))
+                if argv != expected:
+                    raise RuntimeError(
+                        f"Nautilus {action} action passed unexpected argv: {argv!r}"
+                    )
+                print(f"PASS: Nautilus {action} action launched with argv {argv!r}", flush=True)
+                capture.unlink()
+
+            activate_and_check(
+                "Compress", 9, ["--create", "--", str(fixture)]
+            )
+            activate_and_check(
+                "Extract", 10, ["--extract", "--", str(fixture)]
+            )
         finally:
             try:
                 subprocess.run(
