@@ -9,6 +9,10 @@ const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'bytepleat-ui-smoke-'));
 const fixtureDir = path.join(tempRoot, 'fixture');
 fs.mkdirSync(fixtureDir);
 const fixture = path.join(fixtureDir, 'sample.zip');
+const createFixture = path.join(fixtureDir, 'startup-create.txt');
+const startupAction = process.env.BYTEPLEAT_STARTUP_ACTION || 'open';
+if (!['create', 'extract', 'open'].includes(startupAction)) throw new Error(`Unsupported startup action: ${startupAction}`);
+const startupPath = startupAction === 'create' ? createFixture : fixture;
 const appBinaryPath = process.env.BYTEPLEAT_APP_BINARY || path.join(repo, 'desktop/src-tauri/target/debug/bytepleat-desktop');
 
 function crc32(buf) {
@@ -36,26 +40,33 @@ function makeZip(entries) {
   fs.writeFileSync(fixture, Buffer.concat([...locals, centralBytes, end]));
 }
 makeZip([['keep.txt', 'selected fixture payload\n'], ['skip.txt', 'unselected fixture payload\n']]);
+fs.writeFileSync(createFixture, 'created from a real startup argument\n');
 fs.mkdirSync(process.env.BYTEPLEAT_SCREENSHOT_DIR || path.join(os.tmpdir(), 'bytepleat-ui-screenshots'), { recursive: true });
 
 export const config = {
-  runner: 'local', specs: ['./specs/**/*.spec.js'], maxInstances: 1,
+  runner: 'local', specs: [process.env.BYTEPLEAT_STARTUP_ARGS_ONLY ? './specs/startup-args.spec.js' : './specs/native-smoke.spec.js'], maxInstances: 1,
   framework: 'mocha', reporters: ['spec'],
-  services: [['@wdio/tauri-service', { appBinaryPath, appArgs: ['--open', '--', fixture], driverProvider: 'embedded', embeddedPort: 4445 }]],
+  services: [['@wdio/tauri-service', { appBinaryPath, appArgs: [`--${startupAction}`, '--', startupPath], driverProvider: 'embedded', embeddedPort: 4445 }]],
   capabilities: [{ browserName: 'wry' }],
   mochaOpts: { timeout: 120000 },
   baseUrl: 'tauri://localhost',
   outputDir: path.join(tempRoot, 'wdio-logs'),
   onComplete(exitCode) {
     const dest = path.resolve(process.env.BYTEPLEAT_SCREENSHOT_DIR || path.join(os.tmpdir(), 'bytepleat-ui-screenshots'));
-    fs.writeFileSync(path.join(dest, 'bytepleat-ui-smoke-results.json'), JSON.stringify({
-      appBinaryPath, fixture: path.basename(fixture), platform: process.platform,
-      driverProvider: 'embedded', screenshots: ['01-native-inspect.png', '02-selective-extract-review.png'],
-      screenshotFilesPresent: ['01-native-inspect.png', '02-selective-extract-review.png'].filter(name => fs.existsSync(path.join(dest, name))),
+    const screenshots = process.env.BYTEPLEAT_STARTUP_ARGS_ONLY
+      ? []
+      : ['01-native-inspect.png', '02-selective-extract-review.png'];
+    const reportName = process.env.BYTEPLEAT_STARTUP_ARGS_ONLY
+      ? `bytepleat-startup-args-${startupAction}.json`
+      : 'bytepleat-ui-smoke-results.json';
+    fs.writeFileSync(path.join(dest, reportName), JSON.stringify({
+      appBinaryPath, fixture: path.basename(fixture), startupAction, startupPath: path.basename(startupPath), platform: process.platform,
+      driverProvider: 'embedded', screenshots,
+      screenshotFilesPresent: screenshots.filter(name => fs.existsSync(path.join(dest, name))),
       fixtureGeneratedInOsTemp: true, wdioExitCode: exitCode
     }, null, 2) + '\n');
     fs.rmSync(tempRoot, { recursive: true, force: true });
   }
 };
 
-export { fixture };
+export { fixture, startupAction, startupPath };

@@ -148,6 +148,16 @@ jobs:
         run: xvfb-run --auto-servernum npm test
         working-directory: desktop/e2e
 
+      - name: Verify real startup arguments in the Windows WebView
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          for action in create extract open; do
+            echo "Checking startup action: $action"
+            BYTEPLEAT_STARTUP_ARGS_ONLY=1 BYTEPLEAT_STARTUP_ACTION="$action" npm test
+          done
+        working-directory: desktop/e2e
+
       - name: Explain screenshot scope
         if: always()
         shell: bash
