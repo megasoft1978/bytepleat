@@ -92,13 +92,13 @@ Desktop operations are capped at 1 GiB of output and 100,000 entries; listings p
 
 Platform validation is incomplete. These are desktop results from specific sessions, not a claim of support for every OS version or architecture; the [desktop validation record](docs/desktop-validation.md) has the exact scope, versions, open items, and the matching build, package, and Rust CI runs.
 
-At commit `8a346a7`, native WebView and app-command checks passed on macOS ARM64, Linux x64/ARM64, and Windows x64/ARM64 in [GitHub Actions](https://github.com/megasoft1978/bytepleat/actions/runs/38732829088). The checks cover archive inspection, selected-extraction review, create, selected extraction, and overwrite preservation. They do not establish installed-app or shell-integration support. Per-platform detail:
+At the merged source tree (`109dd782`, merge commit `f1f46a4`), native WebView and app-command checks passed on macOS ARM64, Linux x64/ARM64, and Windows x64/ARM64 in [GitHub Actions](https://github.com/megasoft1978/bytepleat/actions/runs/38744817339). The checks cover archive inspection, selected-extraction review, create, selected extraction, and overwrite preservation. A separate [Windows ARM64 packaged smoke](https://github.com/megasoft1978/bytepleat/actions/runs/38744817304) also installed a test MSIX and verified package registration, alias activation, and Explorer-command COM activation. These CI checks do not establish interactive Finder, Explorer, Nautilus, or Dolphin menu behavior or signed public installers. Per-platform detail:
 
 | Platform | What has been checked |
 | --- | --- |
 | macOS 27.0.1 · Apple silicon | Interactive GUI runs of create, inspect, selected and full extraction, overwrite refusal, cancellation, and selected Finder handoffs. Unsigned local build, not notarized. macOS 13 (the bundle minimum) is unverified. |
 | Ubuntu 24.04.5 · ARM64 | Interactive runs in XFCE/Xorg and GNOME/Xorg, including Nautilus and Dolphin handoffs. On GNOME, cancellation, overwrite refusal, and selected extraction passed on an earlier package and have not been repeated on the installed v10 package. Latest source builds and UI smoke checks pass in CI, but have not been installed for a fresh GNOME runtime check. Wayland and Kubuntu are unverified. |
-| Windows | Native WebView E2E on x64 and ARM64, plus MSIX schema and payload validation. Installed-app and Explorer behavior remain unverified. |
+| Windows | Native WebView E2E on x64 and ARM64; MSIX schema and payload checks; Windows 11 ARM64 test-package install, alias registration, and Explorer-command COM activation. Interactive Explorer menu behavior and signed public installers remain unverified. |
 
 The interactive Linux desktop checks above were on ARM64; the Linux CLI package is x86-64, tested separately by CI. See [desktop/README.md](desktop/README.md) for build notes and limitations.
 

@@ -228,7 +228,7 @@ jobs:
         with:
           name: desktop-notices-Windows-ARM64
           path: desktop-notices
-      - name: Download ARM64 Explorer DLL and console probe
+      - name: Download ARM64 Explorer DLL and smoke probes
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: explorer-ARM64
@@ -252,3 +252,4 @@ jobs:
           -AppDirectory ./package-input
           -NoticeDirectory ./desktop-notices
           -ComTestPath ./explorer-payload/BytepleatPackagedComSmoke.exe
+          -InvocationProbePath ./explorer-payload/BytepleatPackagedInvocationReceiver.exe

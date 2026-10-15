@@ -221,6 +221,6 @@ code,pre{font-family:var(--mono)}
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 @media(forced-colors:active){
-  .pleat-strip{forced-color-adjust:none;background:Highlight}
+  .pleat-strip,.app-tabs .is-active::after{forced-color-adjust:none;background:Highlight}
   .app-entries .checked .box,.platform[aria-pressed=true]{outline:2px solid Highlight}
 }

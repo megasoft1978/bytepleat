@@ -1239,6 +1239,46 @@ mod tests {
     }
 
     #[test]
+    fn windows_explorer_verbs_select_the_original_paths() {
+        let executable = OsString::from("bytepleat-desktop.exe");
+        let cases = [
+            (
+                "--create",
+                vec![
+                    r"C:\Users\User\Desktop\first file.txt",
+                    r"C:\Users\User\Desktop\雪だるま.bin",
+                ],
+            ),
+            (
+                "--extract",
+                vec![r"C:\Users\User\Desktop\backup with spaces.zip"],
+            ),
+            ("--open", vec![r"C:\Users\User\Desktop\archive.7z"]),
+        ];
+
+        for (verb, expected_paths) in cases {
+            let mut args = vec![
+                executable.clone(),
+                OsString::from(verb),
+                OsString::from("--"),
+            ];
+            args.extend(expected_paths.iter().map(OsString::from));
+
+            let selected = argument_selection(&args);
+
+            let expected_action = match verb {
+                "--create" => "create",
+                "--extract" => "extract",
+                "--open" => "open",
+                _ => unreachable!(),
+            };
+            assert_eq!(selected.action, expected_action);
+            assert_eq!(selected.paths, expected_paths);
+            assert_eq!(selected.error, None);
+        }
+    }
+
+    #[test]
     fn private_startup_prefix_preserves_order_and_literal_flag_filename() {
         for args in [
             vec![

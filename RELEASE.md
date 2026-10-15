@@ -32,7 +32,7 @@ Windows PowerShell (x86-64):
 $asset = 'bytepleat-0.5.1-x86_64-pc-windows-msvc.zip'
 $sidecar = "$asset.sha256"
 $entry = Get-Content -LiteralPath $sidecar -Raw
-if ($entry -notmatch '^([0-9a-fA-F]{64})\s+bytepleat-0\.5\.0-x86_64-pc-windows-msvc\.zip\s*$') { throw 'Invalid checksum sidecar or filename' }
+if ($entry -notmatch '^([0-9a-fA-F]{64})\s+bytepleat-0\.5\.1-x86_64-pc-windows-msvc\.zip\s*$') { throw 'Invalid checksum sidecar or filename' }
 $expected = $Matches[1]
 $actual = (Get-FileHash -LiteralPath $asset -Algorithm SHA256).Hash
 if ($actual -ne $expected) { throw 'SHA-256 mismatch' }
