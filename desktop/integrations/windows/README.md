@@ -86,17 +86,18 @@ version on every run before creating test state. It refuses any preexisting
 `Bytepleat.Desktop` package across users, an existing execution alias, or classic
 COM registrations for the manifest CLSIDs.
 
-The [Windows 11 ARM64 package-registration and COM-enumeration smoke passed in CI](https://github.com/megasoft1978/bytepleat/actions/runs/38744817304/job/116463703206).
-The current PR adds invocation and argument-handoff checks to that smoke; those
-new checks are pending on the Windows ARM64 runner. The script:
+The [Windows 11 ARM64 packaged integration smoke passed in CI](https://github.com/megasoft1978/bytepleat/actions/runs/38754501942)
+against source tree `2a4295b17c0cfb9793887e3b512e3e26fb494554`, identical to
+merged commit `5f45d4ce02d483c86655754fe25f92452d2b9b18`. It verifies package
+registration, alias activation, packaged COM enumeration, and command invocation
+with argument handoff to a test receiver. The script:
 
 - Creates a certificate in `CurrentUser\My`, exports temporary PFX/CER files,
   and imports only its public certificate into `LocalMachine\TrustedPeople`.
 - Builds and installs the signed ARM64 package; checks its exact name, unique
   publisher, version, architecture, and current-user package full name.
 - Checks the registered manifest's execution alias and the WindowsApps alias
-  reparse point's package family with `fsutil` before the command-invocation
-  check.
+  reparse point's package family with `fsutil` before command invocation.
 - Runs `BytepleatPackagedComSmoke.exe` with a 120-second deadline. This console
   test uses `CoCreateInstance(CLSCTX_LOCAL_SERVER)` for all four manifest CLSIDs,
   checks `IExplorerCommand` canonical IDs, titles and flags, and enumerates
@@ -107,11 +108,10 @@ new checks are pending on the Windows ARM64 runner. The script:
   exits. The test verifies each action flag, `--` terminator, and every path,
   including spaces and Unicode, without launching Bytepleat's UI or controlling
   Explorer. It uses Windows packaged COM registration and the real installed
-  app-execution alias; it does not load the DLL directly. The new invocation
-  portion will prove COM invocation and command-line handoff to the test
-  receiver when its pending ARM64 CI run passes, not that the production GUI
-  consumes the arguments correctly or that a visible Explorer menu renders and
-  invokes successfully.
+  app-execution alias; it does not load the DLL directly. This proves packaged
+  COM invocation and command-line handoff to the test receiver, not that the
+  production GUI consumes the arguments correctly or that a visible Explorer
+  menu renders and invokes successfully.
 - In `finally`, terminates only its own probe if needed, uninstalls only the exact
   current-user package matching the unique test identity (including registration
   after a failed installation), removes the exact temporary certificate
@@ -121,13 +121,12 @@ new checks are pending on the Windows ARM64 runner. The script:
   cleanup; the outer step has a ten-minute timeout and runs on a disposable VM.
 
 The workflow logs the runner OS version, signed test MSIX SHA256, exact package
-full name, individual checks, and cleanup result. The earlier passing run
-establishes current-user development installation, registration/alias
-inspection, and packaged COM activation/enumeration on that native ARM64 runner.
-The current invocation check remains pending. Neither run launches or controls
-the runner desktop, displays Explorer menus, verifies production GUI handoff or
-app startup, establishes consumer signing trust, or establishes x64 runtime
-behavior.
+full name, individual checks, and cleanup result. The passing run establishes
+current-user development installation, registration/alias inspection, packaged
+COM activation/enumeration, and argument handoff to its test receiver on that
+native ARM64 runner. It neither launches nor controls the runner desktop,
+displays Explorer menus, verifies production GUI startup, establishes consumer
+signing trust, nor establishes x64 installed-package behavior.
 
 The ownership regression fixture uses mocks only and also runs on non-Windows
 PowerShell:
