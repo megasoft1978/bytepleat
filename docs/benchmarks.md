@@ -19,7 +19,22 @@ The checked-in public reproduction harness completed on this host with 42 case/m
 
 On the LZ4 source tree, Bytepleat ZIP 6 had a 2.9× lower encode median than 7-Zip ZIP 6, with an archive 0.48% larger. Bytepleat 7z was 0.21% smaller than 7-Zip 7z, but its encode and decode medians were about 9% slower. On the generated text control, Bytepleat ZIP 6 was substantially larger than 7-Zip ZIP 6. These results show workload-specific tradeoffs, not a general speed or compression-ratio advantage. The run's quiescence check was not enabled, so host activity may affect timings; the earlier published LZ4 ZIP 6 run also reported a different median on the same nominal host. Treat sub-second timing differences as exploratory.
 
-The local macOS `tar` lacked Zstandard support, so native-tar Zstandard was skipped. No licensed local RAR executable and terms note were supplied; RAR rows were omitted. This run does not cover Windows or Linux built-in tools or GUI behavior.
+The local macOS `tar` lacked Zstandard support, so native-tar Zstandard was skipped. This 42-group run did not use RAR; the separate RAR trial run is reported below. Neither run covers Windows or Linux built-in performance or GUI behavior.
+
+### RAR trial reproduction · 2026-10-15
+
+A second run used the checked-in harness with RARLAB's [official RAR 7.23 macOS ARM64 command-line trial](https://www.rarlab.com/download.htm), locally within its [40-day evaluation terms](https://www.rarlab.com/license.htm). The trial binary was not committed or redistributed. Across the LZ4 source tree and two generated 8 MiB controls, the run completed 48 case/method groups and five measured repeats per group; all 240 measured archives restored exact paths, byte counts, hashes, and directory paths. The [RAR comparison CSV](benchmarks/macos-rar-reproduction-2026-10-15.csv) includes all methods from this run, and the [sanitized provenance](benchmarks/macos-rar-reproduction-2026-10-15.json) records tool hashes, run settings, corpus pins, and the RAR trial note.
+
+| LZ4 source tree, measured setting | Tool | Archive bytes | Encode median (s) | Decode median (s) |
+| --- | --- | ---: | ---: | ---: |
+| ZIP Deflate 6 | Bytepleat | 480,556 | 0.04327 | 0.03199 |
+| ZIP Deflate 6 | 7-Zip 26.04 | 478,266 | 0.10841 | 0.02950 |
+| 7z LZMA2 5, solid, 16 MiB dictionary | Bytepleat | 269,846 | 0.46664 | 0.03639 |
+| 7z LZMA2 5, solid, 16 MiB dictionary | 7-Zip 26.04 | 270,414 | 0.37629 | 0.03268 |
+| RAR5 m3, solid, 16 MiB dictionary | RAR 7.23 trial | 298,367 | 0.14220 | 0.04095 |
+| RAR5 m5, solid, 16 MiB dictionary | RAR 7.23 trial | 295,577 | 0.14878 | 0.03386 |
+
+On this corpus, Bytepleat 7z made a smaller archive than either RAR setting, while RAR encoded faster than Bytepleat 7z. On the generated repeated-text control, RAR5 m5 produced 519 bytes versus Bytepleat 7z's 1,442 bytes; on the pseudorandom control, RAR5 m5 produced 8,404,415 bytes versus Bytepleat 7z's 8,389,101 bytes. These workload-specific results do not establish an overall winner. RAR itself restored every archive exactly, while 7-Zip 26.04 reported `Unsupported Method` on all six RAR warmup attempts. The sanitized provenance records each decoder exit code and complete-log diagnostic counts; every diagnostic line in these attempts was `Unsupported Method`, with no other diagnostics. The harness records that explicit response as an interoperability limitation; other decoder errors still fail the run. Host quiescence was not checked, so timing differences remain exploratory.
 
 ## Earlier full-suite result: LZ4 v1.10.0 source tree
 
