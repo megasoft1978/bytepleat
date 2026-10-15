@@ -2,9 +2,21 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import crypto from 'node:crypto';
+import zlib from 'node:zlib';
 import { fixture } from '../wdio.conf.js';
 
 const screenshots = path.resolve(process.env.BYTEPLEAT_SCREENSHOT_DIR || path.join(os.tmpdir(), 'bytepleat-ui-screenshots'));
+const crc32Table = Uint32Array.from({ length: 256 }, (_, value) => {
+  let crc = value;
+  for (let bit = 0; bit < 8; bit++) crc = (crc & 1) ? (crc >>> 1) ^ 0xedb88320 : crc >>> 1;
+  return crc >>> 0;
+});
+function crc32(buffer) {
+  let crc = 0xffffffff;
+  for (const byte of buffer) crc = (crc >>> 8) ^ crc32Table[(crc ^ byte) & 0xff];
+  return (crc ^ 0xffffffff) >>> 0;
+}
 const invoke = async (command, args) => {
   const result = await browser.executeAsync(({ command, args }, done) => {
     window.__TAURI__.core.invoke(command, args).then(done, error => done({ invokeError: String(error) }));
@@ -21,6 +33,44 @@ async function waitJob(id) {
     await pause(250);
   }
   throw new Error(`Timed out waiting for native job ${id}`);
+}
+
+function writeSlowExtractionZip(archivePath) {
+  // A highly compressible, deterministic 512 MiB member keeps the fixture
+  // small while making mid-decode cancellation observable on fast machines.
+  const name = Buffer.from('payload.bin');
+  const payload = Buffer.alloc(512 * 1024 * 1024);
+  const compressed = zlib.deflateRawSync(payload, { level: 1 });
+  const crc = typeof zlib.crc32 === 'function' ? zlib.crc32(payload) : crc32(payload);
+  const local = Buffer.alloc(30 + name.length);
+  local.writeUInt32LE(0x04034b50, 0);
+  local.writeUInt16LE(20, 4);
+  local.writeUInt16LE(8, 8);
+  local.writeUInt32LE(crc, 14);
+  local.writeUInt32LE(compressed.length, 18);
+  local.writeUInt32LE(payload.length, 22);
+  local.writeUInt16LE(name.length, 26);
+  name.copy(local, 30);
+
+  const central = Buffer.alloc(46 + name.length);
+  central.writeUInt32LE(0x02014b50, 0);
+  central.writeUInt16LE(20, 4);
+  central.writeUInt16LE(20, 6);
+  central.writeUInt16LE(8, 10);
+  central.writeUInt32LE(crc, 16);
+  central.writeUInt32LE(compressed.length, 20);
+  central.writeUInt32LE(payload.length, 24);
+  central.writeUInt16LE(name.length, 28);
+  name.copy(central, 46);
+
+  const centralOffset = local.length + compressed.length;
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0);
+  end.writeUInt16LE(1, 8);
+  end.writeUInt16LE(1, 10);
+  end.writeUInt32LE(central.length, 12);
+  end.writeUInt32LE(centralOffset, 16);
+  fs.writeFileSync(archivePath, Buffer.concat([local, compressed, central, end]));
 }
 
 describe('Bytepleat native Tauri smoke', () => {
@@ -91,5 +141,60 @@ describe('Bytepleat native Tauri smoke', () => {
     const collision = await waitJob(collisionId);
     assert.equal(collision.state, 'failed');
     assert.equal(fs.readFileSync(path.join(output, 'occupied'), 'utf8'), 'preserve this file');
+  });
+
+  it('cancels a real extraction after partial staging and preserves the archive', async function () {
+    this.timeout(120000);
+    const archive = path.join(path.dirname(fixture), 'cancel-mid-extraction.zip');
+    const destinationParent = path.join(path.dirname(fixture), 'cancel-output-parent');
+    const destination = path.join(destinationParent, 'cancelled-output');
+    fs.mkdirSync(destinationParent, { recursive: true });
+    writeSlowExtractionZip(archive);
+    const originalDigest = crypto.createHash('sha256').update(fs.readFileSync(archive)).digest('hex');
+    const before = new Set(fs.readdirSync(destinationParent));
+
+    const id = await invoke('start_job', { request: {
+      action: 'extract', inputs: [archive], destination, format: null,
+      selected_entries: [], max_output_bytes: 1073741824
+    } });
+
+    let stagePath;
+    await browser.waitUntil(() => {
+      for (const name of fs.readdirSync(destinationParent)) {
+        if (before.has(name)) continue;
+        const candidate = path.join(destinationParent, name);
+        try {
+          for (const entry of fs.readdirSync(candidate, { withFileTypes: true })) {
+            if (!entry.isDirectory() || !entry.name.startsWith('.bytepleat-extract-')) continue;
+            const partial = path.join(candidate, entry.name, 'payload.bin');
+            if (fs.statSync(partial).size > 0) {
+              stagePath = candidate;
+              return true;
+            }
+          }
+        } catch { /* The worker has not created its staged payload yet. */ }
+      }
+      return false;
+    }, {
+      timeout: 30000,
+      interval: 25,
+      timeoutMsg: 'Extraction did not produce a partial private-stage payload within 30 seconds'
+    });
+
+    const accepted = await invoke('cancel_job', { id });
+    assert.equal(accepted, true, 'The active native job should accept cancellation');
+    const cancelled = await waitJob(id);
+    assert.equal(cancelled.state, 'cancelled');
+    await browser.waitUntil(() => !fs.existsSync(stagePath), {
+      timeout: 10000,
+      interval: 25,
+      timeoutMsg: 'The private extraction stage remained after the cancelled job finished'
+    });
+    assert.equal(fs.existsSync(destination), false, 'Cancelled extraction must not publish its output');
+    assert.equal(
+      crypto.createHash('sha256').update(fs.readFileSync(archive)).digest('hex'),
+      originalDigest,
+      'Cancellation must preserve the input archive byte-for-byte'
+    );
   });
 });
