@@ -104,12 +104,12 @@ See the [user guide](docs/user-guide.md) for pipes, archive options, and numeric
 
 | Format | Single-file streams | Folder archive | Notes |
 | --- | --- | --- | --- |
-| Zstandard, gzip, LZ4 | Compress and decompress | Compressed tar | Standard codecs; presets available for Zstandard and gzip |
+| Zstandard, gzip, LZ4 | Compress and decompress | Compressed tar | Byte-stream codecs; presets available for Zstandard and gzip |
 | ZIP | — | Create, inspect, test, and extract a supported subset | Stored and Deflate entries |
 | 7z | — | Create, inspect, test, and extract a bounded subset | LZMA2; compatibility limits apply |
-| Pco | Typed numeric streams | — | Standalone little-endian values; requires an explicit type |
+| Pco | Typed numeric streams | — | CLI-only typed stream; raw little-endian values, explicit type required; not arbitrary files or CSV |
 
-RAR can be identified for metadata display but is not decoded. See [supported formats](docs/formats.md) for exact compatibility boundaries.
+RAR can be identified for metadata display but is not decoded. See [supported formats](docs/formats.md) for exact compatibility boundaries and [compression research](docs/compression-research.md) for the evidence behind codec and format decisions.
 
 Archive contents preserve file bytes and relative paths within the supported scope. Permissions, ownership, links, extended attributes, and portable timestamps are not restored. `test` checks decoding and format integrity; `info` reads metadata. Neither authenticates the sender or scans for malware. See [security and limits](docs/security-limits.md) for extraction checks, default caps, and publication behavior.
 

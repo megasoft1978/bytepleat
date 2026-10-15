@@ -40,3 +40,13 @@ Pco mode reads little-endian fixed-width words with an explicitly supplied type:
 ## Preservation boundaries
 
 Archive extraction restores regular-file contents and relative paths, and supports empty directories. It is not a full filesystem backup: permissions, ownership, links, extended attributes, and portable timestamps are not preserved. Archive names and attributes may have format-specific portability limits. See [security and limits](security-limits.md).
+
+## Format and algorithm references
+
+These sources define formats or describe specific codecs; their existence does not establish Bytepleat's performance on arbitrary data.
+
+- Zstandard framing and entropy coding: [RFC 8878](https://www.rfc-editor.org/rfc/rfc8878.html) and the [upstream implementation](https://github.com/facebook/zstd).
+- DEFLATE: [RFC 1951](https://www.rfc-editor.org/rfc/rfc1951.html). The RFC defines the format, not one encoder's search strategy or speed.
+- LZ4 frames: [upstream frame specification](https://github.com/lz4/lz4/blob/dev/doc/lz4_Frame_format.md) and [reference implementation](https://github.com/lz4/lz4).
+- 7z and LZMA/LZMA2: [7-Zip format notes](https://www.7-zip.org/7z.html), [LZMA SDK](https://www.7-zip.org/sdk.html), and [7-Zip source](https://github.com/ip7z/7zip).
+- Pco: Lončarić, Jeppesen, and Zinberg, [“Pcodec: Better Compression for Numerical Sequences”](https://arxiv.org/abs/2502.06112), [DOI](https://doi.org/10.48550/arXiv.2502.06112), and [reference implementation](https://github.com/pcodec/pcodec). The paper evaluates numerical sequences; those results do not imply gains for general files. Bytepleat's integration is a typed numeric stream with explicit little-endian input, not CSV or arbitrary-file compression.

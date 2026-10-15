@@ -68,7 +68,7 @@
     </div></section>
 
     <section class="section" id="formats"><div class="wrap">
-      <div class="section-head"><div><p class="eyebrow">Formats</p><h2>Familiar archives, clear boundaries.</h2></div><p class="section-intro">Each format is a bounded subset of what the standard allows. The details are in the <a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/formats.md">format notes</a>.</p></div>
+      <div class="section-head"><div><p class="eyebrow">Formats</p><h2>Familiar archives, clear boundaries.</h2></div><p class="section-intro">Each format is a bounded subset of what the standard allows. See the <a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/formats.md">format notes</a> and <a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/compression-research.md">compression research</a>.</p></div>
       <ul class="format-list">
         <li><code>.zip</code><div><h3>ZIP</h3><p>Classic Stored and Deflate entries only.</p></div></li>
         <li><code>.7z</code><div><h3>7z</h3><p>A bounded subset. New archives are written with LZMA2.</p></div></li>
@@ -77,6 +77,7 @@
         <li><code>.tar.lz4</code><div><h3>Tar + LZ4</h3><p>Pack a folder, or open a compressed tar.</p></div></li>
       </ul>
       <aside class="format-limits"><strong>Not supported</strong><p>RAR is not decoded. Password-protected archives and ZIP64 are not supported. A file with a supported extension can still be refused if it falls outside these subsets.</p></aside>
+      <p class="format-note">The CLI also handles Zstandard, gzip and LZ4 byte streams, plus typed Pco numeric streams that require an explicit data type. Pco is not a general file or CSV compressor; see the <a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/formats.md">format notes</a>.</p>
     </div></section>
 
     <section class="section tint" id="status"><div class="wrap status-layout">
