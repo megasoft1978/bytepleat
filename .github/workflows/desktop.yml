@@ -94,6 +94,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           mkdir desktop-package
+          cargo +stable build --locked --release --manifest-path desktop/src-tauri/Cargo.toml
           python desktop/scripts/build-linux-package.py --executable desktop/src-tauri/target/release/bytepleat-desktop --target ${{ matrix.target }} --notices-dir desktop-notices --output desktop-package/Bytepleat-amd64.deb --source-date-epoch 1791936000
           python desktop/scripts/build-linux-package.py --executable desktop/src-tauri/target/release/bytepleat-desktop --target ${{ matrix.target }} --notices-dir desktop-notices --output desktop-package/Bytepleat-amd64-repeat.deb --source-date-epoch 1791936000
           cmp desktop-package/Bytepleat-amd64.deb desktop-package/Bytepleat-amd64-repeat.deb
@@ -136,6 +137,82 @@ jobs:
           name: desktop-executable-Windows-ARM64
           path: desktop/src-tauri/target/aarch64-pc-windows-msvc/release/bytepleat-desktop.exe
           if-no-files-found: error
+
+  linux-packaged-ui-smoke:
+    name: Package GUI launch smoke (Ubuntu 24.04, Xvfb)
+    needs: [app]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Download desktop package from this workflow run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: desktop-deb-amd64
+          path: packaged-input
+      - name: Install packaged app and launch dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dbus-x11 imagemagick x11-utils xvfb
+          sudo apt-get install -y ./packaged-input/Bytepleat-amd64.deb
+          test -x /usr/bin/bytepleat-desktop
+      - name: Launch installed package in private D-Bus and Xvfb
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/packaged-ui-artifacts"
+          set -Eeuo pipefail
+          export BYTEPLEAT_SMOKE_ARTIFACTS="$GITHUB_WORKSPACE/packaged-ui-artifacts"
+          dbus-run-session -- xvfb-run --auto-servernum bash -euo pipefail -c '
+            log="$BYTEPLEAT_SMOKE_ARTIFACTS/app.log"
+            screenshot="$BYTEPLEAT_SMOKE_ARTIFACTS/screen.png"
+            /usr/bin/bytepleat-desktop >"$log" 2>&1 &
+            app_pid=$!
+            cleanup() {
+              kill "$app_pid" 2>/dev/null || true
+              for _ in $(seq 1 20); do
+                kill -0 "$app_pid" 2>/dev/null || break
+                sleep 0.25
+              done
+              kill -KILL "$app_pid" 2>/dev/null || true
+              wait "$app_pid" 2>/dev/null || true
+            }
+            trap cleanup EXIT
+
+            visible=0
+            for _ in $(seq 1 40); do
+              if ! kill -0 "$app_pid" 2>/dev/null; then
+                echo "Bytepleat exited before its window appeared" >&2
+                exit 1
+              fi
+              if xwininfo -root -tree 2>/dev/null | grep -Eiq "Bytepleat"; then
+                visible=1
+                break
+              fi
+              sleep 0.5
+            done
+            if [ "$visible" -ne 1 ]; then
+              echo "No visible Bytepleat window appeared within 20 seconds" >&2
+              exit 1
+            fi
+            import -window root "$screenshot"
+            test -s "$screenshot"
+            echo "Visible Bytepleat window detected"
+          '
+      - name: Explain package GUI launch smoke scope
+        if: always()
+        run: |
+          {
+            echo '### Package GUI launch smoke'
+            echo 'This job installs the normal desktop-deb-amd64 artifact from this workflow run and checks that /usr/bin/bytepleat-desktop opens a visible window under a private D-Bus session and Xvfb.'
+            echo 'This is a package GUI launch smoke, not workflow E2E or live GNOME/Nautilus testing.'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload package GUI launch logs and screenshot
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: desktop-packaged-ui-smoke-${{ github.run_id }}
+          path: packaged-ui-artifacts/
+          if-no-files-found: ignore
+          retention-days: 5
   explorer:
     runs-on: windows-latest
     strategy:
