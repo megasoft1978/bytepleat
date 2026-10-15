@@ -1,7 +1,27 @@
 name: Desktop alpha native checks
 on:
   push:
-    branches: [desktop-alpha]
+    branches: [main, desktop-alpha]
+    paths:
+      - '.github/workflows/desktop.yml'
+      - 'desktop/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'vendor/sevenz-rust2/**'
+      - 'Cargo.toml'
+      - 'LICENSE'
+      - 'scripts/check_source_export.py'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/desktop.yml'
+      - 'desktop/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'vendor/sevenz-rust2/**'
+      - 'Cargo.toml'
+      - 'LICENSE'
+      - 'scripts/check_source_export.py'
   workflow_dispatch:
 permissions:
   contents: read
