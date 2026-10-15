@@ -86,9 +86,8 @@ version on every run before creating test state. It refuses any preexisting
 `Bytepleat.Desktop` package across users, an existing execution alias, or classic
 COM registrations for the manifest CLSIDs.
 
-The [Windows 11 ARM64 packaged integration smoke passed in CI](https://github.com/megasoft1978/bytepleat/actions/runs/38754501942)
-against source tree `2a4295b17c0cfb9793887e3b512e3e26fb494554`, identical to
-merged commit `5f45d4ce02d483c86655754fe25f92452d2b9b18`. It verifies package
+The [Windows 11 ARM64 packaged integration smoke passed in CI](https://github.com/megasoft1978/bytepleat/actions/runs/38770917796)
+against merged source `d1ed936aac3fd28093377e3ac1aca39f5d60d90f`. It verifies package
 registration, alias activation, packaged COM enumeration, and command invocation
 with argument handoff to a test receiver. The script:
 
