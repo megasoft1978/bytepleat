@@ -4,10 +4,10 @@
 
 Bytepleat is a Rust archiver built around familiar formats and careful file handling. Everything runs on your device; inputs are never moved or removed. Bytepleat uses established codecs and archive formats; it does not introduce a proprietary archive format.
 
-| | Status | Get it |
-| --- | --- | --- |
-| **Command-line tool 0.5.1** | Released. Native CI passed on macOS Apple silicon, Linux x86-64 and Windows x86-64. | [Install](#install) |
-| **Desktop app** | Alpha, in development. No consumer installer is published; build it from source. | [Desktop alpha](#desktop-app-alpha) |
+- **[Install the CLI 0.5.1](#install)** — released for macOS Apple silicon, Linux x86-64 and Windows x86-64, with native CI checks on those targets.
+- **[Explore the desktop alpha](#desktop-app-alpha)** — in development; build from source. No consumer installer is published.
+
+[Quick start](#quick-start) · [Supported formats](#supported-formats) · [User guide](docs/user-guide.md)
 
 ## Install
 
@@ -90,15 +90,17 @@ Desktop operations are capped at 1 GiB of output and 100,000 entries; listings p
 
 ### Desktop validation
 
+At commit `fffc6ec`, native WebView E2E passed on macOS, Linux x64/ARM64 and Windows x64/ARM64, including inspection and selected-extraction review. These automated checks do not establish installed-app or shell-integration support. UI changes after that commit need a fresh native CI run.
+
 Platform validation is incomplete. These are desktop results from specific sessions, not a claim of support for every OS version or architecture; [desktop validation](docs/desktop-validation.md) has the exact scope, versions and open items.
 
 | Platform | What has been checked |
 | --- | --- |
 | macOS 27.0.1 · Apple silicon | Interactive GUI runs of create, inspect, selected and full extraction, overwrite refusal, cancellation, and selected Finder handoffs. Unsigned local build, not notarized. macOS 13 (the bundle minimum) is unverified. |
 | Ubuntu 24.04.5 · ARM64 | Interactive runs in XFCE/Xorg and GNOME/Xorg, including Nautilus and Dolphin handoffs. On GNOME, cancellation, overwrite refusal and selected extraction passed on an earlier package and are not yet repeated on the v10 package. Wayland and Kubuntu are unverified. |
-| Windows | Native CI tests, plus x64 and ARM64 MSIX schema and payload validation. No installed app, Explorer or ARM64 runtime check. |
+| Windows | Native WebView E2E on x64 and ARM64, plus MSIX schema and payload validation. Installed-app and Explorer behavior remain unverified. |
 
-The Linux desktop checks were on ARM64; the Linux CLI package is x86-64, tested separately by CI. See [desktop/README.md](desktop/README.md) for build notes and limitations.
+The interactive Linux desktop checks above were on ARM64; the Linux CLI package is x86-64, tested separately by CI. See [desktop/README.md](desktop/README.md) for build notes and limitations.
 
 ## Supported formats
 
