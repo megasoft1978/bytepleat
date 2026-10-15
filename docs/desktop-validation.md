@@ -214,9 +214,10 @@ The merged source tree at `109dd782e9d6cb2ee3178967da638c8ef28b4fc3`
 [native UI smoke](https://github.com/megasoft1978/bytepleat/actions/runs/38744817339),
 [desktop alpha checks](https://github.com/megasoft1978/bytepleat/actions/runs/38744817304),
 and [native Rust CI](https://github.com/megasoft1978/bytepleat/actions/runs/38744817234).
-The post-merge native UI smoke and native Rust CI also passed on the merge
-commit; the post-merge desktop alpha checks were still running when this record
-was updated.
+The post-merge native UI smoke, native Rust CI, and desktop alpha checks also
+passed on the merge commit in runs [38747340991](https://github.com/megasoft1978/bytepleat/actions/runs/38747340991),
+[38747340590](https://github.com/megasoft1978/bytepleat/actions/runs/38747340590),
+and [38747341355](https://github.com/megasoft1978/bytepleat/actions/runs/38747341355).
 
 The native UI workflow built and launched the Tauri app on GitHub-hosted
 macOS ARM64, Ubuntu Linux x64 and ARM64, Windows x64, and Windows 11 ARM64

@@ -80,9 +80,9 @@ Not changed: the native captures are cropped mid-scroll CI fixtures with tempora
 
 ## Validation performed
 
-Headless Chromium smoke checks loaded the app preview and site at 1440 px and 390 px widths, in light and dark system color schemes. The app's Create, Extract and Inspect tabs, theme toggle, keyboard tab movement, and a mocked archive job with determinate progress and preserved Cancel-button focus were exercised. The site mobile menu, Linux target selector, and checksum-command copy confirmation were exercised. There were no JavaScript errors or horizontal overflow at those widths. One oversized mobile gap above Run was found and corrected in the app stylesheet. `node --check` passed for `desktop/ui/app.js` and `site/assets/site.js`; `git diff --check` passed.
+Headless Chromium smoke checks loaded the app preview and site at 1440 px and 390 px widths, in light and dark system color schemes. The app's Create, Extract and Inspect tabs, theme toggle, keyboard tab movement, and a mocked archive job with determinate progress and preserved Cancel-button focus were exercised. The site mobile menu, Linux target selector, and checksum-command copy confirmation were exercised. There were no JavaScript errors or horizontal overflow at those widths. One oversized mobile gap above Run was found and corrected in the app stylesheet. On 2026-10-15, the app preview was also visually reviewed from headless Chromium screenshots at 320×1000 and 1440×1000 CSS pixels; the initial Create view showed no obvious horizontal clipping. This visual pass did not measure document overflow or exercise all rendered states. `node --check` passed for `desktop/ui/app.js` and `site/assets/site.js`; `git diff --check` passed.
 
-No native desktop GUI, Finder/Explorer/Dolphin action, screen reader, reduced-motion mode or physical touch interaction was tested. The browser preview cannot validate Tauri dialogs or archive operations. Layout at 320 px and a complete rendered-state contrast audit remain unverified.
+No native desktop GUI, Finder/Explorer/Dolphin action, screen reader, reduced-motion mode or physical touch interaction was tested. The browser preview cannot validate Tauri dialogs or archive operations. A complete rendered-state contrast audit remains unverified.
 
 ## References
 
