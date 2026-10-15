@@ -61,6 +61,8 @@ pub struct ArchiveEntry {
 pub struct ArchiveListing {
     pub format: String,
     pub entries: Vec<ArchiveEntry>,
+    pub total_entries: u64,
+    pub truncated: bool,
     pub total_bytes: u64,
     pub integrity_validated: bool,
 }
@@ -77,6 +79,8 @@ pub struct WorkerResult {
     pub input_bytes: u64,
     pub output_bytes: u64,
     pub message: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub listing: Option<ArchiveListing>,
 }
 fn limits(n: u64) -> ReadLimits {
     let mut l = ReadLimits::default();
@@ -86,6 +90,54 @@ fn limits(n: u64) -> ReadLimits {
 }
 fn ioerr(e: impl ToString) -> String {
     e.to_string()
+}
+
+const MAX_WORKER_JSON: usize = 1024 * 1024;
+const MAX_PREVIEW_ENTRIES: usize = 5_000;
+
+fn bound_listing_preview(
+    listing: &mut ArchiveListing,
+    input_bytes: u64,
+    message: &str,
+) -> Result<(), String> {
+    listing.total_entries = listing.total_entries.max(listing.entries.len() as u64);
+    let original_len = listing.entries.len();
+    let keep_limit = original_len.min(MAX_PREVIEW_ENTRIES);
+    // Serialize the real empty-result envelope once, then account for each entry's
+    // exact JSON size (including escaping) without cloning candidate listings.
+    let candidate = ArchiveListing {
+        format: listing.format.clone(),
+        entries: Vec::new(),
+        total_entries: listing.total_entries,
+        truncated: listing.truncated,
+        total_bytes: listing.total_bytes,
+        integrity_validated: listing.integrity_validated,
+    };
+    let empty = CliResult {
+        ok: true,
+        result: Some(WorkerResult {
+            output_kind: "none".into(),
+            input_bytes,
+            output_bytes: listing.total_bytes,
+            message: message.to_owned(),
+            listing: Some(candidate),
+        }),
+        error: None,
+    };
+    let mut used = serde_json::to_vec(&empty).map_err(|e| e.to_string())?.len();
+    let mut keep = 0;
+    for entry in listing.entries.iter().take(keep_limit) {
+        let entry_len = serde_json::to_vec(entry).map_err(|e| e.to_string())?.len();
+        let additional = entry_len + usize::from(keep > 0);
+        if used.saturating_add(additional) > MAX_WORKER_JSON {
+            break;
+        }
+        used += additional;
+        keep += 1;
+    }
+    listing.entries.truncate(keep);
+    listing.truncated |= (keep as u64) < listing.total_entries;
+    Ok(())
 }
 fn detect(p: &Path) -> io::Result<ArchiveFormat> {
     let mut f = File::open(p)?;
@@ -109,6 +161,15 @@ fn detect(p: &Path) -> io::Result<ArchiveFormat> {
     }
 }
 pub fn inspect_archive(path: &Path, max_output_bytes: u64) -> Result<ArchiveListing, String> {
+    let temp = tempfile::tempdir().map_err(ioerr)?;
+    inspect_archive_in_stage(path, max_output_bytes, temp.path())
+}
+
+fn inspect_archive_in_stage(
+    path: &Path,
+    max_output_bytes: u64,
+    stage: &Path,
+) -> Result<ArchiveListing, String> {
     let f = detect(path).map_err(ioerr)?;
     let l = limits(max_output_bytes);
     if matches!(f, ArchiveFormat::Zip) {
@@ -147,6 +208,8 @@ pub fn inspect_archive(path: &Path, max_output_bytes: u64) -> Result<ArchiveList
         }
         return Ok(ArchiveListing {
             format: f.label().into(),
+            total_entries: entries.len() as u64,
+            truncated: false,
             entries,
             total_bytes: policy.total_bytes(),
             integrity_validated: false,
@@ -168,13 +231,16 @@ pub fn inspect_archive(path: &Path, max_output_bytes: u64) -> Result<ArchiveList
             .collect::<Result<Vec<_>, &str>>()?;
         return Ok(ArchiveListing {
             format: f.label().into(),
+            total_entries: entries.len() as u64,
+            truncated: false,
             total_bytes: entries.iter().map(|x| x.size).sum(),
             entries,
             integrity_validated: false,
         });
     }
-    let temp = tempfile::tempdir().map_err(ioerr)?;
-    let decoded = temp.path().join("decoded");
+    // Child-process cancellation skips Rust destructors. Keep all decoded
+    // scratch files inside the parent-owned job stage so it can remove them.
+    let decoded = stage.join("inspection-decoded");
     archive::unpack(
         File::open(path).map_err(ioerr)?,
         &decoded,
@@ -203,6 +269,8 @@ pub fn inspect_archive(path: &Path, max_output_bytes: u64) -> Result<ArchiveList
     let total_bytes = entries.iter().map(|x| x.size).sum();
     Ok(ArchiveListing {
         format: f.label().into(),
+        total_entries: entries.len() as u64,
+        truncated: false,
         entries,
         total_bytes,
         integrity_validated: false,
@@ -314,11 +382,12 @@ pub fn execute(
                 input_bytes: st.input_bytes,
                 output_bytes: fs::metadata(artifact).map_err(ioerr)?.len(),
                 message: format!("Created {} archive", fmt.label()),
+                listing: None,
             })
         }
-        "extract" | "test" => {
+        "inspect" | "extract" | "test" => {
             if r.inputs.len() != 1 {
-                return Err("extract and test accept one archive".into());
+                return Err("inspect, extract, and test accept one archive".into());
             }
             let path = &r.inputs[0];
             let fmt = detect(path).map_err(ioerr)?;
@@ -326,19 +395,38 @@ pub fn execute(
             if n > r.max_output_bytes {
                 return Err("archive input exceeds limit".into());
             }
+            if r.action == "inspect" {
+                progress(Progress {
+                    phase: "inspecting".into(),
+                    processed_bytes: 0,
+                    total_bytes: None,
+                    message: "Reading archive listing in private staging".into(),
+                });
+                let mut listing = inspect_archive_in_stage(path, r.max_output_bytes, stage)?;
+                let message = format!("Listed {} archive entries", listing.total_entries);
+                bound_listing_preview(&mut listing, n, &message)?;
+                return Ok(WorkerResult {
+                    output_kind: "none".into(),
+                    input_bytes: n,
+                    output_bytes: listing.total_bytes,
+                    message,
+                    listing: Some(listing),
+                });
+            }
             if r.action == "test" {
                 let s = match fmt {
                     ArchiveFormat::Zip => archive_zip::test(path, &l).map_err(ioerr)?.output_bytes,
                     ArchiveFormat::Sevenz => {
                         archive_sevenz::test(path, &l).map_err(ioerr)?.output_bytes
                     }
-                    _ => inspect_archive(path, r.max_output_bytes)?.total_bytes,
+                    _ => inspect_archive_in_stage(path, r.max_output_bytes, stage)?.total_bytes,
                 };
                 return Ok(WorkerResult {
                     output_kind: "none".into(),
                     input_bytes: n,
                     output_bytes: s,
                     message: "Integrity validated".into(),
+                    listing: None,
                 });
             }
             let decoded = stage.join("decoded");
@@ -376,6 +464,7 @@ pub fn execute(
                 input_bytes: s.input_bytes,
                 output_bytes: s.output_bytes,
                 message: "Archive decoded and validated".into(),
+                listing: None,
             })
         }
         x => Err(format!("unsupported action: {x}")),
@@ -712,7 +801,8 @@ pub fn run_worker_cli(args: &[OsString]) -> Option<i32> {
             error: Some(e.to_string()),
         },
     };
-    if write_atomic_json(&result_path, &output).is_err() {
+    let result_fits = serde_json::to_vec(&output).is_ok_and(|bytes| bytes.len() <= MAX_WORKER_JSON);
+    if !result_fits || write_atomic_json(&result_path, &output).is_err() {
         return Some(1);
     }
     Some(if output.ok { 0 } else { 1 })
@@ -850,6 +940,80 @@ mod tests {
         let bad = t.path().join("fake.zip");
         fs::write(&bad, b"PK\x03\x04truncated").unwrap();
         assert!(inspect_archive(&bad, DEFAULT_LIMIT).is_err());
+        assert!(inspect_archive(&t.path().join("missing.zip"), DEFAULT_LIMIT).is_err());
+    }
+    #[test]
+    fn inspection_preview_reports_total_and_fits_worker_json_cap() {
+        let mut listing = ArchiveListing {
+            format: "zip".into(),
+            entries: (0..20_000)
+                .map(|i| ArchiveEntry {
+                    name: format!("entry-{i:05}-{}", "x".repeat(80)),
+                    size: 1,
+                    is_dir: false,
+                })
+                .collect(),
+            total_entries: 20_000,
+            truncated: false,
+            total_bytes: 20_000,
+            integrity_validated: false,
+        };
+        let message = format!("Listed {} archive entries", listing.total_entries);
+        bound_listing_preview(&mut listing, 1, &message).unwrap();
+        assert!(listing.truncated);
+        assert_eq!(listing.total_entries, 20_000);
+        assert!(listing.entries.len() < listing.total_entries as usize);
+        let result = WorkerResult {
+            output_kind: "none".into(),
+            input_bytes: 1,
+            output_bytes: listing.total_bytes,
+            message,
+            listing: Some(listing),
+        };
+        let bytes =
+            serde_json::to_vec(&serde_json::json!({"ok":true,"result":result,"error":null}))
+                .unwrap();
+        assert!(bytes.len() <= MAX_WORKER_JSON);
+    }
+    #[test]
+    fn inspection_preview_preserves_names_and_budgets_actual_result_envelope() {
+        let names = [
+            format!("{}-\"\\-é-🧪", "n".repeat(2_000)),
+            format!("{}-終", "z".repeat(5_000)),
+        ];
+        let mut listing = ArchiveListing {
+            format: "zip".into(),
+            entries: names
+                .iter()
+                .map(|name| ArchiveEntry {
+                    name: name.clone(),
+                    size: u64::MAX,
+                    is_dir: false,
+                })
+                .collect(),
+            total_entries: 2,
+            truncated: false,
+            total_bytes: u64::MAX,
+            integrity_validated: true,
+        };
+        let input_bytes = u64::MAX;
+        let message = format!("Listed {} archive entries", listing.total_entries);
+        bound_listing_preview(&mut listing, input_bytes, &message).unwrap();
+        assert_eq!(listing.entries.len(), 2);
+        assert_eq!(listing.entries[0].name, names[0]);
+        assert_eq!(listing.entries[1].name, names[1]);
+        let result = CliResult {
+            ok: true,
+            result: Some(WorkerResult {
+                output_kind: "none".into(),
+                input_bytes,
+                output_bytes: listing.total_bytes,
+                message,
+                listing: Some(listing),
+            }),
+            error: None,
+        };
+        assert!(serde_json::to_vec(&result).unwrap().len() <= MAX_WORKER_JSON);
     }
     #[test]
     fn selected_directories_are_retained_and_multi_input_roundtrips() {
@@ -958,6 +1122,7 @@ mod tests {
             input_bytes: 1,
             output_bytes: 7,
             message: String::new(),
+            listing: None,
         };
         assert!(publish(&r, &stage, &result).is_err());
         assert_eq!(fs::read(dest).unwrap(), b"keep");

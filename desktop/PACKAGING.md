@@ -86,11 +86,25 @@ this development packager makes no legal-clearance claim.
 
 ## Scope
 
-The ARM64 development package was built twice with identical bytes and installed
-on Ubuntu 24.04.5. Its required glibc floor is 2.39. The installed executable
-matched the compiled ELF hash; installed-copy interactive testing remains pending.
-This is evidence for that package only and does not claim support for all Debian
-or Ubuntu releases, distributions, or architectures.
+The local ARM64 development package v4 was built twice with identical bytes:
+SHA-256 `17b1e9bb1c75330167c77f923dcd80e6da21eb7c7ad2c4ea4a4a06a397de4469`.
+It contains 377 notice packages, 673 literal notice files, and zero literal
+gaps. Zero literal gaps do not establish legal clearance. The v4 upgrade
+installed successfully on Ubuntu 24.04.5 ARM64 XFCE/Xorg, and the installed
+executable retained SHA-256
+`3165b8d6e48515401d1b8278151b468d9489c46b5bcd4eb75c790f5a2ebd08b5`.
+The installed app was opened cold through Nautilus Open With with “Always use”
+off; it listed four entries and selected extraction restored the Japanese-named
+file with SHA-256
+`291de3adfe866500865cc97d48754b76b09c00abb6fd1ebf31fde81af49f0621`. In
+separate installed-worker subprocess smoke checks, 21 checks passed across
+five formats (five create/extract pairs, five selected extractions, and six
+bounded rejections); these do not constitute GUI coverage across all formats.
+
+This is evidence for that package and system only. It does not claim support for
+all Debian or Ubuntu releases, distributions, architectures, or consumer release readiness. Installed-copy GNOME/Xorg
+listing and selected extraction were separately verified; see the
+[desktop validation record](../docs/desktop-validation.md) for exact scope.
 
 This script packages an existing ELF; it does not establish GUI behavior,
 runtime availability, desktop integration behavior, or native OS support. Run

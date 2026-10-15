@@ -28,6 +28,8 @@ pub struct JobSnapshot {
     pub message: String,
     pub output: Option<String>,
     pub error: Option<String>,
+    #[serde(skip_serializing)]
+    pub listing: Option<ArchiveListing>,
 }
 
 #[derive(Clone, Default, Serialize)]
@@ -258,13 +260,45 @@ fn jobs(state: State<'_, Arc<Broker>>) -> Vec<JobSnapshot> {
 }
 
 #[tauri::command]
-async fn inspect_archive(path: String) -> Result<ArchiveListing, String> {
-    let path = PathBuf::from(path);
-    tauri::async_runtime::spawn_blocking(move || {
-        bytepleat_desktop_core::inspect_archive(&path, 1024 * 1024 * 1024)
+async fn inspect_archive(
+    app: tauri::AppHandle,
+    state: State<'_, Arc<Broker>>,
+    path: String,
+) -> Result<ArchiveListing, String> {
+    let request = OperationRequest {
+        action: "inspect".into(),
+        inputs: vec![PathBuf::from(path)],
+        destination: None,
+        format: None,
+        selected_entries: Vec::new(),
+        max_output_bytes: 1024 * 1024 * 1024,
+    };
+    let id = enqueue_job(app, Arc::clone(state.inner()), request)?;
+    let broker = Arc::clone(state.inner());
+    tauri::async_runtime::spawn_blocking(move || loop {
+        if let Ok(mut jobs) = broker.jobs.lock() {
+            if let Some(job) = jobs.iter_mut().find(|job| job.id == id) {
+                match job.state.as_str() {
+                    "completed" => {
+                        return job
+                            .listing
+                            .take()
+                            .ok_or_else(|| "Inspection returned no listing".into())
+                    }
+                    "cancelled" => return Err("Inspection was cancelled".into()),
+                    "failed" => {
+                        return Err(job.error.clone().unwrap_or_else(|| job.message.clone()))
+                    }
+                    _ => {}
+                }
+            } else {
+                return Err("Inspection job expired".into());
+            }
+        }
+        thread::sleep(Duration::from_millis(50));
     })
     .await
-    .map_err(|e| format!("Archive inspection task failed: {e}"))?
+    .map_err(|e| format!("Inspection task failed: {e}"))?
 }
 
 #[tauri::command]
@@ -273,10 +307,29 @@ fn start_job(
     state: State<'_, Arc<Broker>>,
     request: OperationRequest,
 ) -> Result<String, String> {
-    if state.shutting_down.lock().map(|v| *v).unwrap_or(true) {
+    enqueue_job(app, Arc::clone(state.inner()), request)
+}
+
+fn enqueue_job(
+    app: tauri::AppHandle,
+    state: Arc<Broker>,
+    request: OperationRequest,
+) -> Result<String, String> {
+    let id = reserve_job(&state, &request)?;
+    let worker_id = id.clone();
+    thread::spawn(move || run_job(app, state, worker_id, request));
+    Ok(id)
+}
+
+fn reserve_job(state: &Broker, request: &OperationRequest) -> Result<String, String> {
+    let shutting_down = state
+        .shutting_down
+        .lock()
+        .map_err(|_| "Shutdown state unavailable".to_string())?;
+    if *shutting_down {
         return Err("The application is shutting down".into());
     }
-    validate_request(&request)?;
+    validate_request(request)?;
     let mut jobs = state
         .jobs
         .lock()
@@ -304,6 +357,7 @@ fn start_job(
             message: "Preparing private staging area".into(),
             output: None,
             error: None,
+            listing: None,
         },
     );
     jobs.truncate(HISTORY_LIMIT);
@@ -316,11 +370,18 @@ fn start_job(
         .lock()
         .map_err(|_| "Job state unavailable".to_string())? = false;
     drop(jobs);
+    drop(shutting_down);
 
-    let broker = Arc::clone(&state);
-    let worker_id = id.clone();
-    thread::spawn(move || run_job(app, broker, worker_id, request));
     Ok(id)
+}
+
+fn begin_shutdown(broker: &Broker) -> Option<String> {
+    // Wait for any accepted reservation before inspecting its active slot.
+    *broker
+        .shutting_down
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner) = true;
+    broker.active_id.lock().ok().and_then(|v| v.clone())
 }
 
 #[tauri::command]
@@ -432,7 +493,10 @@ fn open_destination(
 }
 
 fn validate_request(request: &OperationRequest) -> Result<(), String> {
-    if !matches!(request.action.as_str(), "create" | "extract" | "test") {
+    if !matches!(
+        request.action.as_str(),
+        "create" | "extract" | "test" | "inspect"
+    ) {
         return Err("Unsupported operation".into());
     }
     if request.inputs.is_empty() {
@@ -453,6 +517,11 @@ fn validate_request(request: &OperationRequest) -> Result<(), String> {
     }
     if request.action == "create" && request.format.is_none() {
         return Err("Choose an archive format".into());
+    }
+    if request.action == "inspect"
+        && (request.inputs.len() != 1 || request.destination.is_some() || request.format.is_some())
+    {
+        return Err("Inspection requires exactly one archive and no output destination".into());
     }
     Ok(())
 }
@@ -603,6 +672,20 @@ fn run_job(app: tauri::AppHandle, broker: Arc<Broker>, id: String, request: Oper
             } else if status.success() {
                 match read_worker_result(&result_path) {
                     Ok(result) if result.ok => match result.result {
+                        Some(value) if request.action == "inspect" => {
+                            if let Some(listing) = value.listing.clone() {
+                                complete_inspection(&broker, &id, listing, value.message);
+                            } else {
+                                finish(
+                                    &broker,
+                                    &id,
+                                    "failed",
+                                    "Inspection returned no listing",
+                                    Some("Invalid worker result".into()),
+                                    None,
+                                );
+                            }
+                        }
                         Some(value) => {
                             let publish_result = publish_under_job_lock(&broker, &id, || {
                                 publish(&request, &stage, &value)
@@ -669,6 +752,33 @@ fn run_job(app: tauri::AppHandle, broker: Arc<Broker>, id: String, request: Oper
     }
     let _ = app.emit("jobs-changed", ());
     drop(temp);
+}
+
+fn complete_inspection(broker: &Broker, id: &str, listing: ArchiveListing, message: String) {
+    let Ok(mut jobs) = broker.jobs.lock() else {
+        return;
+    };
+    let Ok(cancelled) = broker.cancel.lock() else {
+        return;
+    };
+    let Some(job) = jobs.iter_mut().find(|job| job.id == id) else {
+        return;
+    };
+    if *cancelled || job.state == "cancelling" {
+        job.state = "cancelled".into();
+        job.phase = "Cancelled".into();
+        job.message = "Inspection cancelled".into();
+        job.error = None;
+        job.output = None;
+        job.listing = None;
+    } else {
+        job.state = "completed".into();
+        job.phase = "Complete".into();
+        job.message = message;
+        job.error = None;
+        job.output = None;
+        job.listing = Some(listing);
+    }
 }
 
 struct JobCleanup {
@@ -848,12 +958,9 @@ pub fn run() {
             }
             tauri::RunEvent::ExitRequested { api, .. } => {
                 if let Some(state) = app.try_state::<Arc<Broker>>() {
-                    let active = state.active_id.lock().ok().and_then(|v| v.clone());
+                    let active = begin_shutdown(&state);
                     if let Some(id) = active {
                         api.prevent_exit();
-                        if let Ok(mut shutting_down) = state.shutting_down.lock() {
-                            *shutting_down = true;
-                        }
                         let _ = mark_cancelling(&state, &id);
                         if let Ok(mut child) = state.child.lock() {
                             if let Some(child) = child.as_mut() {
@@ -895,6 +1002,7 @@ mod tests {
                 message: "running".into(),
                 output: None,
                 error: None,
+                listing: None,
             }]),
             active_id: Mutex::new(Some("job-1".into())),
             ..Broker::default()
@@ -943,6 +1051,55 @@ mod tests {
         finish_publication_error(&broker, "job-1", "publication refused".into());
         assert_eq!(broker.jobs.lock().unwrap()[0].state, "cancelled");
         assert!(broker.jobs.lock().unwrap()[0].error.is_none());
+    }
+
+    #[test]
+    fn inspection_and_create_share_one_slot_and_shutdown_refuses_new_jobs() {
+        let broker = Broker::default();
+        let input = tempfile::NamedTempFile::new().unwrap();
+        let mut request = OperationRequest {
+            action: "inspect".into(),
+            inputs: vec![input.path().to_path_buf()],
+            destination: None,
+            format: None,
+            selected_entries: vec![],
+            max_output_bytes: 1024,
+        };
+        let id = reserve_job(&broker, &request).unwrap();
+        request.action = "create".into();
+        request.format = Some(bytepleat_desktop_core::ArchiveFormat::Zip);
+        assert!(reserve_job(&broker, &request)
+            .unwrap_err()
+            .contains("already running"));
+        assert_eq!(begin_shutdown(&broker).as_deref(), Some(id.as_str()));
+        release_job_slot(&broker, &id);
+        assert!(reserve_job(&broker, &request)
+            .unwrap_err()
+            .contains("shutting down"));
+        assert_eq!(broker.jobs.lock().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn cancellation_winning_inspection_completion_discards_listing() {
+        let broker = running_broker();
+        assert!(mark_cancelling(&broker, "job-1"));
+        complete_inspection(
+            &broker,
+            "job-1",
+            ArchiveListing {
+                format: "zip".into(),
+                entries: vec![],
+                total_entries: 0,
+                truncated: false,
+                total_bytes: 0,
+                integrity_validated: false,
+            },
+            "listed".into(),
+        );
+        let jobs = broker.jobs.lock().unwrap();
+        assert_eq!(jobs[0].state, "cancelled");
+        assert!(jobs[0].listing.is_none());
+        assert!(jobs[0].output.is_none());
     }
 
     #[test]
