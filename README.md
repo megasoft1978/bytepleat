@@ -90,7 +90,7 @@ Desktop operations are capped at 1 GiB of output and 100,000 entries; listings p
 
 ### Desktop validation
 
-At commit `fffc6ec`, native WebView E2E passed on macOS, Linux x64/ARM64 and Windows x64/ARM64, including inspection and selected-extraction review. These automated checks do not establish installed-app or shell-integration support. UI changes after that commit need a fresh native CI run.
+At commit `d7018cf`, native WebView and app-command checks passed on macOS ARM64, Linux x64/ARM64, and Windows x64/ARM64 in [GitHub Actions](https://github.com/megasoft1978/bytepleat/actions/runs/38730012396). The checks cover archive inspection, selected-extraction review, create, selected extraction, and overwrite preservation. They do not establish installed-app or shell-integration support. Future UI changes need a fresh native run.
 
 Platform validation is incomplete. These are desktop results from specific sessions, not a claim of support for every OS version or architecture; [desktop validation](docs/desktop-validation.md) has the exact scope, versions and open items.
 

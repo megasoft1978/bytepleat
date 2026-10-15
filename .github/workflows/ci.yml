@@ -59,10 +59,12 @@ jobs:
       - name: Record runner and toolchain
         run: |
           mkdir -p .ci-results
-          rustc --version --verbose > .ci-results/runner.txt
-          cargo --version >> .ci-results/runner.txt
-          python --version >> .ci-results/runner.txt
-          python -c "import platform; print(platform.platform()); print(platform.machine())" >> .ci-results/runner.txt
+          {
+            rustc --version --verbose
+            cargo --version
+            python --version
+            python -c "import platform; print(platform.platform()); print(platform.machine())"
+          } > .ci-results/runner.txt
         shell: bash
       - name: Check formatting
         run: cargo +stable fmt --all -- --check
