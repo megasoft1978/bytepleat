@@ -22,6 +22,17 @@ Verified in a native GUI session:
 - Finder Compress via Services passed with a warm app and selected input
   folder; Finder Extract via Services passed with a cold app and selected ZIP.
 
+On 2026-10-15, the current desktop UI at commit `0d9a8a8` was rebuilt as an
+isolated, unsigned macOS review app and exercised with a two-file ZIP. Full GUI
+extraction completed and both restored files matched their inputs byte for
+byte. A second extraction targeting an already-existing output directory was
+refused; the directory remained empty. The test archive SHA-256 is
+`c1ec09726227056e689011c155425281c28c7f2c56164627b9bf54d9e604806a`; the
+review app executable SHA-256 is
+`7f4cd56107b8839de71c96302ae952f4c440296f17f15200009d94b20aa27c92`. This
+validates those workflows on macOS 27.0.1 ARM64 only and is not release-signing
+or notarization evidence.
+
 Finder Open With cold launch passed with the generated ZIP. Finder Services
 also forwarded a two-file selection to Create with both exact paths. The native
 file picker accepted a generated input via keyboard Go to Folder navigation.
