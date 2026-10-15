@@ -384,6 +384,28 @@ fn begin_shutdown(broker: &Broker) -> Option<String> {
     broker.active_id.lock().ok().and_then(|v| v.clone())
 }
 
+fn finish_shutdown(broker: &Broker) {
+    if let Some(id) = begin_shutdown(broker) {
+        let _ = mark_cancelling(broker, &id);
+        if let Ok(mut child) = broker.child.lock() {
+            if let Some(child) = child.as_mut() {
+                let _ = child.kill();
+            }
+        }
+    }
+    // The worker releases this slot only after reaping its child and dropping
+    // the private staging directory. Waiting here keeps the OS from exiting
+    // while either resource is still owned.
+    while broker
+        .active_id
+        .lock()
+        .map(|v| v.is_some())
+        .unwrap_or(false)
+    {
+        thread::sleep(Duration::from_millis(10));
+    }
+}
+
 #[tauri::command]
 fn cancel_job(state: State<'_, Arc<Broker>>, id: String) -> bool {
     let broker = state.inner();
@@ -750,8 +772,16 @@ fn run_job(app: tauri::AppHandle, broker: Arc<Broker>, id: String, request: Oper
             let _ = process.wait();
         }
     }
-    let _ = app.emit("jobs-changed", ());
     drop(temp);
+    drop(_cleanup);
+    if !broker
+        .shutting_down
+        .lock()
+        .map(|shutting_down| *shutting_down)
+        .unwrap_or(true)
+    {
+        let _ = app.emit("jobs-changed", ());
+    }
 }
 
 fn complete_inspection(broker: &Broker, id: &str, listing: ArchiveListing, message: String) {
@@ -981,6 +1011,11 @@ pub fn run() {
                     }
                 }
             }
+            tauri::RunEvent::Exit => {
+                if let Some(state) = app.try_state::<Arc<Broker>>() {
+                    finish_shutdown(&state);
+                }
+            }
             _ => {}
         });
 }
@@ -1129,6 +1164,54 @@ mod tests {
         assert!(broker.active_id.lock().unwrap().is_none());
         *broker.active_id.lock().unwrap() = Some("job-2".into());
         assert_eq!(broker.active_id.lock().unwrap().as_deref(), Some("job-2"));
+    }
+
+    #[test]
+    fn final_exit_waits_for_worker_child_and_stage_cleanup() {
+        let broker = running_broker();
+        let id = "job-1".to_string();
+        let worker_broker = Arc::clone(&broker);
+        let worker_id = id.clone();
+        let (stage_tx, stage_rx) = mpsc::channel();
+        let worker = thread::spawn(move || {
+            let temp = TempDir::new().unwrap();
+            let stage_path = temp.path().to_path_buf();
+            let child = Command::new("sleep").arg("30").spawn().unwrap();
+            let child_pid = child.id();
+            *worker_broker.child.lock().unwrap() = Some(child);
+            stage_tx.send((stage_path.clone(), child_pid)).unwrap();
+            while !*worker_broker.cancel.lock().unwrap() {
+                thread::sleep(Duration::from_millis(5));
+            }
+            if let Some(mut child) = worker_broker.child.lock().unwrap().take() {
+                let _ = child.wait();
+            }
+            drop(temp);
+            let cleanup = JobCleanup {
+                broker: worker_broker,
+                id: worker_id,
+            };
+            drop(cleanup);
+            (stage_path, child_pid)
+        });
+        let (stage_path, child_pid) = stage_rx.recv().unwrap();
+
+        finish_shutdown(&broker);
+
+        let (worker_stage, worker_pid) = worker.join().unwrap();
+        assert_eq!(stage_path, worker_stage);
+        assert!(!stage_path.exists(), "private staging must be removed");
+        assert_eq!(child_pid, worker_pid);
+        assert!(broker.active_id.lock().unwrap().is_none());
+        assert!(
+            Command::new("kill")
+                .arg("-0")
+                .arg(child_pid.to_string())
+                .stderr(Stdio::null())
+                .status()
+                .is_ok_and(|status| !status.success()),
+            "owned worker must be reaped"
+        );
     }
 
     #[cfg(unix)]

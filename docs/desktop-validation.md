@@ -25,7 +25,12 @@ Verified in a native GUI session:
 Finder Open With cold launch passed with the generated ZIP. Finder Services
 also forwarded a two-file selection to Create with both exact paths. The native
 file picker accepted a generated input via keyboard Go to Folder navigation.
-Quit cleanup during an active operation remains pending. The local
+The managed inspection build also listed a generated TAR+Gzip archive with
+40,001 items, showing a bounded preview of 5,000. Cancelling inspection, Cmd+Q
+during inspection, and closing the window during inspection each passed;
+independent process/filesystem observation confirmed the owned worker exited
+and its staging directory, including decoded scratch files, was removed.
+Dock Quit remains unverified. The local
 app was unsigned/ad-hoc signed; this is not Developer ID signing or notarization.
 The bundle's macOS 13 minimum is metadata only; macOS 13 runtime behavior is
 unverified.
@@ -89,8 +94,7 @@ above. No consumer desktop installer download is published.
 
 ## Remaining validation
 
-- Verify macOS quit cleanup during an active operation; test the minimum
-  supported macOS version.
+- Verify macOS Dock Quit cleanup; test the minimum supported macOS version.
 - Separately verify Kubuntu 26.04 and its newer Dolphin/Plasma combination.
 - Complete Windows 11 installation and Explorer interaction on x64 and ARM64;
   distinguish native runtime results from ARM64 cross-compilation and package
