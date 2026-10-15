@@ -26,7 +26,14 @@ if(BUILD_TESTING)
     target_compile_features(BytepleatPackagedComSmoke PRIVATE cxx_std_17)
     target_compile_definitions(BytepleatPackagedComSmoke PRIVATE UNICODE _UNICODE WIN32_LEAN_AND_MEAN NOMINMAX)
     target_compile_options(BytepleatPackagedComSmoke PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-    target_link_libraries(BytepleatPackagedComSmoke PRIVATE ole32 uuid)
+    target_link_libraries(BytepleatPackagedComSmoke PRIVATE ole32 shell32 uuid)
+    # A console app substituted for bytepleat-desktop.exe in the disposable
+    # smoke package. It records argv and exits, so the packaged command handoff
+    # is exercised without launching the desktop UI.
+    add_executable(BytepleatPackagedInvocationReceiver tests/PackagedInvocationReceiver.cpp)
+    target_compile_features(BytepleatPackagedInvocationReceiver PRIVATE cxx_std_17)
+    target_compile_definitions(BytepleatPackagedInvocationReceiver PRIVATE UNICODE _UNICODE WIN32_LEAN_AND_MEAN NOMINMAX)
+    target_compile_options(BytepleatPackagedInvocationReceiver PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
   endif()
   if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND CMAKE_SYSTEM_PROCESSOR MATCHES "^(AMD64|amd64|x86_64)$" AND NOT CMAKE_GENERATOR_PLATFORM MATCHES "^[Aa][Rr][Mm]64$")
     add_test(NAME BytepleatExplorerCommandsTests COMMAND BytepleatExplorerCommandsTests $<TARGET_FILE:BytepleatExplorerCommands>)

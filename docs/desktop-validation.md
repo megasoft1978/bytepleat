@@ -244,8 +244,8 @@ public distribution, or behavior on every OS version.
 ## Windows ARM64 packaged integration smoke
 
 The desktop workflow now defines a bounded, noninteractive ARM64 packaged smoke
-in the separate `windows-arm64-packaged-smoke` job on `windows-11-arm`, using only
-the app, Explorer DLL, and matching notices built from the same PR. The existing unsigned x64/ARM64 package artifacts
+in the separate `windows-arm64-packaged-smoke` job on `windows-11-arm`, using
+same-revision Explorer, smoke-probe, notice and desktop artifacts. The existing unsigned x64/ARM64 package artifacts
 and both MakeAppx validation paths remain unchanged. A separate test MSIX uses
 a unique publisher and ephemeral self-signed development certificate. Only that public
 certificate is temporarily trusted in the runner's LocalMachine TrustedPeople
@@ -256,7 +256,16 @@ and classic registrations for the command CLSIDs. It verifies current-user
 package identity and registration, the manifest execution alias and its
 package-family reparse point, then uses a console process to activate all four
 packaged `IExplorerCommand` classes and enumerate exactly three expected children.
-The probe has a 60-second deadline inside a ten-minute workflow step. Cleanup in
+It invokes packaged Compress with two real temporary file selections, then
+Extract and Open with one each. For this isolated check only, the package's GUI
+executable is replaced by a tiny ARM64 console receiver that captures parsed
+arguments and exits; the real packaged Explorer DLL, COM registration, and
+app-execution alias are used. The test verifies action flags, the `--`
+terminator, and exact selection paths (including spaces and Unicode) without
+displaying Bytepleat or controlling Explorer. This proves packaged COM
+invocation and argument handoff to a receiver, not that the production app
+consumes these arguments or that the visible Explorer menu works. The probes
+have a 120-second deadline inside a ten-minute workflow step. Cleanup in
 `finally` attempts exact test-package removal even after partial installation,
 exact temporary certificate/thumbprint and private-key removal, and private work
 directory deletion; cleanup errors fail the step. Forced runner termination can
@@ -272,8 +281,8 @@ also rejects a probe artifact whose PE machine is not ARM64. The console probe
 is compiled only for ARM64 and independently rejects an emulated process.
 Local macOS checks cover PowerShell parsing and mocked ownership/cleanup,
 workflow lint, and static/unit checks. Installation, Windows certificate-store
-operations, and packaged COM activation are validated only by the Windows CI
-runner.
+operations, and packaged COM activation/invocation are validated only by the
+Windows CI runner.
 
 Local headless checks on macOS on 2026-10-15 passed workflow `actionlint`,
 PowerShell parsing (eight scripts), ownership/cleanup and prerequisite mocks,
@@ -285,9 +294,11 @@ app. Source-export and diff-whitespace checks passed. These checks do not compil
 or run the Windows-only C++ probe or validate Windows SDK/package runtime behavior.
 
 A passing run establishes development current-user installation,
-registration/alias inspection and packaged COM activation/enumeration on its
-specific native Windows ARM64 runner. It does not show interactive Explorer menus,
-command invocation, app startup/handoff, consumer signing trust, or x64 runtime support.
+specific native Windows ARM64 runner. The PR #6 workflow adds invocation and
+argument-handoff coverage using a test receiver; that new check is pending and
+does not establish production app startup or argument handling. Neither run
+shows interactive Explorer menus, consumer signing trust, or x64 runtime
+support.
 No desktop is launched or controlled by this smoke. See the
 [Windows integration instructions](../desktop/integrations/windows/README.md#arm64-packaged-integration-smoke)
 for the exact script and cleanup scope.

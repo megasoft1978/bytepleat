@@ -3,7 +3,8 @@ param(
   [Parameter(Mandatory=$true)][ValidateSet('ARM64')][string]$ExpectedArchitecture,
   [Parameter(Mandatory=$true)][string]$AppDirectory,
   [Parameter(Mandatory=$true)][string]$NoticeDirectory,
-  [Parameter(Mandatory=$true)][string]$ComTestPath
+  [Parameter(Mandatory=$true)][string]$ComTestPath,
+  [Parameter(Mandatory=$true)][string]$InvocationProbePath
 )
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -29,8 +30,10 @@ foreach ($id in @('6C987D21-07A4-4D7B-992C-2E2D6F5D1001', '6C987D22-07A4-4D7B-99
   }
 }
 $comTest = (Resolve-Path -LiteralPath $ComTestPath).Path
-# Validate the probe artifact before creating any certificate or install state.
+# Validate probe artifacts before creating any certificate or install state.
 Assert-SmokeProbeArchitecture -Path $comTest
+$invocationProbe = (Resolve-Path -LiteralPath $InvocationProbePath).Path
+Assert-SmokeProbeArchitecture -Path $invocationProbe
 $publisher = 'CN=Bytepleat CI ' + [guid]::NewGuid().ToString('N')
 $version = $manifest.Package.Identity.Version
 $work = Join-Path ([IO.Path]::GetTempPath()) ('BytepleatPackagedSmoke-' + [guid]::NewGuid().ToString('N'))
@@ -40,6 +43,8 @@ $fullName = $null
 $installAttempted = $false
 $trustOwned = $false
 $process = $null
+$priorSelectionOne = [Environment]::GetEnvironmentVariable('BYTEPLEAT_SMOKE_SELECTION_1', 'Process')
+$priorSelectionTwo = [Environment]::GetEnvironmentVariable('BYTEPLEAT_SMOKE_SELECTION_2', 'Process')
 try {
   $cert = New-SelfSignedCertificate -Type Custom -Subject $publisher -KeyUsage DigitalSignature `
     -KeyAlgorithm RSA -KeyLength 2048 -HashAlgorithm SHA256 -KeyExportPolicy Exportable `
@@ -55,7 +60,14 @@ try {
   if (Test-Path -LiteralPath $trustPath) { throw 'Unexpected preexisting certificate thumbprint.' }
   $trustOwned = $true
   $null = Import-Certificate -FilePath $cer -CertStoreLocation 'Cert:\LocalMachine\TrustedPeople'
-  & (Join-Path $PSScriptRoot '../package/Build-Package.ps1') -AppDirectory $AppDirectory `
+  # Build a private test package whose application binary is a tiny console
+  # receiver. The real packaged Explorer DLL and package alias invoke it; it
+  # records argv and exits, avoiding app UI or Explorer desktop automation.
+  $invocationApp = Join-Path $work 'invocation-app'
+  $null = New-Item -ItemType Directory -Path $invocationApp
+  Copy-Item -LiteralPath (Join-Path (Resolve-Path -LiteralPath $AppDirectory).Path 'BytepleatExplorerCommands.dll') -Destination $invocationApp
+  Copy-Item -LiteralPath $invocationProbe -Destination (Join-Path $invocationApp 'bytepleat-desktop.exe')
+  & (Join-Path $PSScriptRoot '../package/Build-Package.ps1') -AppDirectory $invocationApp `
     -NoticeDirectory $NoticeDirectory -Architecture $ExpectedArchitecture -Publisher $publisher -Sign `
     -CertificatePath $pfx -CertificatePassword $password -OutputDirectory (Join-Path $work 'package')
   $msix = Join-Path $work "package/Bytepleat-$ExpectedArchitecture.msix"
@@ -79,10 +91,16 @@ try {
   if ($LASTEXITCODE -ne 0) { throw "Could not read execution alias reparse data: $aliasData" }
   Assert-SmokeExecutionAlias -Dump $aliasData -PackageFamilyName $registered[0].PackageFamilyName -ApplicationId 'Bytepleat'
   Write-Host 'Registered manifest and current-user package-family alias reparse point verified (not executed).'
+  $selectionOne = Join-Path $work 'selection one-ñ.txt'
+  $selectionTwo = Join-Path $work 'selection & two.txt'
+  $null = Set-Content -LiteralPath $selectionOne -Value 'first test selection' -NoNewline
+  $null = Set-Content -LiteralPath $selectionTwo -Value 'second test selection' -NoNewline
+  [Environment]::SetEnvironmentVariable('BYTEPLEAT_SMOKE_SELECTION_1', $selectionOne, 'Process')
+  [Environment]::SetEnvironmentVariable('BYTEPLEAT_SMOKE_SELECTION_2', $selectionTwo, 'Process')
   $stdout = Join-Path $work 'com.stdout'
   $stderr = Join-Path $work 'com.stderr'
   $process = Start-Process -FilePath $comTest -NoNewWindow -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
-  if (-not $process.WaitForExit(60000)) { throw 'Packaged COM smoke exceeded 60 seconds.' }
+  if (-not $process.WaitForExit(120000)) { throw 'Packaged COM smoke exceeded 120 seconds.' }
   $process.WaitForExit()
   Get-Content -LiteralPath $stdout | Write-Host
   Get-Content -LiteralPath $stderr | Write-Host
@@ -93,6 +111,7 @@ try {
   # deletion, registry edits, desktop process kill, or shared-directory removal.
   $cleanupErrors = [Collections.Generic.List[string]]::new()
   $cleanup = @(
+    { [Environment]::SetEnvironmentVariable('BYTEPLEAT_SMOKE_SELECTION_1', $priorSelectionOne, 'Process'); [Environment]::SetEnvironmentVariable('BYTEPLEAT_SMOKE_SELECTION_2', $priorSelectionTwo, 'Process') },
     { if ($process -and -not $process.HasExited) { $process.Kill(); if (-not $process.WaitForExit(10000)) { throw 'Owned COM probe did not exit after termination.' } }; if ($process) { $process.Dispose() } },
     { if ($installAttempted) { Remove-SmokeOwnedPackage -Publisher $publisher -Version $version -ExpectedFullName $fullName -ExpectedArchitecture $ExpectedArchitecture } },
     { if ($cert -and $trustOwned) { $path = 'Cert:\LocalMachine\TrustedPeople\' + $cert.Thumbprint; if (Test-Path -LiteralPath $path) { Remove-Item -LiteralPath $path -Force } } },
