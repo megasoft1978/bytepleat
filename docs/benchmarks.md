@@ -1,10 +1,29 @@
 # Bytepleat archive benchmarks
 
-This report compares Bytepleat with command-line archive tools on one Apple M5 Max Mac running macOS 27.0.1 (ARM64, 18 CPU cores, 64 GiB RAM). It reports six selected workloads, not a universal ranking. It does not establish performance on other hardware, Windows, Linux, Finder, or GUI applications.
+This report contains an earlier six-workload suite and a separate standalone reproduction, both measured on one Apple M5 Max Mac running macOS 27.0.1 (ARM64, 18 CPU cores, 64 GiB RAM). These selected results are not a universal ranking and do not establish performance on other hardware, Windows, Linux, Finder, or GUI applications.
 
-## Selected result: LZ4 v1.10.0 source tree
+## Reproduced macOS run: 2026-10-15
 
-On a 1,674,742-byte public LZ4 source tree, Bytepleat ZIP at Deflate level 6 produced a 480,556-byte archive. Its median encode time was 0.0484 s across five measured repeats, versus 0.1052 s for 7zz ZIP at level 6 (478,266 bytes). That is a lower median on this host and workload, not evidence of a general speed advantage. The external `tar | zstd` pipeline was faster to create (0.0216 s) and nearly the same size (354,817 bytes) as Bytepleat `tar.zst` (352,317 bytes; 0.0280 s). These timings include process startup and filesystem IO.
+The checked-in public reproduction harness completed on this host with 42 case/method groups, five measured repeats per group, 210 verified measured records, and zero failures. It covered the LZ4 v1.10.0 source tree plus generated 8 MiB text and pseudorandom controls. The full per-method medians and ranges are in the [42-group CSV](benchmarks/macos-reproduction-2026-10-15.csv); tool hashes, corpus pins, compiler, protocol, and skipped rows are in the [run provenance](benchmarks/macos-reproduction-2026-10-15.json).
+
+| Workload and setting | Tool | Archive bytes | Encode median (s) | Decode median (s) |
+| --- | --- | ---: | ---: | ---: |
+| LZ4 source tree, ZIP Deflate 6 | Bytepleat | 480,556 | 0.03356 | 0.02300 |
+| LZ4 source tree, ZIP Deflate 6 | 7-Zip 26.04 | 478,266 | 0.09671 | 0.02586 |
+| LZ4 source tree, 7z LZMA2 5 | Bytepleat | 269,846 | 0.24432 | 0.02965 |
+| LZ4 source tree, 7z LZMA2 5 | 7-Zip 26.04 | 270,414 | 0.22349 | 0.02707 |
+| LZ4 source tree, tar + Zstandard 3 | Bytepleat | 352,317 | 0.02137 | 0.02301 |
+| LZ4 source tree, tar + Zstandard 3 | system tar + Zstandard 1.5.7 | 354,834 | 0.01741 | 0.02467 |
+| Generated repeated text, ZIP Deflate 6 | Bytepleat | 49,350 | 0.01676 | 0.00577 |
+| Generated repeated text, ZIP Deflate 6 | 7-Zip 26.04 | 26,450 | 0.09498 | 0.00917 |
+
+On the LZ4 source tree, Bytepleat ZIP 6 had a 2.9× lower encode median than 7-Zip ZIP 6, with an archive 0.48% larger. Bytepleat 7z was 0.21% smaller than 7-Zip 7z, but its encode and decode medians were about 9% slower. On the generated text control, Bytepleat ZIP 6 was substantially larger than 7-Zip ZIP 6. These results show workload-specific tradeoffs, not a general speed or compression-ratio advantage. The run's quiescence check was not enabled, so host activity may affect timings; the earlier published LZ4 ZIP 6 run also reported a different median on the same nominal host. Treat sub-second timing differences as exploratory.
+
+The local macOS `tar` lacked Zstandard support, so native-tar Zstandard was skipped. No licensed local RAR executable and terms note were supplied; RAR rows were omitted. This run does not cover Windows or Linux built-in tools or GUI behavior.
+
+## Earlier full-suite result: LZ4 v1.10.0 source tree
+
+This excerpt preserves the earlier six-workload suite's LZ4 result. Its archived raw run and tool binaries are not in this repository; the fresh standalone reproduction above used a separately built Bytepleat executable and a different 7-Zip binary hash, and should be read as a new run rather than a like-for-like rerun of the original binaries. The earlier run reported Bytepleat ZIP Deflate 6 at 0.0484 s median (480,556 bytes), versus 7zz ZIP level 6 at 0.1052 s (478,266 bytes). The external `tar | zstd` pipeline was faster to create (0.0216 s) and nearly the same size (354,817 bytes) as Bytepleat `tar.zst` (352,317 bytes; 0.0280 s). These timings include process startup and filesystem IO.
 
 | Method and measured setting | Archive bytes | Encode seconds | Decode seconds |
 |---|---:|---:|---:|
