@@ -236,6 +236,55 @@ and package construction; they do not verify installed-app behavior,
 Finder/Explorer/Nautilus/Dolphin handoffs, signed distribution, or behavior on
 every OS version.
 
+## Pending Windows ARM64 packaged integration smoke
+
+The desktop workflow now defines a bounded, noninteractive ARM64 packaged smoke
+in the separate `windows-arm64-packaged-smoke` job on `windows-11-arm`, using only
+the app, Explorer DLL, and matching notices built from the same PR. The existing unsigned x64/ARM64 package artifacts
+and both MakeAppx validation paths remain unchanged. A separate test MSIX uses
+a unique publisher and ephemeral self-signed development certificate. Only that public
+certificate is temporarily trusted in the runner's LocalMachine TrustedPeople
+store; installation is for the current user.
+
+The test refuses preexisting Bytepleat packages across users, a preexisting alias,
+and classic registrations for the command CLSIDs. It verifies current-user
+package identity and registration, the manifest execution alias and its
+package-family reparse point, then uses a console process to activate all four
+packaged `IExplorerCommand` classes and enumerate exactly three expected children.
+The probe has a 60-second deadline inside a ten-minute workflow step. Cleanup in
+`finally` attempts exact test-package removal even after partial installation,
+exact temporary certificate/thumbprint and private-key removal, and private work
+directory deletion; cleanup errors fail the step. Forced runner termination can
+prevent `finally`, so this belongs on a disposable runner.
+
+This is new test coverage, not a recorded successful Windows runtime result.
+The manifest minimum remains `10.0.26200.0`, with no override. The public
+[GitHub Windows 11 ARM64 image inventory](https://github.com/actions/runner-images/blob/main/images/windows/Windows11-Arm64-Readme.md)
+reports OS `10.0.26200`. The smoke checks the actual OS version and requires both
+the OS and PowerShell process to be native ARM64 before creating test state; it
+also rejects a probe artifact whose PE machine is not ARM64. The console probe
+is compiled only for ARM64 and independently rejects an emulated process.
+Local macOS checks can cover PowerShell parsing and mocked ownership/cleanup,
+workflow lint, and static/unit checks; installation, Windows certificate-store
+operations and packaged COM activation remain CI-only and unverified here.
+
+Local headless checks on macOS on 2026-10-15 passed workflow `actionlint`,
+PowerShell parsing (eight scripts), ownership/cleanup and prerequisite mocks,
+and Python 3.12 unit suites in `scripts/tests`, `desktop/scripts/tests`, and
+`desktop/integrations/windows/tests` (69 passed, one native Debian packaging test
+skipped). `cargo fmt --all -- --check`, locked Clippy for all targets with
+warnings denied, and locked tests passed for the CLI, desktop core, and Tauri
+app. Source-export and diff-whitespace checks passed. These checks do not compile
+or run the Windows-only C++ probe or validate Windows SDK/package runtime behavior.
+
+A future passing run establishes only development current-user installation,
+registration/alias inspection and packaged COM activation/enumeration on its
+specific native Windows ARM64 runner. It does not show interactive Explorer menus,
+command invocation, app startup/handoff, consumer signing trust, or x64 runtime support.
+No desktop is launched or controlled by this smoke. See the
+[Windows integration instructions](../desktop/integrations/windows/README.md#pending-arm64-packaged-integration-smoke)
+for the exact script and cleanup scope.
+
 ## Remaining validation
 
 - Verify macOS Dock Quit cleanup; test the minimum supported macOS version.

@@ -212,3 +212,43 @@ jobs:
           path: package-output/Bytepleat-${{ matrix.architecture }}.msix
           if-no-files-found: error
           retention-days: 7
+
+  windows-arm64-packaged-smoke:
+    needs: [app, explorer]
+    runs-on: windows-11-arm
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Download ARM64 desktop executable
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: desktop-executable-Windows-ARM64
+          path: desktop-app
+      - name: Download ARM64 notice inventory
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: desktop-notices-Windows-ARM64
+          path: desktop-notices
+      - name: Download ARM64 Explorer DLL and console probe
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: explorer-ARM64
+          path: explorer-payload
+      - name: Assemble exact ARM64 package inputs
+        shell: pwsh
+        run: |
+          $app = Join-Path $PWD 'package-input'
+          New-Item -ItemType Directory -Path $app | Out-Null
+          Copy-Item -LiteralPath desktop-app/bytepleat-desktop.exe -Destination $app
+          Copy-Item -LiteralPath explorer-payload/BytepleatExplorerCommands.dll -Destination $app
+      - name: Packaged integration cleanup regression checks
+        shell: pwsh
+        run: ./desktop/integrations/windows/tests/PackageSmokeCleanupTests.ps1
+      - name: Install and probe development ARM64 MSIX without desktop interaction
+        timeout-minutes: 10
+        shell: pwsh
+        run: >-
+          ./desktop/integrations/windows/tests/Invoke-PackagedSmoke.ps1
+          -ExpectedArchitecture ARM64
+          -AppDirectory ./package-input
+          -NoticeDirectory ./desktop-notices
+          -ComTestPath ./explorer-payload/BytepleatPackagedComSmoke.exe

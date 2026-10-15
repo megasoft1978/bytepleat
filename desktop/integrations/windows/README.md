@@ -63,13 +63,72 @@ Get-AppxPackage -Name Bytepleat.Desktop | Select-Object Name, PackageFullName
 
 Uninstall checks the exact package full name and owned package identity before removal. No wildcard package removal, all-user operation, global COM registry entry, or system-wide installation is used. The package scripts do not publish a production signature or claim Windows certification.
 
+## Pending ARM64 packaged integration smoke
+
+The separate `windows-arm64-packaged-smoke` job in `.github/workflows/desktop.yml`
+uses `windows-11-arm` for native ARM64 installation and runtime checks. It
+downloads the existing ARM64 executable, matching notice inventory, and Explorer
+DLL/console probe artifacts from the same workflow run, and copies only the exact
+app and DLL into the package input directory. The regular x64/ARM64 unsigned
+MakeAppx validation jobs and artifacts are unchanged. `Build-Package.ps1` builds
+a separate signed development MSIX with a unique CI publisher and a one-day
+self-signed code-signing certificate. It stays in a private temporary directory
+and is not uploaded. The disposable runner requires administrator rights for
+the temporary certificate trust entry; installation uses current-user
+`Add-AppxPackage`, without provisioning other users.
+
+`tests/Invoke-PackagedSmoke.ps1 -ExpectedArchitecture ARM64` fails closed unless
+the OS and PowerShell process are both native ARM64, the probe is an ARM64 PE,
+and the OS satisfies the manifest minimum, unchanged at `10.0.26200.0`.
+GitHub's [public Windows 11 ARM64 runner image inventory](https://github.com/actions/runner-images/blob/main/images/windows/Windows11-Arm64-Readme.md)
+reports OS `10.0.26200` for `windows-11-arm`; the script checks the actual runner
+version on every run before creating test state. It refuses any preexisting
+`Bytepleat.Desktop` package across users, an existing execution alias, or classic
+COM registrations for the manifest CLSIDs.
+
+The Actions result is pending. On a compatible runner the script:
+
+- Creates a certificate in `CurrentUser\My`, exports temporary PFX/CER files,
+  and imports only its public certificate into `LocalMachine\TrustedPeople`.
+- Builds and installs the signed ARM64 package; checks its exact name, unique
+  publisher, version, architecture, and current-user package full name.
+- Checks the registered manifest's execution alias and the WindowsApps alias
+  reparse point's package family with `fsutil`, without executing the alias.
+- Runs `BytepleatPackagedComSmoke.exe` with a 60-second deadline. This console
+  test uses `CoCreateInstance(CLSCTX_LOCAL_SERVER)` for all four manifest CLSIDs,
+  checks `IExplorerCommand` canonical IDs, titles and flags, and enumerates
+  exactly the three expected flyout children. It uses Windows packaged COM
+  registration; it does not load the DLL directly or call `Invoke`.
+- In `finally`, terminates only its own probe if needed, uninstalls only the exact
+  current-user package matching the unique test identity (including registration
+  after a failed installation), removes the exact temporary certificate
+  thumbprint from both stores and its private key, and deletes only its private
+  work directory. Cleanup attempts continue after errors and any cleanup error
+  fails the step. As with any `finally`, forced runner termination can prevent
+  cleanup; the outer step has a ten-minute timeout and runs on a disposable VM.
+
+The workflow logs the runner OS version, signed test MSIX SHA256, exact package
+full name, individual checks, and cleanup result. A successful run would supply
+only current-user development installation, registration/alias inspection and
+packaged COM activation/enumeration evidence on that native ARM64 runner. No successful
+run of this new test is recorded here yet. It does not launch/control the runner
+desktop, display Explorer menus, invoke a command, verify GUI handoff or app
+startup, establish consumer signing trust, or establish x64 runtime behavior.
+
+The ownership regression fixture uses mocks only and also runs on non-Windows
+PowerShell:
+
+```powershell
+pwsh -NoProfile -File ./tests/PackageSmokeCleanupTests.ps1
+```
+
 ## Non-Windows static checks
 
 ```sh
 python -m unittest discover -s integrations/windows/tests -v
 ```
 
-These Python checks cover manifest structure and static packaging-source properties only. They are not a PowerShell runtime fixture test, Windows SDK schema validation, installation test, or Explorer interaction test. Native Windows CI can validate compilation and MakeAppx packaging on its configured runner. Actual behavior still requires installation and exercise on Windows 11; a CI package result does not establish native Explorer behavior or broad Windows compatibility. This alpha integration has no runtime verification claim unless a specific run supplies that evidence.
+These Python checks cover manifest structure and static packaging-source properties only. They are not a PowerShell runtime fixture test, Windows SDK schema validation, installation test, or Explorer interaction test. Native Windows CI validates compilation and MakeAppx packaging on its configured runner; the separate pending ARM64 smoke above adds installation and packaged COM checks only when its prerequisites pass. Interactive Explorer behavior and broad Windows compatibility still require separate evidence.
 
 ## Microsoft references
 
@@ -79,3 +138,6 @@ These Python checks cover manifest structure and static packaging-source propert
 - [uap:VisualElements manifest schema](https://learn.microsoft.com/uwp/schemas/appxpackage/uapmanifestschema/element-uap-visualelements)
 - [Application manifest schema](https://learn.microsoft.com/uwp/schemas/appxpackage/uapmanifestschema/element-application)
 - [IShellItemArray::GetAttributes](https://learn.microsoft.com/windows/win32/api/shobjidl_core/nf-shobjidl_core-ishellitemarray-getattributes)
+
+- [Development package certificate and temporary trust](https://learn.microsoft.com/windows/msix/package/create-certificate-package-signing)
+- [GitHub Windows 11 ARM64 runner image and OS version](https://github.com/actions/runner-images/blob/main/images/windows/Windows11-Arm64-Readme.md)
