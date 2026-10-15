@@ -36,13 +36,13 @@ async function waitJob(id) {
 }
 
 function writeSlowExtractionZip(archivePath) {
-  // Decode the marker before thousands of small repeated files. This makes
-  // cancellation observable early while keeping the ZIP and fixture RAM small.
-  const payload = Buffer.alloc(32 * 1024);
+  // Decode the marker before many small repeated files. Their 128 MiB total
+  // output keeps extraction active without a large compressed fixture or RAM use.
+  const payload = Buffer.alloc(8 * 1024);
   const compressed = zlib.deflateRawSync(payload, { level: 1 });
   const crc = typeof zlib.crc32 === 'function' ? zlib.crc32(payload) : crc32(payload);
   const entries = ['ready.bin', ...Array.from(
-    { length: 4096 },
+    { length: 16384 },
     (_, index) => `payload-${String(index).padStart(5, '0')}.bin`
   )];
   const locals = [];
@@ -172,7 +172,16 @@ describe('Bytepleat native Tauri smoke', () => {
     } });
 
     let stagePath;
-    await browser.waitUntil(() => {
+    let latestNativeState = 'missing';
+    let latestRenderedState;
+    let latestStageSeen = false;
+    let terminalState = null;
+    let liveStateBeforeClick;
+    let renderedBeforeClick;
+    let cancelClicked = false;
+    await browser.waitUntil(async () => {
+      const job = (await invoke('jobs')).find(item => item.id === id);
+      latestNativeState = job?.state ?? 'missing';
       for (const name of fs.readdirSync(destinationParent)) {
         if (before.has(name)) continue;
         const candidate = path.join(destinationParent, name);
@@ -182,53 +191,60 @@ describe('Bytepleat native Tauri smoke', () => {
             const partial = path.join(candidate, entry.name, 'ready.bin');
             if (fs.statSync(partial).size > 0) {
               stagePath = candidate;
-              return true;
+              break;
             }
           }
         } catch { /* The worker has not created its staged payload yet. */ }
+        if (stagePath) break;
+      }
+      latestStageSeen = Boolean(stagePath);
+      const active = ['queued', 'running'].includes(latestNativeState);
+      const rendered = await browser.execute(({ id, shouldClick }) => {
+        const card = document.querySelector('#job-now');
+        const button = [...document.querySelectorAll('[data-action="cancel"]')]
+          .find(item => item.dataset.job === id);
+        const style = button ? getComputedStyle(button) : null;
+        const visible = Boolean(button && !button.hidden && button.getClientRects().length &&
+          style.display !== 'none' && style.visibility !== 'hidden');
+        const enabled = Boolean(visible && !button.disabled);
+        const clicked = Boolean(shouldClick && enabled && (button.click(), true));
+        return {
+          visible,
+          enabled,
+          clicked,
+          cardHidden: card?.hidden ?? null,
+          cardClass: card?.className ?? null,
+          stateText: card?.querySelector('.job-state')?.innerText ?? null
+        };
+      }, { id, shouldClick: active && latestStageSeen });
+      latestRenderedState = rendered;
+      if (['completed', 'failed', 'cancelled'].includes(latestNativeState)) {
+        terminalState = latestNativeState;
+        return true;
+      }
+      if (rendered.clicked) {
+        liveStateBeforeClick = latestNativeState;
+        renderedBeforeClick = rendered;
+        cancelClicked = true;
+        return true;
       }
       return false;
     }, {
       timeout: 30000,
-      interval: 25,
-      timeoutMsg: 'Extraction did not produce a partial private-stage payload within 30 seconds'
+      interval: 5,
+      timeoutMsg: `No active rendered Cancel control with partial staging; native=${latestNativeState}, ` +
+        `stageSeen=${latestStageSeen}, UI=${JSON.stringify(latestRenderedState)}`
     });
-
-    const cancelControl = await $(`[data-job="${id}"][data-action="cancel"]`);
-    try {
-      await cancelControl.waitForDisplayed({
-        timeout: 10000,
-        timeoutMsg: 'The active extraction did not show its Cancel control'
-      });
-    } catch {
-      const latestJob = (await invoke('jobs')).find(item => item.id === id);
-      const rendered = await browser.execute(({ id }) => {
-        const card = document.querySelector('#job-now');
-        return {
-          hidden: card?.hidden ?? null,
-          className: card?.className ?? null,
-          stateText: card?.querySelector('.job-state')?.innerText ?? null,
-          hasCancel: [...document.querySelectorAll('[data-action="cancel"]')]
-            .some(button => button.dataset.job === id)
-        };
-      }, { id });
-      throw new Error(
-        `Cancel control was not displayed; native state=${latestJob?.state ?? 'missing'}, ` +
-        `rendered job=${JSON.stringify(rendered)}`
-      );
-    }
-    await cancelControl.waitForEnabled({
-      timeout: 10000,
-      timeoutMsg: 'The active extraction Cancel control was disabled'
-    });
-    const clicked = await browser.execute(({ id }) => {
-      const button = [...document.querySelectorAll('[data-action="cancel"]')]
-        .find(item => item.dataset.job === id);
-      if (!button || button.disabled || button.hidden) return false;
-      button.click();
-      return true;
-    }, { id });
-    assert.equal(clicked, true, 'The visible Cancel control should receive the DOM click');
+    assert.equal(
+      terminalState,
+      null,
+      `Native job reached ${terminalState} before a rendered Cancel control and partial stage ` +
+        `could be clicked; UI=${JSON.stringify(latestRenderedState)}`
+    );
+    assert.equal(cancelClicked, true, 'The visible Cancel control should receive the DOM click');
+    assert.ok(['queued', 'running'].includes(liveStateBeforeClick), 'Click must occur during an active native job');
+    assert.equal(renderedBeforeClick.visible, true);
+    assert.equal(renderedBeforeClick.enabled, true);
     await browser.waitUntil(async () => {
       const job = (await invoke('jobs')).find(item => item.id === id);
       return job && ['cancelling', 'cancelled'].includes(job.state);
