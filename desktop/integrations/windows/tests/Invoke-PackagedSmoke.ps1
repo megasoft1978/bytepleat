@@ -76,9 +76,8 @@ try {
   # Inspect only; never execute the app alias. fsutil output includes the owning
   # package family and application ID for an AppExecLink, independent of locale.
   $aliasData = & fsutil.exe reparsepoint query $aliasPath 2>&1 | Out-String
-  if ($LASTEXITCODE -ne 0 -or $aliasData -notmatch '(?i)0x8000001b' -or
-      -not $aliasData.Contains($registered[0].PackageFamilyName) -or
-      -not $aliasData.Contains('Bytepleat')) { throw "Alias does not reference the installed package: $aliasData" }
+  if ($LASTEXITCODE -ne 0) { throw "Could not read execution alias reparse data: $aliasData" }
+  Assert-SmokeExecutionAlias -Dump $aliasData -PackageFamilyName $registered[0].PackageFamilyName -ApplicationId 'Bytepleat'
   Write-Host 'Registered manifest and current-user package-family alias reparse point verified (not executed).'
   $stdout = Join-Path $work 'com.stdout'
   $stderr = Join-Path $work 'com.stderr'

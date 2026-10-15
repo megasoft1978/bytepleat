@@ -93,3 +93,43 @@ try {
   }
 } finally { Remove-Item -LiteralPath $work -Recurse -Force }
 Write-Host 'ARM64 probe PE architecture and malformed-header checks passed.'
+
+# Exercise the exact offset-prefixed hex representation returned by fsutil.
+$family = 'Bytepleat.Desktop_0123456789abcdef'
+$aliasStrings = @($family, "$family!Bytepleat", 'C:\Program Files\WindowsApps\Bytepleat.Desktop_0.1.0.0_arm64__0123456789abcdef\bytepleat-desktop.exe', '0')
+function New-AppExecLinkDump([string[]]$Strings, [uint32]$Version=3, [string]$Tag='0x8000001b') {
+  $buffer = [Collections.Generic.List[byte]]::new()
+  $buffer.AddRange([BitConverter]::GetBytes($Version))
+  foreach ($value in $Strings) {
+    $buffer.AddRange([Text.Encoding]::Unicode.GetBytes($value))
+    $buffer.Add(0); $buffer.Add(0)
+  }
+  $lines = [Collections.Generic.List[string]]::new()
+  $lines.Add("Reparse Tag Value : $Tag")
+  $lines.Add('Reparse Data:')
+  for ($offset = 0; $offset -lt $buffer.Count; $offset += 16) {
+    $count = [Math]::Min(16, $buffer.Count - $offset)
+    $hex = [Collections.Generic.List[string]]::new()
+    for ($i = 0; $i -lt $count; $i++) { $hex.Add($buffer[$offset + $i].ToString('x2')) }
+    $lines.Add(('{0:X4}:  {1}  {2}' -f $offset, ($hex -join ' '), ('.' * $count)))
+  }
+  return $lines -join "`n"
+}
+$validAlias = New-AppExecLinkDump $aliasStrings
+Assert-SmokeExecutionAlias -Dump $validAlias -PackageFamilyName $family -ApplicationId 'Bytepleat'
+$aliasCase = 0
+foreach ($badAlias in @(
+  (New-AppExecLinkDump $aliasStrings 3 '0xA000000C'),
+  (New-AppExecLinkDump @('Bytepleat.Desktop_other', "$family!Bytepleat", $aliasStrings[2], '0')),
+  (New-AppExecLinkDump @($family, "$family!WrongApp", $aliasStrings[2], '0')),
+  (New-AppExecLinkDump $aliasStrings 2),
+  (($validAlias -split "`n" | Select-Object -SkipLast 1) -join "`n"),
+  ($validAlias -replace '(?m)^0000:.*$', 'invalid hex row'),
+  ($validAlias -replace '(?m)^0010:', '0000:')
+)) {
+  $aliasCase++
+  try { Assert-SmokeExecutionAlias -Dump $badAlias -PackageFamilyName $family -ApplicationId 'Bytepleat' }
+  catch { continue }
+  throw "Expected invalid execution alias fixture $aliasCase to be rejected."
+}
+Write-Host 'Execution alias reparse regression checks passed: valid package/app target and wrong tag, identity, app ID, version, truncation, malformed hex.'

@@ -60,3 +60,35 @@ function Assert-SmokeProbeArchitecture([string]$Path) {
     }
   } finally { $stream.Dispose() }
 }
+
+# fsutil prints AppExecLink payload bytes as offset-prefixed hex rows. Parse the
+# dump as bytes and validate the version-3 four-string list; searching its
+# rendered hex text for package names would silently test the wrong thing.
+function Assert-SmokeExecutionAlias([string]$Dump, [string]$PackageFamilyName, [string]$ApplicationId) {
+  if ($Dump -notmatch '(?i)0x8000001b') { throw 'Alias is not an AppExecLink reparse point.' }
+  $bytes = [Collections.Generic.List[byte]]::new()
+  $expectedOffset = 0
+  foreach ($line in ($Dump -split "`r?`n")) {
+    if ($line -match '(?i)(?:^|\s)(?<offset>[0-9a-f]{4}):(?<data>.*)$') {
+      if ([Convert]::ToInt32($Matches.offset, 16) -ne $expectedOffset) { throw 'AppExecLink hex rows have a missing, duplicate, or out-of-order offset.' }
+      foreach ($token in ($Matches.data.Trim() -split '\s+')) {
+        if ($token -cmatch '^[0-9a-fA-F]{2}$') { $bytes.Add([Convert]::ToByte($token, 16)) }
+        else { break }
+      }
+      if ($bytes.Count -le $expectedOffset) { throw 'AppExecLink hex row does not contain any data bytes.' }
+      $expectedOffset = $bytes.Count
+    }
+  }
+  if ($bytes.Count -lt 14 -or (($bytes.Count - 4) % 2) -ne 0) { throw "AppExecLink reparse data is truncated or has an invalid UTF-16 length ($($bytes.Count) bytes parsed)." }
+  if ($bytes[$bytes.Count - 2] -ne 0 -or $bytes[$bytes.Count - 1] -ne 0) { throw 'AppExecLink string list is missing its final UTF-16 terminator.' }
+  if ([BitConverter]::ToUInt32($bytes.ToArray(), 0) -ne 3) { throw 'Unsupported AppExecLink reparse data version.' }
+  $payload = [Text.Encoding]::Unicode.GetString($bytes.ToArray(), 4, $bytes.Count - 4)
+  $strings = @($payload.Split([char]0) | Where-Object { $_.Length -gt 0 })
+  if ($strings.Count -ne 4) { throw "Expected the four version-3 AppExecLink strings; found $($strings.Count)." }
+  if ($strings[0] -cne $PackageFamilyName -or $strings[1] -cne "$PackageFamilyName!$ApplicationId") {
+    throw 'Execution alias package identity or application ID does not match the installed package.'
+  }
+  if ($strings[2] -notmatch '(?i)[\\/]bytepleat-desktop\.exe$' -or $strings[3] -cne '0') {
+    throw 'Execution alias executable path or desktop application type is unexpected.'
+  }
+}
