@@ -31,9 +31,28 @@ describe('Bytepleat native Tauri smoke', () => {
     assert.match(entryText, /keep\.txt/);
     assert.match(entryText, /skip\.txt/);
     await browser.saveScreenshot(path.join(screenshots, '01-native-inspect.png'));
-    await $('#entry-list [data-entry="0"]').click();
-    await $('#extract-selected').click();
-    await $('#selected-review').waitForDisplayed();
+    const entry = await $('#entry-list [data-entry="0"]');
+    console.info('Native smoke: selecting keep.txt');
+    await entry.scrollIntoView({ block: 'center', inline: 'nearest' });
+    await entry.click();
+    await browser.waitUntil(() => entry.isSelected(), {
+      timeout: 10000, timeoutMsg: 'keep.txt checkbox was not selected after the WebDriver click'
+    });
+    const extractSelected = await $('#extract-selected');
+    await extractSelected.waitForEnabled({
+      timeout: 10000, timeoutMsg: 'Extract selected did not enable after the checkbox change'
+    });
+    // The button is below the fold on small native runner displays. Scroll before
+    // the WebDriver click so the real WebView click handler remains under test.
+    console.info('Native smoke: scrolling to and clicking Extract selected');
+    await extractSelected.scrollIntoView({ block: 'center', inline: 'nearest' });
+    await extractSelected.click();
+    console.info('Native smoke: waiting for selected extraction review');
+    const review = await $('#selected-review');
+    await review.waitForDisplayed({
+      timeout: 10000, timeoutMsg: 'Selected extraction review did not appear after clicking Extract selected'
+    });
+    await review.scrollIntoView({ block: 'center', inline: 'nearest' });
     assert.match(await $('#review-list').getText(), /keep\.txt/);
     await browser.saveScreenshot(path.join(screenshots, '02-selective-extract-review.png'));
   });
