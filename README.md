@@ -1,8 +1,8 @@
 # Bytepleat
 
-Compress files. Pack folders.
+**Compress files. Pack folders. Restore the same bytes.**
 
-Bytepleat is a Rust archiver for files and folders. The desktop alpha provides a modern create, browse, and extract workflow; the released CLI handles compression and archiving from scripts and terminals. Both use familiar formats and preserve file bytes within their documented limits.
+Bytepleat is a Rust archiver built around familiar formats and careful file handling. The released command-line tool works in scripts and terminals. A desktop alpha is being developed for browsing, creating, inspecting, and extracting archives with native file dialogs.
 
 ```sh
 bytepleat compress report.pdf
@@ -14,11 +14,11 @@ bytepleat test project.tar.zst
 bytepleat unpack project.tar.zst -o project-restored
 ```
 
-Your originals stay in place. Named outputs are published after successful completion, and unpacking requires a new destination directory. Built for scripts and everyday file workflows, Bytepleat puts format choice and file-handling behavior in your hands.
+Your originals stay in place. Named outputs are published after successful completion, and unpacking requires a new destination directory. Bytepleat uses established codecs and archive formats; it does not introduce a proprietary archive format.
 
-## Desktop alpha
+## Desktop app in development
 
-A modern desktop interface and Finder, Explorer, and Linux file-manager integrations are in development. See [desktop build instructions and current limitations](desktop/README.md), [verified platform coverage](docs/desktop-validation.md), and [measured archive benchmarks](docs/benchmarks.md). This development branch does not provide a verified consumer desktop release; the downloads below remain the CLI release.
+The desktop app is not part of the verified consumer download yet. See [desktop build instructions and current limitations](desktop/README.md) and [verified platform coverage](docs/desktop-validation.md) for the development status. The packages below are the CLI release.
 
 ## Install
 
@@ -71,13 +71,18 @@ Choose `--preset fast`, `--preset balanced` (the default), or `--preset compact`
 
 See the [user guide](docs/user-guide.md) for pipes, archive options, and numeric buffers, and [supported formats](docs/formats.md) for the precise compatibility boundaries.
 
-## Supported formats at a glance
+## Supported formats
 
-- Byte streams: Zstandard, gzip, LZ4 frames, and explicitly typed standalone Pco.
-- Folder archives: standard tar carried by Zstandard, gzip, or LZ4; classic ZIP Stored/Deflate; and a bounded 7z subset written with LZMA2.
-- RAR is recognized for information display but is not decoded by Bytepleat. An external tool may be used separately.
+| Format | Single-file streams | Folder archive | Notes |
+| --- | --- | --- | --- |
+| Zstandard, gzip, LZ4 | Compress and decompress | Compressed tar | Standard codecs; presets available for Zstandard and gzip |
+| ZIP | — | Create, inspect, test, and extract a supported subset | Stored and Deflate entries |
+| 7z | — | Create, inspect, test, and extract a bounded subset | LZMA2; compatibility limits apply |
+| Pco | Typed numeric streams | — | Standalone little-endian values; requires an explicit type |
 
-Bytepleat uses established compression algorithms. Archive contents preserve file bytes and relative paths, with full filesystem metadata outside the supported scope: permissions, ownership, links, extended attributes, and portable timestamps are not restored. `test` checks decoding and format integrity; `info` reads metadata. Neither authenticates the sender or scans for malware. See [security and limits](docs/security-limits.md) for extraction checks, default caps, and publication behavior.
+RAR can be identified for metadata display but is not decoded. See [supported formats](docs/formats.md) for exact compatibility boundaries.
+
+Archive contents preserve file bytes and relative paths within the supported scope. Permissions, ownership, links, extended attributes, and portable timestamps are not restored. `test` checks decoding and format integrity; `info` reads metadata. Neither authenticates the sender or scans for malware. See [security and limits](docs/security-limits.md) for extraction checks, default caps, and publication behavior.
 
 ## Project
 
