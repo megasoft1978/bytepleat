@@ -1,0 +1,11 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "wdio-test",
+  "description": "Allow the CI-only WebDriver plugin to automate the native desktop window.",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "wdio-webdriver:default"
+  ]
+}

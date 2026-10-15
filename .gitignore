@@ -5,6 +5,7 @@ target/
 **/__pycache__/
 *.pyc
 .DS_Store
+**/node_modules/
 
 # The source export must never contain nested workspaces or worker artifacts.
 release-workspace/

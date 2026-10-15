@@ -17,6 +17,7 @@ let listingCache = null;
 const lastJobStates = new Map();
 
 const NO_DESTINATION = 'No location chosen yet.';
+function showDestination(value){const el=$('#destination-path');el.textContent=value||NO_DESTINATION;el.classList.toggle('is-empty',!value);}
 const THEME_KEY = 'bytepleat-theme';
 // The same words are used for the tab, heading, button, job title and completion message.
 const MODES = {
@@ -90,7 +91,7 @@ function runHint(busy, unsupportedMulti, emptyExtract) {
 }
 function updateEntryHint() {
   $('#entry-hint').textContent = selectedEntries.length
-    ? `${selectedEntries.length} selected. Next, choose a destination folder on the Extract tab. Bytepleat decodes the whole archive, then keeps only these.`
+    ? `${selectedEntries.length} selected. Choose Extract selected to pick a destination folder. Bytepleat decodes the whole archive, then keeps only these.`
     : 'No entries ticked yet. Tick the entries you want, then choose Extract selected. To extract everything, use the Extract tab.';
 }
 function updateSelectionNote() {
@@ -111,12 +112,13 @@ function startSelectiveExtract(archive, entries) {
   setMode('extract'); showSelection([archive]);
   listingCache = cache; selectedEntries = entries; selectiveExtraction = true;
   renderReview(); updateRunState(); updateDestinationNote();
-  status(REVIEW_STATUS);
+  status('');
+  $('#announce').textContent=REVIEW_STATUS;
   $('#review-title').focus();
 }
-function updateRunState() { const busy=currentJobs.some(isActive); const unsupportedMulti=(mode==='open'||mode==='extract')&&selected.length>1; const emptyExtract=mode==='extract'&&selectiveExtraction&&selectedEntries.length===0; $('#run-job').disabled=!native || busy || inspectionInFlight || selected.length===0 || unsupportedMulti || emptyExtract || (mode!=='open'&&!destination); $('#run-job').title=unsupportedMulti?'Select one archive at a time':emptyExtract?'Select at least one entry to extract':inspectionInFlight?'Reading archive listing…':busy?'One archive job can run at a time':''; $('#run-hint').textContent=runHint(busy,unsupportedMulti,emptyExtract); $('#selection-count').textContent=selected.length?`${selected.length} ${selected.length===1?'item':'items'} selected`:''; $('#extract-selected').disabled=selectedEntries.length===0; updateEntryHint(); updateSelectionNote(); }
+function updateRunState() { const busy=currentJobs.some(isActive); const unsupportedMulti=(mode==='open'||mode==='extract')&&selected.length>1; const emptyExtract=mode==='extract'&&selectiveExtraction&&selectedEntries.length===0; $('#run-job').disabled=!native || busy || inspectionInFlight || selected.length===0 || unsupportedMulti || emptyExtract || (mode!=='open'&&!destination); $('#run-job').title=unsupportedMulti?'Select one archive at a time':emptyExtract?'Select at least one entry to extract':inspectionInFlight?'Reading archive listing…':busy?'One archive job can run at a time':''; $('#run-hint').textContent=runHint(busy,unsupportedMulti,emptyExtract); $('#selection-count').textContent=selected.length?(mode==='create'?`${selected.length} ${selected.length===1?'item':'items'} selected`:`${selected.length} ${selected.length===1?'archive':'archives'} selected`):''; $('#extract-selected').disabled=selectedEntries.length===0; const listed=mode==='open'&&!$('#archive-inspection').hidden; $('#run-label').textContent=listed?'Inspect again':MODES[mode].run; $('#run-job').classList.toggle('is-secondary',listed); $('#extract-selected').classList.toggle('button-primary',listed); $('#extract-selected').classList.toggle('button-secondary',!listed); updateEntryHint(); updateSelectionNote(); }
 function setMode(next) {
-  mode=next; destination=null; $('#destination-path').textContent=NO_DESTINATION;
+  mode=next; destination=null; showDestination(null);
   const text=MODES[mode];
   $$('.mode-tab').forEach(btn=>{const active=btn.dataset.mode===mode;btn.classList.toggle('active',active);btn.setAttribute('aria-selected',String(active));btn.tabIndex=active?0:-1;});
   $('#workspace-panel').setAttribute('aria-labelledby',`tab-${mode}`);
@@ -141,11 +143,11 @@ function setMode(next) {
 $$('.mode-tab').forEach(btn=>btn.addEventListener('click',()=>setMode(btn.dataset.mode)));
 // Arrow keys move focus between tabs; Enter or Space selects, so browsing tabs never clears a selection.
 $('.mode-tabs').addEventListener('keydown',e=>{const tabs=$$('.mode-tab');const i=tabs.indexOf(document.activeElement);if(i<0)return;const target={ArrowRight:(i+1)%tabs.length,ArrowLeft:(i+tabs.length-1)%tabs.length,Home:0,End:tabs.length-1}[e.key];if(target===undefined)return;e.preventDefault();tabs[target].focus();});
-$$('input[name="format"]').forEach(input=>input.addEventListener('change',()=>{$$('.format-option').forEach(el=>el.classList.toggle('selected',el.contains(input)&&input.checked));const hadDestination=Boolean(destination);destination=null;$('#destination-path').textContent=NO_DESTINATION;updateDestinationNote(hadDestination?'The format changed, so choose the save location again.':'');updateRunState();}));
+$$('input[name="format"]').forEach(input=>input.addEventListener('change',()=>{$$('.format-option').forEach(el=>el.classList.toggle('selected',el.contains(input)&&input.checked));const hadDestination=Boolean(destination);destination=null;showDestination(null);updateDestinationNote(hadDestination?'The format changed, so choose the save location again.':'');updateRunState();}));
 $('#browse-inputs').addEventListener('click',async()=>{if(!native){status('Open this screen in the Bytepleat desktop app to browse files.',true);return;}try{const paths=await invoke('choose_inputs');showSelection(paths,true);}catch(e){status(String(e),true);}});
 $('#browse-folder').addEventListener('click',async()=>{if(!native){status('Native folder access requires the desktop app.',true);return;}try{const path=await invoke('choose_input_directory');if(path)showSelection([path],true);}catch(e){status(String(e),true);}});
 $('#drop-zone').addEventListener('click',e=>{if(e.target.closest('button'))return;$('#browse-inputs').click();});
-$('#choose-destination').addEventListener('click',async()=>{if(!native){status('Native save and folder dialogs require the desktop app.',true);return;}try{const value=mode==='create'?await invoke('choose_output',{format:$$('input[name="format"]').find(i=>i.checked).value}):await invoke('choose_directory');if(value){destination=value;$('#destination-path').textContent=value;if($('#status-message').textContent===REVIEW_STATUS)status('');updateDestinationNote();updateRunState();}}catch(e){status(String(e),true);}});
+$('#choose-destination').addEventListener('click',async()=>{if(!native){status('Native save and folder dialogs require the desktop app.',true);return;}try{const value=mode==='create'?await invoke('choose_output',{format:$$('input[name="format"]').find(i=>i.checked).value}):await invoke('choose_directory');if(value){destination=value;showDestination(value);updateDestinationNote();updateRunState();}}catch(e){status(String(e),true);}});
 $('#run-job').addEventListener('click',async()=>{
   if(!native){status('Native backend required. No archive operation was started.',true);return;}
   if((mode==='open'||mode==='extract')&&selected.length>1){status(multiArchiveMessage(selected.length),true);return;}
@@ -160,7 +162,7 @@ $('#run-job').addEventListener('click',async()=>{
   } catch(error){status(String(error),true);}
 });
 function renderArchiveListing(listing,preselected=[]){
-  const section=$('#archive-inspection');section.hidden=false;const total=listing.total_entries??listing.entries.length;const shown=Math.min(listing.entries.length,5000);$('#inspection-summary').textContent=`Showing ${shown} of ${total} items · ${formatBytes(listing.total_bytes)}${listing.truncated?' · preview limited':''}`;
+  const section=$('#archive-inspection');section.hidden=false;const total=listing.total_entries??listing.entries.length;const shown=Math.min(listing.entries.length,5000);$('#inspection-summary').textContent=`Showing ${shown} of ${total} ${total===1?'entry':'entries'} · ${formatBytes(listing.total_bytes)}${listing.truncated?' · preview limited':''}`;
   selectedEntries=listing.entries.slice(0,shown).map(entry=>entry.name).filter(name=>preselected.includes(name));
   const host=$('#entry-list');host.innerHTML=listing.entries.slice(0,shown).map((entry,index)=>`<label class="entry-row"><input type="checkbox" data-entry="${index}"${selectedEntries.includes(entry.name)?' checked':''}><span class="entry-name">${esc(entry.name)}</span><span class="entry-size">${entry.is_dir?'Folder':formatBytes(entry.size)}</span></label>`).join('') || '<p class="selection-empty">No entries listed.</p>';
   if(total>shown){const note=document.createElement('p');note.className='entry-limit';note.textContent=`Showing ${shown} of ${total} entries. Only listed entries can be selected for extraction.`;host.append(note);}
@@ -188,7 +190,7 @@ function jobProgress(job){
 }
 function jobAssurance(job){
   if(job.state==='completed')return job.action==='inspect'?'Listing only. File contents have not been checked.':'Your originals were not changed.';
-  if(job.state==='failed')return 'Your originals were not changed.';
+  if(job.state==='failed')return 'Your originals were not changed. Check the message above, adjust your choices, and run it again.';
   if(job.state==='cancelled')return 'Stopped before finishing. Your originals were not changed.';
   return '';
 }

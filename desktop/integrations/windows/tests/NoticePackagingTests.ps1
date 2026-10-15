@@ -1,4 +1,5 @@
 $ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
 $copier = Join-Path $PSScriptRoot '../package/Copy-Notices.ps1'
 $work = Join-Path ([IO.Path]::GetTempPath()) ('BytepleatNoticeTests-' + [guid]::NewGuid().ToString('N'))
 $source = Join-Path $work 'source'

@@ -1020,7 +1020,10 @@ pub fn run() {
         ..Broker::default()
     });
     let single_instance_broker = Arc::clone(&broker);
-    tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    #[cfg(feature = "ui-test")]
+    let builder = builder.plugin(tauri_plugin_wdio_webdriver::init());
+    builder
         .plugin(
             tauri_plugin_single_instance::Builder::new()
                 .callback(move |app, args, _cwd| {

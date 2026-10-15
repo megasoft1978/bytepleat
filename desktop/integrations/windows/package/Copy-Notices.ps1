@@ -24,8 +24,16 @@ if ($null -eq $report.packages -or $null -eq $report.runtime_components -or $nul
 # Validate every manifest path before copying any file. Only explicit inventory paths are used.
 $entries = [Collections.Generic.List[object]]::new()
 foreach ($component in @($report.packages) + @($report.runtime_components)) {
-  foreach ($notice in @($component.notices) + @($component.vendored_component_notices)) {
-    if ($null -ne $notice) { $entries.Add($notice) }
+  foreach ($propertyName in @('notices', 'vendored_component_notices')) {
+    # vendored_component_notices is optional in collector output. Read through
+    # PSObject.Properties so callers using StrictMode can process older or
+    # target-specific records that omit it without weakening validation.
+    $property = $component.PSObject.Properties[$propertyName]
+    if ($null -ne $property) {
+      foreach ($notice in @($property.Value)) {
+        if ($null -ne $notice) { $entries.Add($notice) }
+      }
+    }
   }
 }
 if ($entries.Count -gt 4096) { throw 'Notice inventory exceeds the bounded 4096-file limit.' }

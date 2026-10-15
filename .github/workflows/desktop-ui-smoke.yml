@@ -1,0 +1,171 @@
+name: Desktop native UI smoke
+
+on:
+  push:
+    branches: [main, desktop-alpha]
+    paths:
+      - '.github/workflows/desktop-ui-smoke.yml'
+      - 'README.md'
+      - 'site/**'
+      - 'desktop/ui/**'
+      - 'desktop/e2e/**'
+      - 'desktop/presentation-capture/**'
+      - 'desktop/core/**'
+      - 'desktop/src-tauri/**'
+      - 'desktop/package.json'
+      - 'desktop/package-lock.json'
+      - 'src/**'
+      - 'tests/**'
+      - 'vendor/sevenz-rust2/**'
+      - 'Cargo.toml'
+      - 'LICENSE'
+      - 'scripts/check_source_export.py'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/desktop-ui-smoke.yml'
+      - 'README.md'
+      - 'site/**'
+      - 'desktop/ui/**'
+      - 'desktop/e2e/**'
+      - 'desktop/presentation-capture/**'
+      - 'desktop/core/**'
+      - 'desktop/src-tauri/**'
+      - 'desktop/package.json'
+      - 'desktop/package-lock.json'
+      - 'src/**'
+      - 'tests/**'
+      - 'vendor/sevenz-rust2/**'
+      - 'Cargo.toml'
+      - 'LICENSE'
+      - 'scripts/check_source_export.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  presentation-screenshots:
+    name: README and website screenshots
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/presentation-capture/package-lock.json
+
+      - name: Install screenshot dependencies
+        run: npm ci
+        working-directory: desktop/presentation-capture
+
+      - name: Install headless Chromium
+        run: npx playwright install --with-deps chromium
+        working-directory: desktop/presentation-capture
+
+      - name: Capture checked-out website and rendered README
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          python3 -m http.server 4173 --directory site > /tmp/bytepleat-site-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          node desktop/presentation-capture/capture.mjs
+
+      - name: Upload website and README screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: bytepleat-presentation-${{ github.sha }}
+          path: desktop/presentation-capture/artifacts/
+          if-no-files-found: ignore
+          retention-days: 5
+
+  native-ui:
+    name: Native UI (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            executable: bytepleat-desktop
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-gnu
+            executable: bytepleat-desktop
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+            executable: bytepleat-desktop
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            executable: bytepleat-desktop.exe
+          - os: windows-11-arm
+            target: aarch64-pc-windows-msvc
+            executable: bytepleat-desktop.exe
+    env:
+      CARGO_BUILD_JOBS: 4
+      BYTEPLEAT_SCREENSHOT_DIR: ${{ github.workspace }}/desktop-ui-artifacts/screenshots
+      BYTEPLEAT_APP_BINARY: ${{ github.workspace }}/desktop/src-tauri/target/${{ matrix.target }}/debug/${{ matrix.executable }}
+      TAURI_CONFIG: >-
+        {"app":{"security":{"capabilities":["main-events","wdio-test"]}}}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install Linux WebView dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential curl file libayatana-appindicator3-dev librsvg2-dev libssl-dev libwebkit2gtk-4.1-dev libxdo-dev xvfb
+
+      - name: Install Rust toolchain
+        run: rustup toolchain install stable --profile minimal
+
+      - name: Install Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+
+      - name: Install e2e dependencies
+        run: npm ci
+        working-directory: desktop/e2e
+
+      - name: Build UI test executable
+        run: cargo +stable build --locked --manifest-path desktop/src-tauri/Cargo.toml --target ${{ matrix.target }} --features ui-test
+
+      - name: Run native WebView smoke and capture screenshots
+        if: runner.os != 'Linux'
+        run: npm test
+        working-directory: desktop/e2e
+
+      - name: Run native WebView smoke in virtual display
+        if: runner.os == 'Linux'
+        run: xvfb-run --auto-servernum npm test
+        working-directory: desktop/e2e
+
+      - name: Explain screenshot scope
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '### Native UI smoke artifacts'
+            echo 'Screenshots are captured from the app native WebView running on an independent GitHub-hosted runner (Linux uses Xvfb).'
+            echo 'If the e2e harness mocks Tauri commands, this run does not verify the native command/backend implementation.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload native UI screenshots and reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: desktop-native-ui-${{ matrix.target }}
+          path: |
+            desktop-ui-artifacts/
+            desktop/e2e/test-results/
+            desktop/e2e/reports/
+          if-no-files-found: ignore
+          retention-days: 5

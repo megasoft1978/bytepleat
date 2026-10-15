@@ -127,6 +127,8 @@ code,pre{font-family:var(--mono)}
 .platform-progress article{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.5rem 1rem;align-items:start;padding:1.1rem 0;border-top:1px solid var(--line-strong)}
 .platform-progress h3{margin:0;font-size:1.05rem}
 .platform-progress p{margin:.3rem 0 0;color:var(--muted);font-size:.9rem}
+.platform-progress .progress-label{grid-column:2;grid-row:1}
+.platform-progress article>div{grid-column:1;grid-row:1}
 .progress-label{padding:.15rem .6rem;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface);color:var(--ink);font-size:.8rem;font-weight:600;white-space:nowrap}
 
 /* CLI downloads (rendered further by site.js) */
@@ -207,6 +209,7 @@ code,pre{font-family:var(--mono)}
   .app-tabs span{padding:.7rem .6rem}
   .app-pane{padding:.9rem .8rem 1rem}
   .platform-progress article{grid-template-columns:minmax(0,1fr)}
+  .platform-progress .progress-label,.platform-progress article>div{grid-column:1;grid-row:auto}
   .progress-label{justify-self:start}
   .platform-output{flex-direction:column;align-items:flex-start}
   .pending{white-space:normal}

@@ -49,6 +49,8 @@ button{color:inherit}
 h1,h2,h3,p,ul{margin:0}
 a{color:var(--accent);text-underline-offset:.18em}
 :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+/* Headings take programmatic focus after a hand-off so screen readers announce them; they are not controls, so no ring. */
+h3[tabindex="-1"]:focus{outline:none}
 .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .skip-link{position:absolute;top:-4rem;left:.75rem;z-index:5;padding:.6rem .9rem;background:var(--surface);color:var(--ink);border:1px solid var(--line-strong);border-radius:6px}
 .skip-link:focus{top:.75rem}
@@ -81,6 +83,10 @@ a{color:var(--accent);text-underline-offset:.18em}
 .button-primary{min-height:2.9rem;padding:0 1.5rem;border-color:var(--primary);background:var(--primary);color:var(--on-primary);font-size:1rem}
 .button-primary:hover:not(:disabled){background:var(--primary-hover);border-color:var(--primary-hover)}
 .button-primary:disabled{border-color:var(--line)}
+/* Once a listing is shown, Extract selected is the next step and re-running Inspect steps back. */
+.button-primary.is-secondary{min-height:2.5rem;padding:0 1rem;border-color:var(--line-strong);background:var(--surface);color:var(--ink);font-size:.9rem}
+.button-primary.is-secondary:hover:not(:disabled){background:var(--mint-soft);border-color:var(--primary)}
+#extract-selected.button-primary{min-height:2.5rem;font-size:.9rem}
 
 /* Workspace card: the pleat edge is the product's one decorative motif. */
 .workspace-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
@@ -130,14 +136,14 @@ a{color:var(--accent);text-underline-offset:.18em}
 .entry-row:hover{background:var(--surface-2)}
 .entry-row:focus-within{outline:3px solid var(--focus);outline-offset:-3px}
 .entry-row input{accent-color:var(--primary);width:1.05rem;height:1.05rem;flex:none}
-.entry-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.entry-name{font-family:var(--mono);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .entry-size{flex:none;color:var(--muted)}
 .entry-limit{padding:.5rem .7rem}
 .entry-hint{margin:0 0 .7rem;color:var(--muted);font-size:.85rem}
 .selection-note{margin:.5rem 0 0;padding:.55rem .8rem;border-left:4px solid var(--line-strong);border-radius:0 6px 6px 0;background:var(--surface-2);color:var(--muted);font-size:.85rem}
 .selected-review .review-note{margin:.6rem 0;color:var(--muted);font-size:.85rem}
 .review-list{margin:.6rem 0 .8rem;padding:0;max-height:11rem;overflow:auto;list-style:none;border:1px solid var(--line-strong);border-radius:6px;font-size:.85rem}
-.review-list li{padding:.4rem .7rem;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.review-list li{font-family:var(--mono);padding:.4rem .7rem;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .review-list li:last-child{border-bottom:0}
 .review-actions{display:flex;flex-wrap:wrap;gap:.5rem}
 
@@ -164,6 +170,7 @@ a{color:var(--accent);text-underline-offset:.18em}
 .destination-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:.75rem}
 .destination-path,.destination-note{grid-column:1/-1;margin-left:2.35rem}
 .destination-path{font-family:var(--mono);font-size:.8rem;overflow-wrap:anywhere}
+.destination-path.is-empty{font-family:var(--font);font-size:.875rem;color:var(--muted)}
 .destination-note{color:var(--muted);font-size:.8rem;margin-top:-.35rem;overflow-wrap:anywhere}
 .run-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem 1.5rem;margin-top:1.4rem;padding-top:1.25rem;border-top:1px solid var(--line)}
 .run-hint{flex:1 1 14rem;color:var(--muted);font-size:.875rem}
@@ -212,7 +219,8 @@ a{color:var(--accent);text-underline-offset:.18em}
 .aside-note{margin-top:.6rem;color:var(--muted);font-size:.85rem}
 .bottom-note{margin-top:2rem;padding:.75rem 0;color:var(--muted);font-size:.8rem}
 
-@media(max-width:1000px){.work-grid{grid-template-columns:1fr}.formats-aside{grid-template-columns:1fr 1fr}}
+/* Keep archive paths and actions wide enough at typical 1024px alpha window sizes. */
+@media(max-width:1180px){.work-grid{grid-template-columns:1fr}.formats-aside{grid-template-columns:1fr 1fr}}
 @media(max-width:860px){
   .app-shell{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto;grid-template-areas:"brand" "main" "activity"}
   .brand-bar{padding:.75rem 1rem;border-right:0;border-bottom:1px solid var(--line)}
