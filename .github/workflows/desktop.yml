@@ -153,7 +153,7 @@ jobs:
       - name: Install packaged app and launch dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y dbus-x11 imagemagick x11-utils xvfb
+          sudo apt-get install -y dbus-x11 imagemagick x11-utils xdotool xvfb
           sudo apt-get install -y ./packaged-input/Bytepleat-amd64.deb
           test -x /usr/bin/bytepleat-desktop
       - name: Launch installed package in private D-Bus and Xvfb
@@ -161,7 +161,7 @@ jobs:
           mkdir -p "$GITHUB_WORKSPACE/packaged-ui-artifacts"
           set -Eeuo pipefail
           export BYTEPLEAT_SMOKE_ARTIFACTS="$GITHUB_WORKSPACE/packaged-ui-artifacts"
-          dbus-run-session -- xvfb-run --auto-servernum bash -euo pipefail -c '
+          dbus-run-session -- xvfb-run --auto-servernum bash -euo pipefail <<'EOF'
             log="$BYTEPLEAT_SMOKE_ARTIFACTS/app.log"
             screenshot="$BYTEPLEAT_SMOKE_ARTIFACTS/screen.png"
             /usr/bin/bytepleat-desktop >"$log" 2>&1 &
@@ -177,33 +177,57 @@ jobs:
             }
             trap cleanup EXIT
 
-            visible=0
-            for _ in $(seq 1 40); do
+            window_id=""
+            for _ in $(seq 1 60); do
               if ! kill -0 "$app_pid" 2>/dev/null; then
                 echo "Bytepleat exited before its window appeared" >&2
                 exit 1
               fi
-              if xwininfo -root -tree 2>/dev/null | grep -Eiq "Bytepleat"; then
-                visible=1
+              window_id="$(xdotool search --onlyvisible --name Bytepleat 2>/dev/null | head -n 1 || true)"
+              if [ -n "$window_id" ]; then
                 break
               fi
               sleep 0.5
             done
-            if [ "$visible" -ne 1 ]; then
-              echo "No visible Bytepleat window appeared within 20 seconds" >&2
+            if [ -z "$window_id" ]; then
+              echo "No visible window titled Bytepleat appeared within 30 seconds" >&2
               exit 1
             fi
-            import -window root "$screenshot"
-            test -s "$screenshot"
-            echo "Visible Bytepleat window detected"
-          '
+
+            rendered=0
+            for _ in $(seq 1 40); do
+              if ! kill -0 "$app_pid" 2>/dev/null; then
+                echo "Bytepleat exited before its window rendered" >&2
+                exit 1
+              fi
+              if ! xdotool getwindowname "$window_id" 2>/dev/null | grep -Fxq "Bytepleat"; then
+                window_id="$(xdotool search --onlyvisible --name Bytepleat 2>/dev/null | head -n 1 || true)"
+              fi
+              if [ -z "$window_id" ]; then
+                echo "Visible window titled Bytepleat disappeared before rendering" >&2
+                exit 1
+              fi
+              import -window "$window_id" "$screenshot"
+              colors="$(identify -format '%k' "$screenshot" 2>/dev/null || echo 0)"
+              if [ "$colors" -ge 16 ]; then
+                rendered=1
+                break
+              fi
+              sleep 0.5
+            done
+            if [ "$rendered" -ne 1 ]; then
+              echo "Bytepleat window stayed blank or had fewer than 16 colors after 20 seconds" >&2
+              exit 1
+            fi
+            echo "Rendered, nonblank Bytepleat window captured ($colors colors)"
+          EOF
       - name: Explain package GUI launch smoke scope
         if: always()
         run: |
           {
             echo '### Package GUI launch smoke'
-            echo 'This job installs the normal desktop-deb-amd64 artifact from this workflow run and checks that /usr/bin/bytepleat-desktop opens a visible window under a private D-Bus session and Xvfb.'
-            echo 'This is a package GUI launch smoke, not workflow E2E or live GNOME/Nautilus testing.'
+            echo 'This job installs the normal desktop-deb-amd64 artifact from this workflow run and verifies that /usr/bin/bytepleat-desktop renders a nonblank, visible Bytepleat window under private D-Bus and Xvfb.'
+            echo 'This verifies packaged window rendering, not user workflows or live GNOME/Nautilus behavior.'
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload package GUI launch logs and screenshot
         if: always()
