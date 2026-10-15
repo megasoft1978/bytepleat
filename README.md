@@ -120,6 +120,7 @@ Archive contents preserve file bytes and relative paths within the supported sco
 - [Security reporting](SECURITY.md)
 - [Support](SUPPORT.md)
 - [Release notes and verification](RELEASE.md)
+- [Benchmark results and reproduction](docs/benchmarks.md)
 - [GitHub repository](https://github.com/megasoft1978/bytepleat)
 - [Project website](https://megasoft1978.github.io/bytepleat/)
 
