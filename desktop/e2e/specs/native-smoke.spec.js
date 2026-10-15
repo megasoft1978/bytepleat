@@ -2,9 +2,21 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import crypto from 'node:crypto';
+import zlib from 'node:zlib';
 import { fixture } from '../wdio.conf.js';
 
 const screenshots = path.resolve(process.env.BYTEPLEAT_SCREENSHOT_DIR || path.join(os.tmpdir(), 'bytepleat-ui-screenshots'));
+const crc32Table = Uint32Array.from({ length: 256 }, (_, value) => {
+  let crc = value;
+  for (let bit = 0; bit < 8; bit++) crc = (crc & 1) ? (crc >>> 1) ^ 0xedb88320 : crc >>> 1;
+  return crc >>> 0;
+});
+function crc32(buffer) {
+  let crc = 0xffffffff;
+  for (const byte of buffer) crc = (crc >>> 8) ^ crc32Table[(crc ^ byte) & 0xff];
+  return (crc ^ 0xffffffff) >>> 0;
+}
 const invoke = async (command, args) => {
   const result = await browser.executeAsync(({ command, args }, done) => {
     window.__TAURI__.core.invoke(command, args).then(done, error => done({ invokeError: String(error) }));
@@ -21,6 +33,57 @@ async function waitJob(id) {
     await pause(250);
   }
   throw new Error(`Timed out waiting for native job ${id}`);
+}
+
+function writeSlowExtractionZip(archivePath) {
+  // Decode the marker before many small repeated files. Their 128 MiB total
+  // output keeps extraction active without a large compressed fixture or RAM use.
+  const payload = Buffer.alloc(8 * 1024);
+  const compressed = zlib.deflateRawSync(payload, { level: 1 });
+  const crc = typeof zlib.crc32 === 'function' ? zlib.crc32(payload) : crc32(payload);
+  const entries = ['ready.bin', ...Array.from(
+    { length: 16384 },
+    (_, index) => `payload-${String(index).padStart(5, '0')}.bin`
+  )];
+  const locals = [];
+  const centrals = [];
+  let offset = 0;
+  for (const entry of entries) {
+    const name = Buffer.from(entry);
+    const local = Buffer.alloc(30 + name.length);
+    local.writeUInt32LE(0x04034b50, 0);
+    local.writeUInt16LE(20, 4);
+    local.writeUInt16LE(8, 8);
+    local.writeUInt32LE(crc, 14);
+    local.writeUInt32LE(compressed.length, 18);
+    local.writeUInt32LE(payload.length, 22);
+    local.writeUInt16LE(name.length, 26);
+    name.copy(local, 30);
+    locals.push(local, compressed);
+
+    const central = Buffer.alloc(46 + name.length);
+    central.writeUInt32LE(0x02014b50, 0);
+    central.writeUInt16LE(20, 4);
+    central.writeUInt16LE(20, 6);
+    central.writeUInt16LE(8, 10);
+    central.writeUInt32LE(crc, 16);
+    central.writeUInt32LE(compressed.length, 20);
+    central.writeUInt32LE(payload.length, 24);
+    central.writeUInt16LE(name.length, 28);
+    central.writeUInt32LE(offset, 42);
+    name.copy(central, 46);
+    centrals.push(central);
+    offset += local.length + compressed.length;
+  }
+
+  const centralBytes = Buffer.concat(centrals);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0);
+  end.writeUInt16LE(entries.length, 8);
+  end.writeUInt16LE(entries.length, 10);
+  end.writeUInt32LE(centralBytes.length, 12);
+  end.writeUInt32LE(offset, 16);
+  fs.writeFileSync(archivePath, Buffer.concat([...locals, centralBytes, end]));
 }
 
 describe('Bytepleat native Tauri smoke', () => {
@@ -91,5 +154,117 @@ describe('Bytepleat native Tauri smoke', () => {
     const collision = await waitJob(collisionId);
     assert.equal(collision.state, 'failed');
     assert.equal(fs.readFileSync(path.join(output, 'occupied'), 'utf8'), 'preserve this file');
+  });
+
+  it('cancels a real extraction after partial staging and preserves the archive', async function () {
+    this.timeout(120000);
+    const archive = path.join(path.dirname(fixture), 'cancel-mid-extraction.zip');
+    const destinationParent = path.join(path.dirname(fixture), 'cancel-output-parent');
+    const destination = path.join(destinationParent, 'cancelled-output');
+    fs.mkdirSync(destinationParent, { recursive: true });
+    writeSlowExtractionZip(archive);
+    const originalDigest = crypto.createHash('sha256').update(fs.readFileSync(archive)).digest('hex');
+    const before = new Set(fs.readdirSync(destinationParent));
+
+    const id = await invoke('start_job', { request: {
+      action: 'extract', inputs: [archive], destination, format: null,
+      selected_entries: [], max_output_bytes: 1073741824
+    } });
+
+    let stagePath;
+    let latestNativeState = 'missing';
+    let latestRenderedState;
+    let latestStageSeen = false;
+    let terminalState = null;
+    let liveStateBeforeClick;
+    let renderedBeforeClick;
+    let cancelClicked = false;
+    await browser.waitUntil(async () => {
+      const job = (await invoke('jobs')).find(item => item.id === id);
+      latestNativeState = job?.state ?? 'missing';
+      for (const name of fs.readdirSync(destinationParent)) {
+        if (before.has(name)) continue;
+        const candidate = path.join(destinationParent, name);
+        try {
+          for (const entry of fs.readdirSync(candidate, { withFileTypes: true })) {
+            if (!entry.isDirectory() || !entry.name.startsWith('.bytepleat-extract-')) continue;
+            const partial = path.join(candidate, entry.name, 'ready.bin');
+            if (fs.statSync(partial).size > 0) {
+              stagePath = candidate;
+              break;
+            }
+          }
+        } catch { /* The worker has not created its staged payload yet. */ }
+        if (stagePath) break;
+      }
+      latestStageSeen = Boolean(stagePath);
+      const active = ['queued', 'running'].includes(latestNativeState);
+      const rendered = await browser.execute(({ id, shouldClick }) => {
+        const card = document.querySelector('#job-now');
+        const button = [...document.querySelectorAll('[data-action="cancel"]')]
+          .find(item => item.dataset.job === id);
+        const style = button ? getComputedStyle(button) : null;
+        const visible = Boolean(button && !button.hidden && button.getClientRects().length &&
+          style.display !== 'none' && style.visibility !== 'hidden');
+        const enabled = Boolean(visible && !button.disabled);
+        const clicked = Boolean(shouldClick && enabled && (button.click(), true));
+        return {
+          visible,
+          enabled,
+          clicked,
+          cardHidden: card?.hidden ?? null,
+          cardClass: card?.className ?? null,
+          stateText: card?.querySelector('.job-state')?.innerText ?? null
+        };
+      }, { id, shouldClick: active && latestStageSeen });
+      latestRenderedState = rendered;
+      if (['completed', 'failed', 'cancelled'].includes(latestNativeState)) {
+        terminalState = latestNativeState;
+        return true;
+      }
+      if (rendered.clicked) {
+        liveStateBeforeClick = latestNativeState;
+        renderedBeforeClick = rendered;
+        cancelClicked = true;
+        return true;
+      }
+      return false;
+    }, {
+      timeout: 30000,
+      interval: 5,
+      timeoutMsg: `No active rendered Cancel control with partial staging; native=${latestNativeState}, ` +
+        `stageSeen=${latestStageSeen}, UI=${JSON.stringify(latestRenderedState)}`
+    });
+    assert.equal(
+      terminalState,
+      null,
+      `Native job reached ${terminalState} before a rendered Cancel control and partial stage ` +
+        `could be clicked; UI=${JSON.stringify(latestRenderedState)}`
+    );
+    assert.equal(cancelClicked, true, 'The visible Cancel control should receive the DOM click');
+    assert.ok(['queued', 'running'].includes(liveStateBeforeClick), 'Click must occur during an active native job');
+    assert.equal(renderedBeforeClick.visible, true);
+    assert.equal(renderedBeforeClick.enabled, true);
+    await browser.waitUntil(async () => {
+      const job = (await invoke('jobs')).find(item => item.id === id);
+      return job && ['cancelling', 'cancelled'].includes(job.state);
+    }, {
+      timeout: 10000,
+      interval: 25,
+      timeoutMsg: 'Clicking the visible Cancel control did not request native cancellation'
+    });
+    const cancelled = await waitJob(id);
+    assert.equal(cancelled.state, 'cancelled');
+    await browser.waitUntil(() => !fs.existsSync(stagePath), {
+      timeout: 10000,
+      interval: 25,
+      timeoutMsg: 'The private extraction stage remained after the cancelled job finished'
+    });
+    assert.equal(fs.existsSync(destination), false, 'Cancelled extraction must not publish its output');
+    assert.equal(
+      crypto.createHash('sha256').update(fs.readFileSync(archive)).digest('hex'),
+      originalDigest,
+      'Cancellation must preserve the input archive byte-for-byte'
+    );
   });
 });
