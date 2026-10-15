@@ -213,6 +213,19 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  nautilus-runtime:
+    name: Nautilus installed integration runtime
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Install Nautilus and isolated display dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dbus-x11 nautilus python3-nautilus python3-pyatspi xvfb xdotool
+      - name: Install and activate the integration through Nautilus
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" dbus-run-session -- /usr/bin/python3 desktop/scripts/nautilus_runtime_smoke.py
+
   windows-arm64-packaged-smoke:
     needs: [app, explorer]
     runs-on: windows-11-arm

@@ -244,6 +244,24 @@ These runs verify app behavior in CI and development-package construction; they 
 not verify interactive Finder/Explorer/Nautilus/Dolphin menu behavior, signed
 public distribution, or behavior on every OS version.
 
+### Isolated Nautilus integration runtime · Ubuntu 24.04 · 2026-10-15
+
+The new headless Nautilus smoke was run three consecutive times in an isolated
+Ubuntu 24.04 ARM64 container with GNOME Files/Nautilus `1:46.4-0ubuntu0.2`,
+under a 1280×1024 Xvfb display and a private D-Bus session. Each run installed
+the per-user integration through the real Linux installer into a temporary
+home, opened a selected fixture in Nautilus, and activated both visible context
+actions. A recorder executable verified the exact handoff three times for each
+action: Compress received `--create -- <fixture-path>` and Extract received
+`--extract -- <fixture-path>`, including a Unicode filename and paths with
+spaces and a leading dash. The recorder replaced the desktop app: these checks
+verify extension loading, menu activation, and argument handoff only. They did
+not run compression or extraction, and do not establish behavior in an
+interactive GNOME Shell session, on Wayland, or on other distributions. The
+first hosted Nautilus runtime job passed in [GitHub Actions run
+38762493952](https://github.com/megasoft1978/bytepleat/actions/runs/38762493952).
+A subsequent validation run is in progress.
+
 ## Windows ARM64 packaged integration smoke
 
 The desktop workflow now defines a bounded, noninteractive ARM64 packaged smoke
