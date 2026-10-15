@@ -181,8 +181,31 @@ describe('Bytepleat native Tauri smoke', () => {
       timeoutMsg: 'Extraction did not produce a partial private-stage payload within 30 seconds'
     });
 
-    const accepted = await invoke('cancel_job', { id });
-    assert.equal(accepted, true, 'The active native job should accept cancellation');
+    const cancelControl = await $(`[data-job="${id}"][data-action="cancel"]`);
+    await cancelControl.waitForDisplayed({
+      timeout: 10000,
+      timeoutMsg: 'The active extraction did not show its Cancel control'
+    });
+    await cancelControl.waitForEnabled({
+      timeout: 10000,
+      timeoutMsg: 'The active extraction Cancel control was disabled'
+    });
+    const clicked = await browser.execute(({ id }) => {
+      const button = [...document.querySelectorAll('[data-action="cancel"]')]
+        .find(item => item.dataset.job === id);
+      if (!button || button.disabled || button.hidden) return false;
+      button.click();
+      return true;
+    }, { id });
+    assert.equal(clicked, true, 'The visible Cancel control should receive the DOM click');
+    await browser.waitUntil(async () => {
+      const job = (await invoke('jobs')).find(item => item.id === id);
+      return job && ['cancelling', 'cancelled'].includes(job.state);
+    }, {
+      timeout: 10000,
+      interval: 25,
+      timeoutMsg: 'Clicking the visible Cancel control did not request native cancellation'
+    });
     const cancelled = await waitJob(id);
     assert.equal(cancelled.state, 'cancelled');
     await browser.waitUntil(() => !fs.existsSync(stagePath), {
