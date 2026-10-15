@@ -209,10 +209,14 @@ as an installed GNOME package remains pending.
 
 ## Current automated baseline · 2026-10-15
 
-At commit `8a346a777b166610bce9f2b37381740097215cc9`, all three GitHub Actions
-workflows passed: [native UI smoke run 38732829088](https://github.com/megasoft1978/bytepleat/actions/runs/38732829088),
-[desktop alpha checks run 38732829095](https://github.com/megasoft1978/bytepleat/actions/runs/38732829095),
-and [native Rust CI run 38732829104](https://github.com/megasoft1978/bytepleat/actions/runs/38732829104).
+The merged source tree at `109dd782e9d6cb2ee3178967da638c8ef28b4fc3`
+(merge commit `f1f46a4b64dd4eb3010b47acdecd49251131a92c`) passed the
+[native UI smoke](https://github.com/megasoft1978/bytepleat/actions/runs/38744817339),
+[desktop alpha checks](https://github.com/megasoft1978/bytepleat/actions/runs/38744817304),
+and [native Rust CI](https://github.com/megasoft1978/bytepleat/actions/runs/38744817234).
+The post-merge native UI smoke and native Rust CI also passed on the merge
+commit; the post-merge desktop alpha checks were still running when this record
+was updated.
 
 The native UI workflow built and launched the Tauri app on GitHub-hosted
 macOS ARM64, Ubuntu Linux x64 and ARM64, Windows x64, and Windows 11 ARM64
@@ -226,17 +230,18 @@ command-level checks exercised native builds but did not use the operating
 system file dialogs or shell context menus.
 
 The desktop build workflow also passed formatting, Clippy, and tests on macOS
-ARM64, Linux x64, and Windows x64; built the Windows x64 desktop app and
-cross-compiled Windows ARM64; rebuilt the Linux development package; and
-validated unsigned Windows x64/ARM64 MSIX package schemas and payloads. Native
-Explorer COM and quoting tests passed on Windows x64; the ARM64 adapter compiled,
-but its native tests were skipped. The native Rust workflow passed on macOS
-ARM64, Linux x64, and Windows x64. These runs verify app behavior in CI runners
-and package construction; they do not verify installed-app behavior,
-Finder/Explorer/Nautilus/Dolphin handoffs, signed distribution, or behavior on
-every OS version.
+ARM64, Linux x64, and Windows x64; built Windows x64 and ARM64 desktop apps;
+rebuilt the Linux development package; and validated unsigned Windows x64/ARM64
+MSIX package schemas and payloads. Native Explorer COM and quoting tests passed
+on Windows x64. On Windows 11 ARM64, the packaged smoke installed a test MSIX,
+verified package registration and its execution alias, then activated the
+packaged Explorer-command COM classes and enumerated their menu children. The
+native Rust workflow passed on macOS ARM64, Linux x64, and Windows x64. These
+runs verify app behavior in CI and development-package construction; they do
+not verify interactive Finder/Explorer/Nautilus/Dolphin menu behavior, signed
+public distribution, or behavior on every OS version.
 
-## Pending Windows ARM64 packaged integration smoke
+## Windows ARM64 packaged integration smoke
 
 The desktop workflow now defines a bounded, noninteractive ARM64 packaged smoke
 in the separate `windows-arm64-packaged-smoke` job on `windows-11-arm`, using only
@@ -257,16 +262,18 @@ exact temporary certificate/thumbprint and private-key removal, and private work
 directory deletion; cleanup errors fail the step. Forced runner termination can
 prevent `finally`, so this belongs on a disposable runner.
 
-This is new test coverage, not a recorded successful Windows runtime result.
+This passed as a development-package runtime check on the named Windows 11
+ARM64 runner. It is not a public-release installer test.
 The manifest minimum remains `10.0.26200.0`, with no override. The public
 [GitHub Windows 11 ARM64 image inventory](https://github.com/actions/runner-images/blob/main/images/windows/Windows11-Arm64-Readme.md)
 reports OS `10.0.26200`. The smoke checks the actual OS version and requires both
 the OS and PowerShell process to be native ARM64 before creating test state; it
 also rejects a probe artifact whose PE machine is not ARM64. The console probe
 is compiled only for ARM64 and independently rejects an emulated process.
-Local macOS checks can cover PowerShell parsing and mocked ownership/cleanup,
-workflow lint, and static/unit checks; installation, Windows certificate-store
-operations and packaged COM activation remain CI-only and unverified here.
+Local macOS checks cover PowerShell parsing and mocked ownership/cleanup,
+workflow lint, and static/unit checks. Installation, Windows certificate-store
+operations, and packaged COM activation are validated only by the Windows CI
+runner.
 
 Local headless checks on macOS on 2026-10-15 passed workflow `actionlint`,
 PowerShell parsing (eight scripts), ownership/cleanup and prerequisite mocks,
@@ -277,21 +284,22 @@ warnings denied, and locked tests passed for the CLI, desktop core, and Tauri
 app. Source-export and diff-whitespace checks passed. These checks do not compile
 or run the Windows-only C++ probe or validate Windows SDK/package runtime behavior.
 
-A future passing run establishes only development current-user installation,
+A passing run establishes development current-user installation,
 registration/alias inspection and packaged COM activation/enumeration on its
 specific native Windows ARM64 runner. It does not show interactive Explorer menus,
 command invocation, app startup/handoff, consumer signing trust, or x64 runtime support.
 No desktop is launched or controlled by this smoke. See the
-[Windows integration instructions](../desktop/integrations/windows/README.md#pending-arm64-packaged-integration-smoke)
+[Windows integration instructions](../desktop/integrations/windows/README.md#arm64-packaged-integration-smoke)
 for the exact script and cleanup scope.
 
 ## Remaining validation
 
 - Verify macOS Dock Quit cleanup; test the minimum supported macOS version.
 - Separately verify Kubuntu 26.04 and its newer Dolphin/Plasma combination.
-- Verify installed Windows app behavior and Explorer interaction on x64 and
-  ARM64. Native WebView E2E now passes on the GitHub-hosted x64 and Windows 11
-  ARM64 runners, but does not test installation or Explorer handoff.
+- Verify installed Windows app and Explorer interaction on x64, plus
+  interactive Explorer menu behavior and app handoff on ARM64. Native WebView
+  E2E passes on both runners; the ARM64 packaged smoke verifies installation,
+  registration, and COM activation, but not interactive menu use.
 - Install the latest Linux development package in GNOME and re-run inspection
   cancellation, no-overwrite, and selective extraction; those flows passed on
   the earlier installed v6 package. The current source was rebuilt and packaged
