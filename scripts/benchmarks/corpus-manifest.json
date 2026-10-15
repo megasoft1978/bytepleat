@@ -1,0 +1,11 @@
+{
+  "schema": "bytepleat-benchmark-corpus-v1",
+  "source_url": "https://github.com/lz4/lz4/archive/refs/tags/v1.10.0.tar.gz",
+  "revision": "lz4/lz4 tag v1.10.0",
+  "license_note": "Upstream source files retain their per-file BSD-2-Clause and GPL-2.0-or-later notices; see the upstream repository license files.",
+  "derived_ustar": {
+    "bytes": 1843200,
+    "sha256": "fd33f2ea8f797d4d02452e80f1819a472f584471bc7b1fa09c0a17099b5f43f3",
+    "format": "USTAR, regular files only, component-wise sorted POSIX paths rooted at lz4-v1.10.0/, uid/gid 0, empty uname/gname, mtime 0, normalized file mode 0644"
+  }
+}

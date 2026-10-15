@@ -1,0 +1,194 @@
+name: Desktop alpha native checks
+on:
+  push:
+    branches: [desktop-alpha]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  app:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.os }}
+    env:
+      CARGO_BUILD_JOBS: 4
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.12'
+      - name: Linux desktop development libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential libxdo-dev libssl-dev librsvg2-dev libayatana-appindicator3-dev
+      - name: Install Rust checks
+        run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy
+      - name: Check source export
+        run: python scripts/check_source_export.py
+      - name: Core formatting
+        run: cargo +stable fmt --manifest-path desktop/core/Cargo.toml --all -- --check
+      - name: Core Clippy
+        run: cargo +stable clippy --locked --manifest-path desktop/core/Cargo.toml --all-targets -- -D warnings
+      - name: Core tests
+        run: cargo +stable test --locked --manifest-path desktop/core/Cargo.toml
+      - name: App formatting
+        run: cargo +stable fmt --manifest-path desktop/src-tauri/Cargo.toml --all -- --check
+      - name: App Clippy
+        run: cargo +stable clippy --locked --manifest-path desktop/src-tauri/Cargo.toml --all-targets -- -D warnings
+      - name: App tests
+        run: cargo +stable test --locked --manifest-path desktop/src-tauri/Cargo.toml
+      - name: Build the desktop executable
+        run: cargo +stable build --locked --release --manifest-path desktop/src-tauri/Cargo.toml
+      - name: Compile the desktop executable for Windows ARM64
+        if: runner.os == 'Windows'
+        run: |
+          rustup target add aarch64-pc-windows-msvc
+          cargo +stable build --locked --release --target aarch64-pc-windows-msvc --manifest-path desktop/src-tauri/Cargo.toml
+      - name: Adapter Python tests
+        run: python -m unittest discover -s desktop/scripts/tests -v
+      - name: Windows adapter schema tests
+        run: python -m unittest discover -s desktop/integrations/windows/tests -v
+      - name: Native notice packaging regression checks
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./desktop/integrations/windows/tests/NoticePackagingTests.ps1
+      - name: Collect exact desktop and runtime notices
+        env:
+          RUSTUP_TOOLCHAIN: stable
+        run: python desktop/scripts/collect-desktop-notices.py --target ${{ matrix.target }} --output-dir desktop-notices
+      - name: Collect Windows ARM64 notices
+        if: runner.os == 'Windows'
+        env:
+          RUSTUP_TOOLCHAIN: stable
+        run: python desktop/scripts/collect-desktop-notices.py --target aarch64-pc-windows-msvc --output-dir desktop-notices-arm64
+      - name: Build reproducible Linux development package
+        if: runner.os == 'Linux'
+        run: |
+          mkdir desktop-package
+          python desktop/scripts/build-linux-package.py --executable desktop/src-tauri/target/release/bytepleat-desktop --target ${{ matrix.target }} --notices-dir desktop-notices --output desktop-package/Bytepleat-amd64.deb --source-date-epoch 1791936000
+          python desktop/scripts/build-linux-package.py --executable desktop/src-tauri/target/release/bytepleat-desktop --target ${{ matrix.target }} --notices-dir desktop-notices --output desktop-package/Bytepleat-amd64-repeat.deb --source-date-epoch 1791936000
+          cmp desktop-package/Bytepleat-amd64.deb desktop-package/Bytepleat-amd64-repeat.deb
+          dpkg-deb --info desktop-package/Bytepleat-amd64.deb
+      - name: Upload matching notice inventory
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: desktop-notices-${{ runner.os }}
+          path: desktop-notices/
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload Windows ARM64 notice inventory
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: desktop-notices-Windows-ARM64
+          path: desktop-notices-arm64/
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload Linux development package
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: desktop-deb-amd64
+          path: desktop-package/Bytepleat-amd64.deb
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload alpha executable for local VM testing
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: desktop-executable-${{ runner.os }}
+          path: |
+            desktop/src-tauri/target/release/bytepleat-desktop
+            desktop/src-tauri/target/release/bytepleat-desktop.exe
+          if-no-files-found: error
+      - name: Upload Windows ARM64 executable for local VM testing
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: desktop-executable-Windows-ARM64
+          path: desktop/src-tauri/target/aarch64-pc-windows-msvc/release/bytepleat-desktop.exe
+          if-no-files-found: error
+  explorer:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, ARM64]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Configure Explorer adapter
+        run: cmake -S desktop/integrations/windows -B desktop-explorer-build -A ${{ matrix.arch }}
+      - name: Compile adapter and native tests
+        run: cmake --build desktop-explorer-build --config Release
+      - name: Run real native COM and quoting tests
+        if: matrix.arch == 'x64'
+        run: ctest --test-dir desktop-explorer-build -C Release --output-on-failure --no-tests=error
+      - name: Upload compiled adapter and tests
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: explorer-${{ matrix.arch }}
+          path: desktop-explorer-build/Release/
+          if-no-files-found: error
+
+  windows-package-validation:
+    needs: [app, explorer]
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: x64
+            executable: desktop-executable-Windows
+            notices: desktop-notices-Windows
+          - architecture: ARM64
+            executable: desktop-executable-Windows-ARM64
+            notices: desktop-notices-Windows-ARM64
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Download matching desktop executable
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ matrix.executable }}
+          path: desktop-app
+      - name: Download matching desktop notices
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ matrix.notices }}
+          path: desktop-notices
+      - name: Download matching Explorer DLL
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: explorer-${{ matrix.architecture }}
+          path: explorer-payload
+      - name: Assemble matching package inputs
+        shell: pwsh
+        run: |
+          $app = Join-Path $PWD 'package-input'
+          New-Item -ItemType Directory -Path $app | Out-Null
+          Copy-Item desktop-app/bytepleat-desktop.exe $app
+          Copy-Item explorer-payload/BytepleatExplorerCommands.dll $app
+          if (-not (Test-Path (Join-Path $app 'bytepleat-desktop.exe'))) { throw 'Windows app artifact missing' }
+          if (-not (Test-Path (Join-Path $app 'BytepleatExplorerCommands.dll'))) { throw 'Windows Explorer DLL artifact missing' }
+      - name: Validate and create unsigned MSIX with MakeAppx
+        shell: pwsh
+        run: >-
+          ./desktop/integrations/windows/package/Build-Package.ps1
+          -AppDirectory ./package-input
+          -Architecture ${{ matrix.architecture }}
+          -NoticeDirectory ./desktop-notices
+          -OutputDirectory ./package-output
+      - name: Upload unsigned development validation package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: unsigned-msix-validation-${{ matrix.architecture }}
+          path: package-output/Bytepleat-${{ matrix.architecture }}.msix
+          if-no-files-found: error
+          retention-days: 7

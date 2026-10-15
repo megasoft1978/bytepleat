@@ -1,0 +1,534 @@
+{
+  "description": "Supplemental literal notice texts bound to reviewed exact package versions and pinned upstream commits. These records add to THIRD-PARTY.json inventory.",
+  "records": [
+    {
+      "declared_license": "BSD-3-Clause",
+      "mapping_note": "alloc-stdlib Cargo.toml explicitly declares BSD-3-Clause. Pinned root Cargo.toml independently declares BSD-3-Clause; root LICENSE has Dropbox copyright and full BSD 3-Clause terms.",
+      "name": "alloc-stdlib",
+      "notices": [
+        {
+          "license": "LICENSE",
+          "path": "notice-sources/alloc-stdlib-LICENSE",
+          "sha256": "c0c56f26d9c051cac4d200c34c84e7ae9aaa853e01a982a1df08b09931e518ae",
+          "source_url": "https://raw.githubusercontent.com/dropbox/rust-alloc-no-stdlib/0a81fd6928ea3b33c8cd484aa4575d50ffb98012/LICENSE"
+        }
+      ],
+      "pinned_git_sha": "0a81fd6928ea3b33c8cd484aa4575d50ffb98012",
+      "repository": "https://github.com/dropbox/rust-alloc-no-stdlib",
+      "source_mapping_status": "verified_source_mapping",
+      "version": "0.3.0"
+    },
+    {
+      "declared_license": "MIT OR Apache-2.0",
+      "mapping_note": "parser/Cargo.toml explicitly declares MIT OR Apache-2.0. Parser README says licensed under either; root README repeats the dual-license statement and contribution licensing note.",
+      "name": "defmt-parser",
+      "notices": [
+        {
+          "license": "LICENSE-MIT",
+          "path": "notice-sources/defmt-parser-LICENSE-MIT",
+          "sha256": "2710a622a896bba67356913d4d0492cab5465f61b2ecce6d880aeb483834fb50",
+          "source_url": "https://raw.githubusercontent.com/knurling-rs/defmt/4a8cdb44891ed57b8ff5a023b6bec7137c48708f/LICENSE-MIT"
+        }
+      ],
+      "pinned_git_sha": "4a8cdb44891ed57b8ff5a023b6bec7137c48708f",
+      "repository": "https://github.com/knurling-rs/defmt",
+      "source_mapping_status": "verified_source_mapping",
+      "version": "1.0.0"
+    },
+    {
+      "declared_license": "MIT OR Apache-2.0",
+      "mapping_note": "parser/Cargo.toml explicitly declares MIT OR Apache-2.0. Parser README says licensed under either; root README repeats the dual-license statement and contribution licensing note.",
+      "name": "defmt-parser",
+      "notices": [
+        {
+          "license": "LICENSE-APACHE",
+          "path": "notice-sources/defmt-parser-LICENSE-APACHE",
+          "sha256": "8173d5c29b4f956d532781d2b86e4e30f83e6b7878dce18c919451d6ba707c90",
+          "source_url": "https://raw.githubusercontent.com/knurling-rs/defmt/4a8cdb44891ed57b8ff5a023b6bec7137c48708f/LICENSE-APACHE"
+        }
+      ],
+      "pinned_git_sha": "4a8cdb44891ed57b8ff5a023b6bec7137c48708f",
+      "repository": "https://github.com/knurling-rs/defmt",
+      "source_mapping_status": "verified_source_mapping",
+      "version": "1.0.0"
+    },
+    {
+      "declared_license": "Apache-2.0 OR MIT",
+      "mapping_note": "crates/tauri-plugin Cargo.toml uses license.workspace=true; root workspace.package declares Apache-2.0 OR MIT. README says MIT or MIT/Apache 2.0 where applicable. Both full texts are present at this pinned commit.",
+      "name": "tauri-plugin",
+      "notices": [
+        {
+          "license": "LICENSE-MIT",
+          "path": "notice-sources/tauri-plugin-LICENSE-MIT",
+          "sha256": "9dd42ea92cff2ede5cd477cbfcce051b2d0115c0ac7f368ee88cb545055dff1d",
+          "source_url": "https://raw.githubusercontent.com/tauri-apps/tauri/59b63ab500da9859f12d8888c3298bc29bba0b92/LICENSE-MIT"
+        }
+      ],
+      "pinned_git_sha": "59b63ab500da9859f12d8888c3298bc29bba0b92",
+      "repository": "https://github.com/tauri-apps/tauri",
+      "source_mapping_status": "verified_source_mapping",
+      "version": "2.7.2"
+    },
+    {
+      "declared_license": "Apache-2.0 OR MIT",
+      "mapping_note": "crates/tauri-plugin Cargo.toml uses license.workspace=true; root workspace.package declares Apache-2.0 OR MIT. README says MIT or MIT/Apache 2.0 where applicable. Both full texts are present at this pinned commit.",
+      "name": "tauri-plugin",
+      "notices": [
+        {
+          "license": "LICENSE-APACHE-2.0",
+          "path": "notice-sources/tauri-plugin-LICENSE-APACHE-2.0",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "source_url": "https://raw.githubusercontent.com/tauri-apps/tauri/59b63ab500da9859f12d8888c3298bc29bba0b92/LICENSE-APACHE-2.0"
+        }
+      ],
+      "pinned_git_sha": "59b63ab500da9859f12d8888c3298bc29bba0b92",
+      "repository": "https://github.com/tauri-apps/tauri",
+      "source_mapping_status": "verified_source_mapping",
+      "version": "2.7.2"
+    },
+    {
+      "declared_license": "MIT",
+      "mapping_note": "objc2 Cargo.toml explicitly declares MIT; pinned root LICENSE.md classifies objc2, block2, objc2-encode as MIT. Root README points to this detailed mapping. No separate MIT text is present in the pinned tree. The canonical MIT text is included via the upstream mapping link; its generic copyright placeholder is retained. Shared objc2 LICENSE.md also notes uncertainty about distribution of SDK-derived works; copying the mapping does not resolve it. The canonical MIT text contains generic copyright/license-text placeholders; this package has no verified upstream copyright attribution or complete package-specific license text. Shared mapping also records unresolved SDK-derived distribution ambiguity.",
+      "mapping_source_url": "https://raw.githubusercontent.com/madsmtm/objc2/d7d2fa23ceaa5e6096c923b081040e5d81b3b9df/LICENSE.md",
+      "name": "objc2",
+      "notices": [
+        {
+          "license": "MIT",
+          "path": "notice-sources/MIT.txt",
+          "sha256": "c3b1b78bc8bd3ea13aa4bc9778442d16560270afa235006d816e5e88cef24db4",
+          "source_url": "https://spdx.org/licenses/MIT.txt"
+        },
+        {
+          "license": "source-mapping",
+          "path": "notice-sources/objc2-LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/d7d2fa23ceaa5e6096c923b081040e5d81b3b9df/LICENSE.md"
+        }
+      ],
+      "pinned_git_sha": "d7d2fa23ceaa5e6096c923b081040e5d81b3b9df",
+      "repository": "https://github.com/madsmtm/objc2",
+      "selected_license": "MIT",
+      "source_finding": {
+        "mapping_note": "Canonical MIT.txt uses generic copyright/license-text placeholders; no verified upstream copyright attribution or package-specific complete license text was found at the pinned source. Shared pinned LICENSE.md says crates are SDK-derived and leaves distribution implications unclear. No authors or legal obligations are inferred.",
+        "name": "objc2",
+        "pinned_git_sha": "d7d2fa23ceaa5e6096c923b081040e5d81b3b9df",
+        "repository": "https://github.com/madsmtm/objc2",
+        "source_mapping_status": "upstream_mapping_verified_canonical_text_supplemented",
+        "version": "0.6.5"
+      },
+      "source_mapping_status": "upstream_mapping_verified_canonical_text_supplemented",
+      "version": "0.6.5"
+    },
+    {
+      "declared_license": "MIT",
+      "mapping_note": "block2 Cargo.toml explicitly declares MIT; pinned root LICENSE.md classifies objc2, block2, objc2-encode as MIT. Root README points to this detailed mapping. No separate MIT text is present in the pinned tree. The canonical MIT text is included via the upstream mapping link; its generic copyright placeholder is retained. Shared objc2 LICENSE.md also notes uncertainty about distribution of SDK-derived works; copying the mapping does not resolve it. The canonical MIT text contains generic copyright/license-text placeholders; this package has no verified upstream copyright attribution or complete package-specific license text. Shared mapping also records unresolved SDK-derived distribution ambiguity.",
+      "mapping_source_url": "https://raw.githubusercontent.com/madsmtm/objc2/b4167b582b2f75f9a1be75495c41b765344fd03c/LICENSE.md",
+      "name": "block2",
+      "notices": [
+        {
+          "license": "MIT",
+          "path": "notice-sources/MIT.txt",
+          "sha256": "c3b1b78bc8bd3ea13aa4bc9778442d16560270afa235006d816e5e88cef24db4",
+          "source_url": "https://spdx.org/licenses/MIT.txt"
+        },
+        {
+          "license": "source-mapping",
+          "path": "notice-sources/objc2-LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/b4167b582b2f75f9a1be75495c41b765344fd03c/LICENSE.md"
+        }
+      ],
+      "pinned_git_sha": "b4167b582b2f75f9a1be75495c41b765344fd03c",
+      "repository": "https://github.com/madsmtm/objc2",
+      "selected_license": "MIT",
+      "source_finding": {
+        "mapping_note": "Canonical MIT.txt uses generic copyright/license-text placeholders; no verified upstream copyright attribution or package-specific complete license text was found at the pinned source. Shared pinned LICENSE.md says crates are SDK-derived and leaves distribution implications unclear. No authors or legal obligations are inferred.",
+        "name": "block2",
+        "pinned_git_sha": "b4167b582b2f75f9a1be75495c41b765344fd03c",
+        "repository": "https://github.com/madsmtm/objc2",
+        "source_mapping_status": "upstream_mapping_verified_canonical_text_supplemented",
+        "version": "0.6.2"
+      },
+      "source_mapping_status": "upstream_mapping_verified_canonical_text_supplemented",
+      "version": "0.6.2"
+    },
+    {
+      "declared_license": "MIT",
+      "mapping_note": "objc2-encode Cargo.toml explicitly declares MIT; pinned root LICENSE.md classifies objc2, block2, objc2-encode as MIT. Root README points to this detailed mapping. No separate MIT text is present in the pinned tree. The canonical MIT text is included via the upstream mapping link; its generic copyright placeholder is retained. Shared objc2 LICENSE.md also notes uncertainty about distribution of SDK-derived works; copying the mapping does not resolve it. The canonical MIT text contains generic copyright/license-text placeholders; this package has no verified upstream copyright attribution or complete package-specific license text. Shared mapping also records unresolved SDK-derived distribution ambiguity.",
+      "mapping_source_url": "https://raw.githubusercontent.com/madsmtm/objc2/8d214f5477365ffcbcbb7de058c86ed9a518efb7/LICENSE.md",
+      "name": "objc2-encode",
+      "notices": [
+        {
+          "license": "MIT",
+          "path": "notice-sources/MIT.txt",
+          "sha256": "c3b1b78bc8bd3ea13aa4bc9778442d16560270afa235006d816e5e88cef24db4",
+          "source_url": "https://spdx.org/licenses/MIT.txt"
+        },
+        {
+          "license": "source-mapping",
+          "path": "notice-sources/objc2-LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/8d214f5477365ffcbcbb7de058c86ed9a518efb7/LICENSE.md"
+        }
+      ],
+      "pinned_git_sha": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+      "repository": "https://github.com/madsmtm/objc2",
+      "selected_license": "MIT",
+      "source_finding": {
+        "mapping_note": "Canonical MIT.txt uses generic copyright/license-text placeholders; no verified upstream copyright attribution or package-specific complete license text was found at the pinned source. Shared pinned LICENSE.md says crates are SDK-derived and leaves distribution implications unclear. No authors or legal obligations are inferred.",
+        "name": "objc2-encode",
+        "pinned_git_sha": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+        "repository": "https://github.com/madsmtm/objc2",
+        "source_mapping_status": "upstream_mapping_verified_canonical_text_supplemented",
+        "version": "4.1.0"
+      },
+      "source_mapping_status": "upstream_mapping_verified_canonical_text_supplemented",
+      "version": "4.1.0"
+    },
+    {
+      "declared_license": "Zlib OR Apache-2.0 OR MIT",
+      "mapping_note": "dispatch2 Cargo.toml uses license.workspace=true; pinned root workspace.package declares Zlib OR Apache-2.0 OR MIT. Root LICENSE.md assigns that trio to all crates except objc2, block2, objc2-foundation and objc2-encode. Root README points to detailed LICENSE.md. The crate README MIT badge is one allowed OR option and is not treated as a contradiction. The upstream mapping also states SDK-derived distribution ambiguity; inclusion here does not resolve that question. The MIT branch is selected from the declared Zlib OR Apache-2.0 OR MIT alternatives; declared SPDX remains unchanged. The canonical MIT text has generic copyright placeholders and does not supply verified package-specific attribution. Shared mapping records unresolved SDK-derived distribution ambiguity.",
+      "mapping_source_url": "https://raw.githubusercontent.com/madsmtm/objc2/8852b424193ca41602281b3d7540d7c8ed51e49a/LICENSE.md",
+      "name": "dispatch2",
+      "notices": [
+        {
+          "license": "source-mapping",
+          "path": "notice-sources/objc2-LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/8852b424193ca41602281b3d7540d7c8ed51e49a/LICENSE.md"
+        },
+        {
+          "license": "MIT",
+          "path": "notice-sources/MIT.txt",
+          "sha256": "c3b1b78bc8bd3ea13aa4bc9778442d16560270afa235006d816e5e88cef24db4",
+          "source_url": "https://spdx.org/licenses/MIT.txt"
+        }
+      ],
+      "pinned_git_sha": "8852b424193ca41602281b3d7540d7c8ed51e49a",
+      "repository": "https://github.com/madsmtm/objc2",
+      "selected_license": "MIT",
+      "source_finding": {
+        "mapping_note": "The selected canonical MIT text uses generic copyright/license-text placeholders and does not establish package-specific upstream copyright attribution or full package-specific license text. Shared pinned LICENSE.md says crates are SDK-derived and leaves distribution implications unclear. No authors or legal obligations are inferred.",
+        "name": "dispatch2",
+        "pinned_git_sha": "8852b424193ca41602281b3d7540d7c8ed51e49a",
+        "repository": "https://github.com/madsmtm/objc2",
+        "source_mapping_status": "verified_source_mapping",
+        "version": "0.3.1"
+      },
+      "source_mapping_status": "verified_source_mapping",
+      "version": "0.3.1"
+    },
+    {
+      "declared_license": "Zlib OR Apache-2.0 OR MIT",
+      "mapping_note": "objc2-app-kit Cargo.toml uses license.workspace=true; pinned root workspace.package declares Zlib OR Apache-2.0 OR MIT. Root LICENSE.md assigns that trio to all crates except objc2, block2, objc2-foundation and objc2-encode. Root README points to detailed LICENSE.md. The crate README MIT badge is one allowed OR option and is not treated as a contradiction. The upstream mapping also states SDK-derived distribution ambiguity; inclusion here does not resolve that question. The MIT branch is selected from the declared Zlib OR Apache-2.0 OR MIT alternatives; declared SPDX remains unchanged. The canonical MIT text has generic copyright placeholders and does not supply verified package-specific attribution. Shared mapping records unresolved SDK-derived distribution ambiguity.",
+      "mapping_source_url": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+      "name": "objc2-app-kit",
+      "notices": [
+        {
+          "license": "source-mapping",
+          "path": "notice-sources/objc2-LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md"
+        },
+        {
+          "license": "MIT",
+          "path": "notice-sources/MIT.txt",
+          "sha256": "c3b1b78bc8bd3ea13aa4bc9778442d16560270afa235006d816e5e88cef24db4",
+          "source_url": "https://spdx.org/licenses/MIT.txt"
+        }
+      ],
+      "pinned_git_sha": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "repository": "https://github.com/madsmtm/objc2",
+      "selected_license": "MIT",
+      "source_finding": {
+        "mapping_note": "The selected canonical MIT text uses generic copyright/license-text placeholders and does not establish package-specific upstream copyright attribution or full package-specific license text. Shared pinned LICENSE.md says crates are SDK-derived and leaves distribution implications unclear. No authors or legal obligations are inferred.",
+        "name": "objc2-app-kit",
+        "pinned_git_sha": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+        "repository": "https://github.com/madsmtm/objc2",
+        "source_mapping_status": "verified_source_mapping",
+        "version": "0.3.2"
+      },
+      "source_mapping_status": "verified_source_mapping",
+      "version": "0.3.2"
+    },
+    {
+      "declared_license": "Zlib OR Apache-2.0 OR MIT",
+      "mapping_note": "objc2-core-foundation Cargo.toml uses license.workspace=true; pinned root workspace.package declares Zlib OR Apache-2.0 OR MIT. Root LICENSE.md assigns that trio to all crates except objc2, block2, objc2-foundation and objc2-encode. Root README points to detailed LICENSE.md. The crate README MIT badge is one allowed OR option and is not treated as a contradiction. The upstream mapping also states SDK-derived distribution ambiguity; inclusion here does not resolve that question. The MIT branch is selected from the declared Zlib OR Apache-2.0 OR MIT alternatives; declared SPDX remains unchanged. The canonical MIT text has generic copyright placeholders and does not supply verified package-specific attribution. Shared mapping records unresolved SDK-derived distribution ambiguity.",
+      "mapping_source_url": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+      "name": "objc2-core-foundation",
+      "notices": [
+        {
+          "license": "source-mapping",
+          "path": "notice-sources/objc2-LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md"
+        },
+        {
+          "license": "MIT",
+          "path": "notice-sources/MIT.txt",
+          "sha256": "c3b1b78bc8bd3ea13aa4bc9778442d16560270afa235006d816e5e88cef24db4",
+          "source_url": "https://spdx.org/licenses/MIT.txt"
+        }
+      ],
+      "pinned_git_sha": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "repository": "https://github.com/madsmtm/objc2",
+      "selected_license": "MIT",
+      "source_finding": {
+        "mapping_note": "The selected canonical MIT text uses generic copyright/license-text placeholders and does not establish package-specific upstream copyright attribution or full package-specific license text. Shared pinned LICENSE.md says crates are SDK-derived and leaves distribution implications unclear. No authors or legal obligations are inferred.",
+        "name": "objc2-core-foundation",
+        "pinned_git_sha": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+        "repository": "https://github.com/madsmtm/objc2",
+        "source_mapping_status": "verified_source_mapping",
+        "version": "0.3.2"
+      },
+      "source_mapping_status": "verified_source_mapping",
+      "version": "0.3.2"
+    },
+    {
+      "declared_license": "Zlib OR Apache-2.0 OR MIT",
+      "mapping_note": "objc2-core-graphics Cargo.toml uses license.workspace=true; pinned root workspace.package declares Zlib OR Apache-2.0 OR MIT. Root LICENSE.md assigns that trio to all crates except objc2, block2, objc2-foundation and objc2-encode. Root README points to detailed LICENSE.md. The crate README MIT badge is one allowed OR option and is not treated as a contradiction. The upstream mapping also states SDK-derived distribution ambiguity; inclusion here does not resolve that question. The MIT branch is selected from the declared Zlib OR Apache-2.0 OR MIT alternatives; declared SPDX remains unchanged. The canonical MIT text has generic copyright placeholders and does not supply verified package-specific attribution. Shared mapping records unresolved SDK-derived distribution ambiguity.",
+      "mapping_source_url": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+      "name": "objc2-core-graphics",
+      "notices": [
+        {
+          "license": "source-mapping",
+          "path": "notice-sources/objc2-LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md"
+        },
+        {
+          "license": "MIT",
+          "path": "notice-sources/MIT.txt",
+          "sha256": "c3b1b78bc8bd3ea13aa4bc9778442d16560270afa235006d816e5e88cef24db4",
+          "source_url": "https://spdx.org/licenses/MIT.txt"
+        }
+      ],
+      "pinned_git_sha": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "repository": "https://github.com/madsmtm/objc2",
+      "selected_license": "MIT",
+      "source_finding": {
+        "mapping_note": "The selected canonical MIT text uses generic copyright/license-text placeholders and does not establish package-specific upstream copyright attribution or full package-specific license text. Shared pinned LICENSE.md says crates are SDK-derived and leaves distribution implications unclear. No authors or legal obligations are inferred.",
+        "name": "objc2-core-graphics",
+        "pinned_git_sha": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+        "repository": "https://github.com/madsmtm/objc2",
+        "source_mapping_status": "verified_source_mapping",
+        "version": "0.3.2"
+      },
+      "source_mapping_status": "verified_source_mapping",
+      "version": "0.3.2"
+    },
+    {
+      "declared_license": "Zlib OR Apache-2.0 OR MIT",
+      "mapping_note": "objc2-io-surface Cargo.toml uses license.workspace=true; pinned root workspace.package declares Zlib OR Apache-2.0 OR MIT. Root LICENSE.md assigns that trio to all crates except objc2, block2, objc2-foundation and objc2-encode. Root README points to detailed LICENSE.md. The crate README MIT badge is one allowed OR option and is not treated as a contradiction. The upstream mapping also states SDK-derived distribution ambiguity; inclusion here does not resolve that question. The MIT branch is selected from the declared Zlib OR Apache-2.0 OR MIT alternatives; declared SPDX remains unchanged. The canonical MIT text has generic copyright placeholders and does not supply verified package-specific attribution. Shared mapping records unresolved SDK-derived distribution ambiguity.",
+      "mapping_source_url": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+      "name": "objc2-io-surface",
+      "notices": [
+        {
+          "license": "source-mapping",
+          "path": "notice-sources/objc2-LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md"
+        },
+        {
+          "license": "MIT",
+          "path": "notice-sources/MIT.txt",
+          "sha256": "c3b1b78bc8bd3ea13aa4bc9778442d16560270afa235006d816e5e88cef24db4",
+          "source_url": "https://spdx.org/licenses/MIT.txt"
+        }
+      ],
+      "pinned_git_sha": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "repository": "https://github.com/madsmtm/objc2",
+      "selected_license": "MIT",
+      "source_finding": {
+        "mapping_note": "The selected canonical MIT text uses generic copyright/license-text placeholders and does not establish package-specific upstream copyright attribution or full package-specific license text. Shared pinned LICENSE.md says crates are SDK-derived and leaves distribution implications unclear. No authors or legal obligations are inferred.",
+        "name": "objc2-io-surface",
+        "pinned_git_sha": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+        "repository": "https://github.com/madsmtm/objc2",
+        "source_mapping_status": "verified_source_mapping",
+        "version": "0.3.2"
+      },
+      "source_mapping_status": "verified_source_mapping",
+      "version": "0.3.2"
+    },
+    {
+      "declared_license": "Zlib OR Apache-2.0 OR MIT",
+      "mapping_note": "objc2-quartz-core Cargo.toml uses license.workspace=true; pinned root workspace.package declares Zlib OR Apache-2.0 OR MIT. Root LICENSE.md assigns that trio to all crates except objc2, block2, objc2-foundation and objc2-encode. Root README points to detailed LICENSE.md. The crate README MIT badge is one allowed OR option and is not treated as a contradiction. The upstream mapping also states SDK-derived distribution ambiguity; inclusion here does not resolve that question. The MIT branch is selected from the declared Zlib OR Apache-2.0 OR MIT alternatives; declared SPDX remains unchanged. The canonical MIT text has generic copyright placeholders and does not supply verified package-specific attribution. Shared mapping records unresolved SDK-derived distribution ambiguity.",
+      "mapping_source_url": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+      "name": "objc2-quartz-core",
+      "notices": [
+        {
+          "license": "source-mapping",
+          "path": "notice-sources/objc2-LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md"
+        },
+        {
+          "license": "MIT",
+          "path": "notice-sources/MIT.txt",
+          "sha256": "c3b1b78bc8bd3ea13aa4bc9778442d16560270afa235006d816e5e88cef24db4",
+          "source_url": "https://spdx.org/licenses/MIT.txt"
+        }
+      ],
+      "pinned_git_sha": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "repository": "https://github.com/madsmtm/objc2",
+      "selected_license": "MIT",
+      "source_finding": {
+        "mapping_note": "The selected canonical MIT text uses generic copyright/license-text placeholders and does not establish package-specific upstream copyright attribution or full package-specific license text. Shared pinned LICENSE.md says crates are SDK-derived and leaves distribution implications unclear. No authors or legal obligations are inferred.",
+        "name": "objc2-quartz-core",
+        "pinned_git_sha": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+        "repository": "https://github.com/madsmtm/objc2",
+        "source_mapping_status": "verified_source_mapping",
+        "version": "0.3.2"
+      },
+      "source_mapping_status": "verified_source_mapping",
+      "version": "0.3.2"
+    },
+    {
+      "declared_license": "Zlib OR Apache-2.0 OR MIT",
+      "mapping_note": "objc2-web-kit Cargo.toml uses license.workspace=true; pinned root workspace.package declares Zlib OR Apache-2.0 OR MIT. Root LICENSE.md assigns that trio to all crates except objc2, block2, objc2-foundation and objc2-encode. Root README points to detailed LICENSE.md. The crate README MIT badge is one allowed OR option and is not treated as a contradiction. The upstream mapping also states SDK-derived distribution ambiguity; inclusion here does not resolve that question. The MIT branch is selected from the declared Zlib OR Apache-2.0 OR MIT alternatives; declared SPDX remains unchanged. The canonical MIT text has generic copyright placeholders and does not supply verified package-specific attribution. Shared mapping records unresolved SDK-derived distribution ambiguity.",
+      "mapping_source_url": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+      "name": "objc2-web-kit",
+      "notices": [
+        {
+          "license": "source-mapping",
+          "path": "notice-sources/objc2-LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md"
+        },
+        {
+          "license": "MIT",
+          "path": "notice-sources/MIT.txt",
+          "sha256": "c3b1b78bc8bd3ea13aa4bc9778442d16560270afa235006d816e5e88cef24db4",
+          "source_url": "https://spdx.org/licenses/MIT.txt"
+        }
+      ],
+      "pinned_git_sha": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "repository": "https://github.com/madsmtm/objc2",
+      "selected_license": "MIT",
+      "source_finding": {
+        "mapping_note": "The selected canonical MIT text uses generic copyright/license-text placeholders and does not establish package-specific upstream copyright attribution or full package-specific license text. Shared pinned LICENSE.md says crates are SDK-derived and leaves distribution implications unclear. No authors or legal obligations are inferred.",
+        "name": "objc2-web-kit",
+        "pinned_git_sha": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+        "repository": "https://github.com/madsmtm/objc2",
+        "source_mapping_status": "verified_source_mapping",
+        "version": "0.3.2"
+      },
+      "source_mapping_status": "verified_source_mapping",
+      "version": "0.3.2"
+    },
+    {
+      "declared_license": "Zlib OR Apache-2.0 OR MIT",
+      "mapping_note": "Crate manifest uses license.workspace=true; pinned root workspace.package declares Zlib OR Apache-2.0 OR MIT. Root LICENSE.md assigns that trio to all crates except objc2, block2, objc2-foundation and objc2-encode. Crate README MIT badge is one allowed OR option and is consistent with manifest inheritance and detailed root scope. The crate README MIT badge is one allowed OR option and is not treated as a contradiction. The upstream mapping also states SDK-derived distribution ambiguity; inclusion here does not resolve that question. The MIT branch is selected from the declared Zlib OR Apache-2.0 OR MIT alternatives; declared SPDX remains unchanged. The canonical MIT text has generic copyright placeholders and does not supply verified package-specific attribution. Shared mapping records unresolved SDK-derived distribution ambiguity.",
+      "mapping_source_url": "https://raw.githubusercontent.com/madsmtm/objc2/8d214f5477365ffcbcbb7de058c86ed9a518efb7/LICENSE.md",
+      "name": "objc2-exception-helper",
+      "notices": [
+        {
+          "license": "source-mapping",
+          "path": "notice-sources/objc2-LICENSE.md",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "source_url": "https://raw.githubusercontent.com/madsmtm/objc2/8d214f5477365ffcbcbb7de058c86ed9a518efb7/LICENSE.md"
+        },
+        {
+          "license": "MIT",
+          "path": "notice-sources/MIT.txt",
+          "sha256": "c3b1b78bc8bd3ea13aa4bc9778442d16560270afa235006d816e5e88cef24db4",
+          "source_url": "https://spdx.org/licenses/MIT.txt"
+        }
+      ],
+      "pinned_git_sha": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+      "repository": "https://github.com/madsmtm/objc2",
+      "selected_license": "MIT",
+      "source_finding": {
+        "mapping_note": "The selected canonical MIT text uses generic copyright/license-text placeholders and does not establish package-specific upstream copyright attribution or full package-specific license text. Shared pinned LICENSE.md says crates are SDK-derived and leaves distribution implications unclear. No authors or legal obligations are inferred.",
+        "name": "objc2-exception-helper",
+        "pinned_git_sha": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+        "repository": "https://github.com/madsmtm/objc2",
+        "source_mapping_status": "verified_source_mapping",
+        "version": "0.1.1"
+      },
+      "source_mapping_status": "verified_source_mapping",
+      "version": "0.1.1"
+    },
+    {
+      "declared_license": "MPL-2.0",
+      "mapping_note": "selectors/Cargo.toml explicitly declares MPL-2.0; root README says Stylo is licensed under MPL 2.0. Recursive tree has no license/notice candidates. Raw checks of LICENSE-MPL-2.0, LICENSE, and components/style/LICENSE at this exact SHA each returned HTTP 404; license text unavailable from pinned tree. Pinned selectors/lib.rs contains the MPL 2.0 header; Mozilla canonical MPL 2.0 terms are included. Preserve MPL file-level source and notice obligations when redistributing covered source or executables.",
+      "name": "selectors",
+      "notices": [
+        {
+          "license": "MPL-2.0-source-header",
+          "path": "notice-sources/selectors-lib.rs",
+          "sha256": "d54c6e13e9e952dac17d209171df8657e3cae93beaddace4906150cdec8d02e9",
+          "source_url": "https://raw.githubusercontent.com/servo/stylo/572ecba2d1600e7c3d490586692a209faf703baa/selectors/lib.rs"
+        },
+        {
+          "license": "MPL-2.0",
+          "path": "notice-sources/MPL-2.0.txt",
+          "sha256": "fab3dd6bdab226f1c08630b1dd917e11fcb4ec5e1e020e2c16f83a0a13863e85",
+          "source_url": "https://www.mozilla.org/media/MPL/2.0/index.815ca599c9df.txt"
+        }
+      ],
+      "pinned_git_sha": "572ecba2d1600e7c3d490586692a209faf703baa",
+      "repository": "https://github.com/servo/stylo",
+      "source_mapping_status": "declared_mapping_text_canonical_terms_supplemented",
+      "version": "0.38.0"
+    },
+    {
+      "name": "dlopen2",
+      "version": "0.8.2",
+      "repository": "https://github.com/OpenByteDev/dlopen2",
+      "pinned_git_sha": "cc80e4a0a90d499b677fdf7743699b4b3a43a989",
+      "declared_license": "MIT",
+      "mapping_note": "dlopen2/Cargo.toml at the pinned commit directly declares MIT and version 0.8.2; .cargo_vcs_info.json identifies path_in_vcs=dlopen2. The pinned root LICENSE supplies the literal MIT terms and package copyright attribution.",
+      "source_mapping_status": "verified_source_mapping",
+      "notices": [
+        {
+          "license": "MIT",
+          "path": "notice-sources/linux-dlopen2-LICENSE",
+          "sha256": "39fa265207450e77c62e90c5594a06c085b655d8374c7ced4bf7894b6bd95dd2",
+          "source_url": "https://raw.githubusercontent.com/OpenByteDev/dlopen2/cc80e4a0a90d499b677fdf7743699b4b3a43a989/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "dlopen2_derive",
+      "version": "0.4.3",
+      "repository": "https://github.com/OpenByteDev/dlopen2",
+      "pinned_git_sha": "cc80e4a0a90d499b677fdf7743699b4b3a43a989",
+      "declared_license": "MIT",
+      "mapping_note": "dlopen2-derive/Cargo.toml at the pinned commit directly declares MIT and version 0.4.3; .cargo_vcs_info.json identifies path_in_vcs=dlopen2-derive. The pinned root LICENSE supplies the literal MIT terms and package copyright attribution.",
+      "source_mapping_status": "verified_source_mapping",
+      "notices": [
+        {
+          "license": "MIT",
+          "path": "notice-sources/linux-dlopen2-LICENSE",
+          "sha256": "39fa265207450e77c62e90c5594a06c085b655d8374c7ced4bf7894b6bd95dd2",
+          "source_url": "https://raw.githubusercontent.com/OpenByteDev/dlopen2/cc80e4a0a90d499b677fdf7743699b4b3a43a989/LICENSE"
+        }
+      ]
+    },
+    {
+      "name": "libappindicator-sys",
+      "version": "0.9.0",
+      "repository": "https://github.com/tauri-apps/libappindicator-rs",
+      "pinned_git_sha": "eafd1e3682a1247f595410266091e9684021cb6f",
+      "declared_license": "Apache-2.0 OR MIT",
+      "mapping_note": "sys/Cargo.toml at the pinned commit directly declares Apache-2.0 OR MIT and version 0.9.0; .cargo_vcs_info.json identifies path_in_vcs=sys. The root Cargo.toml has no inherited workspace license; root README describes the project and both root license texts are present at this commit. Both declared alternatives are retained.",
+      "source_mapping_status": "verified_source_mapping",
+      "notices": [
+        {
+          "license": "MIT",
+          "path": "notice-sources/linux-libappindicator-sys-LICENSE-MIT",
+          "sha256": "eb227437252b2a7a9c1fc342c93ade1f3d7ce38cc6dd754f613db07d53ceff0b",
+          "source_url": "https://raw.githubusercontent.com/tauri-apps/libappindicator-rs/eafd1e3682a1247f595410266091e9684021cb6f/LICENSE-MIT"
+        },
+        {
+          "license": "Apache-2.0",
+          "path": "notice-sources/linux-libappindicator-sys-LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "source_url": "https://raw.githubusercontent.com/tauri-apps/libappindicator-rs/eafd1e3682a1247f595410266091e9684021cb6f/LICENSE-APACHE"
+        }
+      ]
+    }
+  ],
+  "schema_version": 1
+}

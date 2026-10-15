@@ -1,0 +1,84 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Bytepleat",
+  "version": "0.1.0-alpha.0",
+  "identifier": "io.github.megasoft1978.bytepleat.desktop",
+  "build": {
+    "frontendDist": "../ui"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "Bytepleat",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 760,
+        "minHeight": 560,
+        "label": "main"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "category": "Utility",
+    "shortDescription": "Lossless archive creation and extraction",
+    "longDescription": "Alpha desktop interface for Bytepleat archive operations.",
+    "macOS": {
+      "minimumSystemVersion": "13.0"
+    },
+    "fileAssociations": [
+      {
+        "ext": [
+          "zip"
+        ],
+        "name": "ZIP archive",
+        "mimeType": "application/zip",
+        "role": "Viewer"
+      },
+      {
+        "ext": [
+          "7z"
+        ],
+        "name": "7-Zip archive",
+        "mimeType": "application/x-7z-compressed",
+        "role": "Viewer"
+      },
+      {
+        "ext": [
+          "tar.zst"
+        ],
+        "name": "Zstandard tar archive",
+        "mimeType": "application/zstd",
+        "role": "Viewer"
+      },
+      {
+        "ext": [
+          "tar.gz"
+        ],
+        "name": "Gzip tar archive",
+        "mimeType": "application/gzip",
+        "role": "Viewer"
+      },
+      {
+        "ext": [
+          "tar.lz4"
+        ],
+        "name": "LZ4 tar archive",
+        "mimeType": "application/x-lz4",
+        "role": "Viewer"
+      }
+    ]
+  }
+}

@@ -1,8 +1,13 @@
 # Bytepleat
 
-Compress files. Pack folders.
+**Compress files. Pack folders. Restore the same bytes.**
 
-Bytepleat is a Rust command-line archiver for files and folders. Compress, pack, inspect, test, and restore through one consistent set of commands, using familiar formats and preserving the original file bytes.
+Bytepleat is a Rust archiver built around familiar formats and careful file handling. Everything runs on your device; inputs are never moved or removed.
+
+| | Status | Get it |
+| --- | --- | --- |
+| **Command-line tool 0.5.1** | Released. Native CI passed on macOS Apple silicon, Linux x86-64 and Windows x86-64. | [Install](#install) |
+| **Desktop app** | Alpha, in development. No consumer installer is published. | [Build and try it](#desktop-app-alpha) |
 
 ```sh
 bytepleat compress report.pdf
@@ -14,7 +19,35 @@ bytepleat test project.tar.zst
 bytepleat unpack project.tar.zst -o project-restored
 ```
 
-Your originals stay in place. Named outputs are published after successful completion, and unpacking requires a new destination directory. Built for scripts and everyday file workflows, Bytepleat puts format choice and file-handling behavior in your hands.
+Your originals stay in place. Named outputs are published after successful completion, and unpacking requires a new destination directory. Bytepleat uses established codecs and archive formats; it does not introduce a proprietary archive format.
+
+## Desktop app (alpha)
+
+A calm desktop window for everyday archive work, built on the same bounded archive engine as the CLI. It uses your system's file dialogs and has three views:
+
+- **Create:** choose files or a folder, pick a format, and save a new archive.
+- **Extract:** unpack one archive into a new folder. An existing destination is refused, never overwritten.
+- **Inspect:** list an archive's entries without extracting. Listing does not verify file contents. Extracting selected entries still decodes the whole archive before keeping the ones you chose.
+
+There is no desktop installer yet; the packages under [Install](#install) are the CLI release. To try the alpha, build it from source (Rust 1.93 or newer, Node.js/npm and the [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/)):
+
+```sh
+cd desktop
+npm install --ignore-scripts
+npm run tauri -- dev
+```
+
+Desktop operations are capped at 1 GiB of output and 100,000 entries; listings preview up to 5,000 entries. ZIP is classic Stored/Deflate only, 7z is a bounded subset, and compressed tar uses Zstandard, gzip or LZ4. RAR, password-protected archives and ZIP64 are not supported. See [supported formats](docs/formats.md).
+
+**Platform evidence.** Platform validation is incomplete. This summarizes [desktop validation](docs/desktop-validation.md), which has the exact scope, versions and open items:
+
+| Platform | What has been checked |
+| --- | --- |
+| macOS 27.0.1 · Apple silicon | Interactive GUI runs of create, inspect, selected and full extraction, overwrite refusal, cancellation, and selected Finder handoffs. Unsigned local build; not notarized. macOS 13 (the bundle minimum) is unverified. |
+| Ubuntu 24.04.5 · ARM64 | Interactive runs in XFCE/Xorg and GNOME/Xorg, including Nautilus and Dolphin handoffs. Some GNOME checks still need repeating on the latest package. Wayland and Kubuntu are unverified. |
+| Windows | Native CI tests and MSIX package validation only. Installed GUI and Explorer behavior are unverified. |
+
+These are results from specific sessions, not a claim of support for every OS version or architecture. See [desktop/README.md](desktop/README.md) for build notes and limitations.
 
 ## Install
 
@@ -67,13 +100,18 @@ Choose `--preset fast`, `--preset balanced` (the default), or `--preset compact`
 
 See the [user guide](docs/user-guide.md) for pipes, archive options, and numeric buffers, and [supported formats](docs/formats.md) for the precise compatibility boundaries.
 
-## Supported formats at a glance
+## Supported formats
 
-- Byte streams: Zstandard, gzip, LZ4 frames, and explicitly typed standalone Pco.
-- Folder archives: standard tar carried by Zstandard, gzip, or LZ4; classic ZIP Stored/Deflate; and a bounded 7z subset written with LZMA2.
-- RAR is recognized for information display but is not decoded by Bytepleat. An external tool may be used separately.
+| Format | Single-file streams | Folder archive | Notes |
+| --- | --- | --- | --- |
+| Zstandard, gzip, LZ4 | Compress and decompress | Compressed tar | Byte-stream codecs; presets available for Zstandard and gzip |
+| ZIP | — | Create, inspect, test, and extract a supported subset | Stored and Deflate entries |
+| 7z | — | Create, inspect, test, and extract a bounded subset | LZMA2; compatibility limits apply |
+| Pco | Typed numeric streams | — | CLI-only typed stream; raw little-endian values, explicit type required; not arbitrary files or CSV |
 
-Bytepleat uses established compression algorithms. Archive contents preserve file bytes and relative paths, with full filesystem metadata outside the supported scope: permissions, ownership, links, extended attributes, and portable timestamps are not restored. `test` checks decoding and format integrity; `info` reads metadata. Neither authenticates the sender or scans for malware. See [security and limits](docs/security-limits.md) for extraction checks, default caps, and publication behavior.
+RAR can be identified for metadata display but is not decoded. See [supported formats](docs/formats.md) for exact compatibility boundaries and [compression research](docs/compression-research.md) for the evidence behind codec and format decisions.
+
+Archive contents preserve file bytes and relative paths within the supported scope. Permissions, ownership, links, extended attributes, and portable timestamps are not restored. `test` checks decoding and format integrity; `info` reads metadata. Neither authenticates the sender or scans for malware. See [security and limits](docs/security-limits.md) for extraction checks, default caps, and publication behavior.
 
 ## Project
 
@@ -82,6 +120,7 @@ Bytepleat uses established compression algorithms. Archive contents preserve fil
 - [Security reporting](SECURITY.md)
 - [Support](SUPPORT.md)
 - [Release notes and verification](RELEASE.md)
+- [Benchmark results and reproduction](docs/benchmarks.md)
 - [GitHub repository](https://github.com/megasoft1978/bytepleat)
 - [Project website](https://megasoft1978.github.io/bytepleat/)
 

@@ -1,0 +1,27 @@
+[package]
+name = "bytepleat-desktop-core"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+rust-version = "1.93"
+
+[lib]
+name = "bytepleat_desktop_core"
+
+[[bin]]
+name = "bytepleat-worker"
+path = "src/bin/bytepleat-worker.rs"
+
+[dependencies]
+bytepleat = { path = "../.." }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tempfile = "3"
+walkdir = "2"
+same-file = "1"
+zip = { version = "=9.0.3", default-features = false, features = ["deflate-flate2"] }
+tar = "=0.4.46"
+unicode-normalization = "0.1"
+
+[patch.crates-io]
+sevenz-rust2 = { path = "../../vendor/sevenz-rust2" }
