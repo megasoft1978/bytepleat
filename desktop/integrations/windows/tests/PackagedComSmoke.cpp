@@ -2,10 +2,12 @@
 #error Packaged COM smoke requires a native ARM64 build.
 #endif
 #include <windows.h>
+#include <shlobj.h>
 #include <shobjidl.h>
 #include <wrl/client.h>
 #include <cstdio>
 #include <cwchar>
+#include <string>
 #include <utility>
 #include <vector>
 
