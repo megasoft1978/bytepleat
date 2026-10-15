@@ -1,0 +1,531 @@
+{
+  "schema": "bytepleat-macos-rar-reproduction-v1",
+  "run": {
+    "started_utc": "2026-10-15T16:03:13Z",
+    "ended_utc": "2026-10-15T16:04:22Z",
+    "elapsed_seconds": 68.487
+  },
+  "scope": "macOS ARM64 single-host measurement; exploratory timings only, not a cross-platform or general performance ranking.",
+  "repository": {
+    "bytepleat_version": "0.5.1",
+    "benchmark_harness_sha256": "02fc7cf488892f9b094d57da4cde4a84d32e165002df037a62deb9f5c7316679",
+    "corpus_manifest_sha256": "5275aa164e90d8e5e443a968d21fb36cb741b28e2ea086bb89385e5bde280b98",
+    "prepared_manifest_sha256": "e70427cb503c05b6ff3b87e34ee4965debf2e60eedfe4a0e4ab012af819c0f22",
+    "bytepleat_source_commit": "bf3cacbcc586510178e62a90de16d7243605dfc7"
+  },
+  "host": {
+    "cpu": "Apple M5 Max",
+    "architecture": "arm64",
+    "macos": "27.0.1",
+    "logical_cpu_count": 18,
+    "memory_bytes": 68719476736,
+    "load_average_at_start": [
+      8.4482421875,
+      7.50634765625,
+      6.14453125
+    ]
+  },
+  "build": {
+    "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+    "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+    "command": "cargo build --release --locked --bin bytepleat",
+    "bytepleat_binary_sha256": "5fc681485466155f3ffd0f52dcaf74b45791c54e53e474193edf9faa5742db4c"
+  },
+  "tools": {
+    "7-Zip": {
+      "version": "26.04 arm64",
+      "binary_sha256": "5a25067326ccbc3b3c6f21b7961f91292598cd42a4885fdf9f5448bd091348d3"
+    },
+    "RAR": {
+      "version": "7.23 macOS ARM64 command-line trial",
+      "binary_sha256": "fd6c7db73c659a28b50408354f4a4845c53a67f929f37fd99df92aa77b9f5153",
+      "official_download_archive_sha256": "68b393c000758d477fde43c955ff7542f12f76f3f5e87cdda923152fc791bd4d",
+      "source": "https://www.rarlab.com/rar/rarmacos-arm-723.tar.gz",
+      "license_note": "Official RAR for macOS ARM 7.23 trial, evaluated within RARLAB's 40-day trial period; used locally and not redistributed.",
+      "redistributed": false,
+      "archive_settings": {
+        "format": "RAR5",
+        "levels": [
+          3,
+          5
+        ],
+        "solid": true,
+        "dictionary_bytes": 16777216,
+        "threads": 1
+      }
+    },
+    "Info-ZIP": {
+      "version": "3.0 Apple-modified",
+      "binary_sha256": "aab14c5dba5af0f2fd94f7c2863edd069aae7d96051953b4a890bd610141c20b"
+    },
+    "macOS ditto": {
+      "binary_sha256": "88933d7c96cc2c02219d61f5523b61a902dca8fdeed3b8384f24066ff48541bb"
+    },
+    "Zstandard CLI": {
+      "version": "1.5.7",
+      "binary_sha256": "aff8169fb421bb925fb16c44a7e0143fa2c7a941dc45cce76b15062a2ce54917"
+    },
+    "LZ4 CLI": {
+      "version": "1.10.0",
+      "binary_sha256": "4fef8dd687478d1a8dcf4e2db25defd2daf76f7e0bb3478f023b738f9501f48c"
+    },
+    "system tar": {
+      "version": "bsdtar 3.5.3 / libarchive 3.7.4",
+      "binary_sha256": "ad4e73ac2e00b3d69969b2e8da466f08c7968a51f424380ecb4d9ff6779b28b9"
+    }
+  },
+  "corpus": {
+    "upstream": "lz4/lz4 tag v1.10.0",
+    "derived_ustar_bytes": 1843200,
+    "derived_ustar_sha256": "fd33f2ea8f797d4d02452e80f1819a472f584471bc7b1fa09c0a17099b5f43f3",
+    "also_includes": [
+      "generated 8 MiB repeated-text control",
+      "generated 8 MiB pseudorandom control"
+    ]
+  },
+  "protocol": {
+    "warmups_per_case_method": 1,
+    "measured_repeats_per_case_method": 5,
+    "random_seed": 20261014,
+    "case_method_groups": 48,
+    "warmup_records": 48,
+    "measured_records": 240,
+    "verified_measured_records": 240,
+    "failures": 0,
+    "verification": "exact relative paths, byte counts, SHA-256 hashes and directory paths; encode process startup and file IO included; extraction startup and IO included; fsync excluded",
+    "external_worker_quiescence": "not_checked; system load was recorded, so timing comparisons may be affected"
+  },
+  "rar_independent_decode": {
+    "decoder": "7-Zip 26.04",
+    "warmup_outcomes": {
+      "unsupported-method": 6
+    },
+    "interpretation": "RAR 7.23 archives restored exactly through RAR itself; 7-Zip reported Unsupported Method on RAR warmups. This is a version-specific interoperability observation, not a claim that RAR output is corrupt."
+  },
+  "results_csv": "macos-rar-reproduction-2026-10-15.csv",
+  "methods": {
+    "measured": [
+      "7zz-7z-5",
+      "7zz-zip-6",
+      "7zz-zip-9",
+      "bytepleat-7z-5",
+      "bytepleat-tar-gzip-6",
+      "bytepleat-tar-lz4",
+      "bytepleat-tar-zstd-3",
+      "bytepleat-zip-6",
+      "bytepleat-zip-9",
+      "ditto-zip",
+      "infozip-6",
+      "rar5-m3",
+      "rar5-m5",
+      "tar-gzip-6",
+      "tar-lz4",
+      "tar-zstd-3"
+    ],
+    "skipped": [
+      {
+        "id": "native-tar-zstd-3",
+        "reason": "missing executable(s): tar native zstd support"
+      }
+    ]
+  },
+  "randomized_order": [
+    {
+      "case": "lz4-source",
+      "phase": "warmup",
+      "method_ids": [
+        "bytepleat-zip-6",
+        "7zz-zip-6",
+        "tar-lz4",
+        "bytepleat-zip-9",
+        "bytepleat-tar-zstd-3",
+        "7zz-zip-9",
+        "infozip-6",
+        "rar5-m3",
+        "rar5-m5",
+        "bytepleat-tar-lz4",
+        "tar-zstd-3",
+        "bytepleat-tar-gzip-6",
+        "bytepleat-7z-5",
+        "ditto-zip",
+        "tar-gzip-6",
+        "7zz-7z-5"
+      ]
+    },
+    {
+      "case": "lz4-source",
+      "phase": 1,
+      "method_ids": [
+        "rar5-m5",
+        "bytepleat-7z-5",
+        "bytepleat-zip-9",
+        "tar-gzip-6",
+        "ditto-zip",
+        "tar-lz4",
+        "bytepleat-tar-lz4",
+        "7zz-7z-5",
+        "infozip-6",
+        "bytepleat-zip-6",
+        "7zz-zip-6",
+        "7zz-zip-9",
+        "bytepleat-tar-zstd-3",
+        "bytepleat-tar-gzip-6",
+        "rar5-m3",
+        "tar-zstd-3"
+      ]
+    },
+    {
+      "case": "lz4-source",
+      "phase": 2,
+      "method_ids": [
+        "7zz-zip-9",
+        "rar5-m3",
+        "bytepleat-tar-lz4",
+        "bytepleat-7z-5",
+        "tar-gzip-6",
+        "bytepleat-tar-gzip-6",
+        "bytepleat-zip-6",
+        "bytepleat-tar-zstd-3",
+        "ditto-zip",
+        "rar5-m5",
+        "7zz-7z-5",
+        "tar-lz4",
+        "bytepleat-zip-9",
+        "7zz-zip-6",
+        "tar-zstd-3",
+        "infozip-6"
+      ]
+    },
+    {
+      "case": "lz4-source",
+      "phase": 3,
+      "method_ids": [
+        "bytepleat-tar-lz4",
+        "bytepleat-tar-gzip-6",
+        "rar5-m5",
+        "ditto-zip",
+        "tar-lz4",
+        "tar-zstd-3",
+        "bytepleat-zip-6",
+        "7zz-7z-5",
+        "7zz-zip-9",
+        "tar-gzip-6",
+        "bytepleat-7z-5",
+        "bytepleat-zip-9",
+        "infozip-6",
+        "bytepleat-tar-zstd-3",
+        "rar5-m3",
+        "7zz-zip-6"
+      ]
+    },
+    {
+      "case": "lz4-source",
+      "phase": 4,
+      "method_ids": [
+        "tar-gzip-6",
+        "7zz-zip-6",
+        "rar5-m5",
+        "bytepleat-tar-zstd-3",
+        "bytepleat-7z-5",
+        "tar-lz4",
+        "infozip-6",
+        "bytepleat-tar-gzip-6",
+        "7zz-7z-5",
+        "bytepleat-zip-9",
+        "7zz-zip-9",
+        "ditto-zip",
+        "bytepleat-zip-6",
+        "rar5-m3",
+        "bytepleat-tar-lz4",
+        "tar-zstd-3"
+      ]
+    },
+    {
+      "case": "lz4-source",
+      "phase": 5,
+      "method_ids": [
+        "bytepleat-tar-lz4",
+        "7zz-7z-5",
+        "infozip-6",
+        "bytepleat-tar-zstd-3",
+        "rar5-m3",
+        "7zz-zip-9",
+        "bytepleat-zip-9",
+        "bytepleat-7z-5",
+        "tar-gzip-6",
+        "rar5-m5",
+        "bytepleat-zip-6",
+        "tar-lz4",
+        "bytepleat-tar-gzip-6",
+        "tar-zstd-3",
+        "ditto-zip",
+        "7zz-zip-6"
+      ]
+    },
+    {
+      "case": "synthetic-text-8m",
+      "phase": "warmup",
+      "method_ids": [
+        "bytepleat-tar-zstd-3",
+        "7zz-zip-9",
+        "bytepleat-tar-gzip-6",
+        "infozip-6",
+        "ditto-zip",
+        "7zz-7z-5",
+        "rar5-m5",
+        "bytepleat-tar-lz4",
+        "rar5-m3",
+        "tar-gzip-6",
+        "tar-zstd-3",
+        "tar-lz4",
+        "bytepleat-zip-9",
+        "bytepleat-7z-5",
+        "7zz-zip-6",
+        "bytepleat-zip-6"
+      ]
+    },
+    {
+      "case": "synthetic-text-8m",
+      "phase": 1,
+      "method_ids": [
+        "bytepleat-tar-lz4",
+        "tar-gzip-6",
+        "bytepleat-zip-9",
+        "tar-lz4",
+        "7zz-7z-5",
+        "rar5-m5",
+        "bytepleat-tar-zstd-3",
+        "bytepleat-tar-gzip-6",
+        "infozip-6",
+        "bytepleat-zip-6",
+        "bytepleat-7z-5",
+        "7zz-zip-6",
+        "tar-zstd-3",
+        "rar5-m3",
+        "ditto-zip",
+        "7zz-zip-9"
+      ]
+    },
+    {
+      "case": "synthetic-text-8m",
+      "phase": 2,
+      "method_ids": [
+        "ditto-zip",
+        "bytepleat-tar-zstd-3",
+        "bytepleat-zip-9",
+        "bytepleat-7z-5",
+        "7zz-7z-5",
+        "bytepleat-tar-lz4",
+        "rar5-m5",
+        "tar-zstd-3",
+        "7zz-zip-6",
+        "tar-gzip-6",
+        "7zz-zip-9",
+        "rar5-m3",
+        "tar-lz4",
+        "infozip-6",
+        "bytepleat-tar-gzip-6",
+        "bytepleat-zip-6"
+      ]
+    },
+    {
+      "case": "synthetic-text-8m",
+      "phase": 3,
+      "method_ids": [
+        "bytepleat-zip-9",
+        "ditto-zip",
+        "bytepleat-zip-6",
+        "tar-gzip-6",
+        "7zz-7z-5",
+        "bytepleat-7z-5",
+        "bytepleat-tar-lz4",
+        "tar-zstd-3",
+        "7zz-zip-6",
+        "rar5-m3",
+        "tar-lz4",
+        "rar5-m5",
+        "7zz-zip-9",
+        "bytepleat-tar-gzip-6",
+        "bytepleat-tar-zstd-3",
+        "infozip-6"
+      ]
+    },
+    {
+      "case": "synthetic-text-8m",
+      "phase": 4,
+      "method_ids": [
+        "ditto-zip",
+        "bytepleat-tar-lz4",
+        "bytepleat-zip-9",
+        "7zz-zip-9",
+        "7zz-7z-5",
+        "bytepleat-tar-gzip-6",
+        "rar5-m5",
+        "tar-lz4",
+        "bytepleat-zip-6",
+        "bytepleat-tar-zstd-3",
+        "7zz-zip-6",
+        "bytepleat-7z-5",
+        "infozip-6",
+        "tar-gzip-6",
+        "tar-zstd-3",
+        "rar5-m3"
+      ]
+    },
+    {
+      "case": "synthetic-text-8m",
+      "phase": 5,
+      "method_ids": [
+        "tar-zstd-3",
+        "bytepleat-7z-5",
+        "7zz-zip-9",
+        "7zz-zip-6",
+        "ditto-zip",
+        "tar-gzip-6",
+        "bytepleat-tar-gzip-6",
+        "bytepleat-zip-6",
+        "tar-lz4",
+        "rar5-m3",
+        "rar5-m5",
+        "bytepleat-tar-lz4",
+        "7zz-7z-5",
+        "bytepleat-zip-9",
+        "bytepleat-tar-zstd-3",
+        "infozip-6"
+      ]
+    },
+    {
+      "case": "synthetic-random-8m",
+      "phase": "warmup",
+      "method_ids": [
+        "bytepleat-tar-zstd-3",
+        "tar-zstd-3",
+        "bytepleat-tar-lz4",
+        "infozip-6",
+        "bytepleat-zip-6",
+        "rar5-m3",
+        "bytepleat-7z-5",
+        "ditto-zip",
+        "7zz-zip-6",
+        "7zz-zip-9",
+        "bytepleat-zip-9",
+        "tar-lz4",
+        "rar5-m5",
+        "7zz-7z-5",
+        "tar-gzip-6",
+        "bytepleat-tar-gzip-6"
+      ]
+    },
+    {
+      "case": "synthetic-random-8m",
+      "phase": 1,
+      "method_ids": [
+        "bytepleat-tar-lz4",
+        "7zz-zip-9",
+        "rar5-m5",
+        "tar-lz4",
+        "bytepleat-tar-zstd-3",
+        "bytepleat-7z-5",
+        "rar5-m3",
+        "ditto-zip",
+        "7zz-7z-5",
+        "bytepleat-zip-9",
+        "tar-zstd-3",
+        "infozip-6",
+        "bytepleat-tar-gzip-6",
+        "7zz-zip-6",
+        "tar-gzip-6",
+        "bytepleat-zip-6"
+      ]
+    },
+    {
+      "case": "synthetic-random-8m",
+      "phase": 2,
+      "method_ids": [
+        "bytepleat-tar-gzip-6",
+        "rar5-m5",
+        "infozip-6",
+        "tar-zstd-3",
+        "tar-gzip-6",
+        "tar-lz4",
+        "rar5-m3",
+        "7zz-zip-9",
+        "ditto-zip",
+        "bytepleat-zip-9",
+        "bytepleat-tar-lz4",
+        "7zz-7z-5",
+        "bytepleat-tar-zstd-3",
+        "bytepleat-7z-5",
+        "bytepleat-zip-6",
+        "7zz-zip-6"
+      ]
+    },
+    {
+      "case": "synthetic-random-8m",
+      "phase": 3,
+      "method_ids": [
+        "tar-gzip-6",
+        "ditto-zip",
+        "infozip-6",
+        "7zz-zip-6",
+        "tar-zstd-3",
+        "7zz-zip-9",
+        "bytepleat-zip-6",
+        "tar-lz4",
+        "rar5-m3",
+        "bytepleat-7z-5",
+        "7zz-7z-5",
+        "bytepleat-tar-zstd-3",
+        "bytepleat-tar-lz4",
+        "bytepleat-tar-gzip-6",
+        "rar5-m5",
+        "bytepleat-zip-9"
+      ]
+    },
+    {
+      "case": "synthetic-random-8m",
+      "phase": 4,
+      "method_ids": [
+        "tar-gzip-6",
+        "ditto-zip",
+        "7zz-7z-5",
+        "infozip-6",
+        "bytepleat-tar-zstd-3",
+        "bytepleat-tar-gzip-6",
+        "7zz-zip-9",
+        "tar-zstd-3",
+        "bytepleat-zip-9",
+        "tar-lz4",
+        "bytepleat-zip-6",
+        "rar5-m5",
+        "7zz-zip-6",
+        "rar5-m3",
+        "bytepleat-7z-5",
+        "bytepleat-tar-lz4"
+      ]
+    },
+    {
+      "case": "synthetic-random-8m",
+      "phase": 5,
+      "method_ids": [
+        "bytepleat-tar-lz4",
+        "7zz-zip-6",
+        "bytepleat-7z-5",
+        "infozip-6",
+        "bytepleat-zip-9",
+        "7zz-zip-9",
+        "bytepleat-tar-zstd-3",
+        "tar-zstd-3",
+        "rar5-m5",
+        "tar-lz4",
+        "tar-gzip-6",
+        "bytepleat-zip-6",
+        "bytepleat-tar-gzip-6",
+        "7zz-7z-5",
+        "rar5-m3",
+        "ditto-zip"
+      ]
+    }
+  ],
+  "benchmark_command": "python3 scripts/benchmarks/bench_macos.py --bytepleat <release-binary> --7zz <7zz> --rar <local-RAR-trial> --rar-license-note <local-evaluation-terms> --prepared <verified-corpus> --output <new-path-outside-repository> --repeats 5"
+}

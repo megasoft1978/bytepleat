@@ -26,6 +26,15 @@ def dirs(root):
     root = Path(root)
     return sorted(p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_dir())
 
+def independent_decode_status(record, content_matches):
+    if record.get('exit_code') == 0 and content_matches:
+        return 'pass'
+    errors = [line.strip() for line in record.get('stderr_tail', '').splitlines() if line.startswith('ERROR:')]
+    if (record.get('exit_code') == 2 and not record.get('timed_out') and errors
+            and all(line.startswith('ERROR: Unsupported Method :') for line in errors)):
+        return 'unsupported-method'
+    return 'fail'
+
 def _kill_group(proc):
     try: os.killpg(proc.pid, signal.SIGKILL)
     except ProcessLookupError: pass
@@ -249,8 +258,9 @@ def main():
                   xd=wd/'independent-7zz-restore'; xd.mkdir(); xr=run([zz,'x','-y','-bd','-o'+str(xd),arc],ROOT,a.timeout,wd/'rar-7zz.err')
                   try: xv=xr['exit_code']==0 and tree(xd)==expected[cid][0] and dirs(xd)==expected[cid][1]
                   except Exception: xv=False
-                  item['independent_warmup_decode']={'decoder':'7zz','record':xr,'verification':'pass' if xv else 'fail'}
-                  if not xv: failures.append({'case':cid,'phase':'warmup-independent-7zz-restore','method':m,'record':xr})
+                  independent_status=independent_decode_status(xr,xv)
+                  item['independent_warmup_decode']={'decoder':'7zz','record':xr,'verification':independent_status}
+                  if independent_status=='fail': failures.append({'case':cid,'phase':'warmup-independent-7zz-restore','method':m,'record':xr})
               else:
                 item.update(verification='encode-fail'); failures.append({'case':cid,'phase':item['phase'],'method':m,'encode':enc})
               (warmups if phase==0 else records).append(item)
