@@ -209,15 +209,16 @@ as an installed GNOME package remains pending.
 
 ## Current automated baseline · 2026-10-15
 
-The merged source tree at `109dd782e9d6cb2ee3178967da638c8ef28b4fc3`
-(merge commit `f1f46a4b64dd4eb3010b47acdecd49251131a92c`) passed the
-[native UI smoke](https://github.com/megasoft1978/bytepleat/actions/runs/38744817339),
-[desktop alpha checks](https://github.com/megasoft1978/bytepleat/actions/runs/38744817304),
-and [native Rust CI](https://github.com/megasoft1978/bytepleat/actions/runs/38744817234).
-The post-merge native UI smoke, native Rust CI, and desktop alpha checks also
-passed on the merge commit in runs [38747340991](https://github.com/megasoft1978/bytepleat/actions/runs/38747340991),
-[38747340590](https://github.com/megasoft1978/bytepleat/actions/runs/38747340590),
-and [38747341355](https://github.com/megasoft1978/bytepleat/actions/runs/38747341355).
+The current merged source tree is `5f45d4ce02d483c86655754fe25f92452d2b9b18`.
+Its [native UI smoke](https://github.com/megasoft1978/bytepleat/actions/runs/38756329912)
+passed on macOS ARM64, Linux x64/ARM64, and Windows x64/ARM64. The Windows
+WebView test launched the app with `--create`, `--extract`, and `--open` and
+checked the resulting selected paths and visible UI state. The [native Rust CI](https://github.com/megasoft1978/bytepleat/actions/runs/38756329946)
+also passed.
+The [desktop alpha checks](https://github.com/megasoft1978/bytepleat/actions/runs/38754501942)
+passed on the exact same source tree (the tested PR head and merge commit have
+identical Git tree `2a4295b17c0cfb9793887e3b512e3e26fb494554`); that run includes
+Linux packaging and Windows x64/ARM64 adapter and package checks.
 
 The native UI workflow built and launched the Tauri app on GitHub-hosted
 macOS ARM64, Ubuntu Linux x64 and ARM64, Windows x64, and Windows 11 ARM64
@@ -236,9 +237,10 @@ rebuilt the Linux development package; and validated unsigned Windows x64/ARM64
 MSIX package schemas and payloads. Native Explorer COM and quoting tests passed
 on Windows x64. On Windows 11 ARM64, the packaged smoke installed a test MSIX,
 verified package registration and its execution alias, then activated the
-packaged Explorer-command COM classes and enumerated their menu children. The
-native Rust workflow passed on macOS ARM64, Linux x64, and Windows x64. These
-runs verify app behavior in CI and development-package construction; they do
+packaged Explorer-command COM classes, enumerated their menu children, and
+invoked Compress, Extract, and Open with arguments captured by a test receiver.
+The native Rust workflow passed on macOS ARM64, Linux x64, and Windows x64.
+These runs verify app behavior in CI and development-package construction; they do
 not verify interactive Finder/Explorer/Nautilus/Dolphin menu behavior, signed
 public distribution, or behavior on every OS version.
 
@@ -294,12 +296,11 @@ warnings denied, and locked tests passed for the CLI, desktop core, and Tauri
 app. Source-export and diff-whitespace checks passed. These checks do not compile
 or run the Windows-only C++ probe or validate Windows SDK/package runtime behavior.
 
-A passing run establishes development current-user installation,
-specific native Windows ARM64 runner. The PR #6 workflow adds invocation and
-argument-handoff coverage using a test receiver; that new check is pending and
-does not establish production app startup or argument handling. Neither run
-shows interactive Explorer menus, consumer signing trust, or x64 runtime
-support.
+A passing run establishes development current-user installation, package
+registration, alias activation, and packaged COM invocation with argument
+handoff to a test receiver on the specific native Windows ARM64 runner. It does
+not establish production package startup through Explorer, consumer signing
+trust, interactive Explorer menus, or x64 installed-package behavior.
 No desktop is launched or controlled by this smoke. See the
 [Windows integration instructions](../desktop/integrations/windows/README.md#arm64-packaged-integration-smoke)
 for the exact script and cleanup scope.
