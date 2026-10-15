@@ -154,7 +154,7 @@ jobs:
         run: |
           for action in create extract open; do
             echo "Checking startup action: $action"
-            BYTEPLEAT_STARTUP_ARGS_ONLY=1 BYTEPLEAT_STARTUP_ACTION="$action" npm test
+            BYTEPLEAT_STARTUP_ARGS_ONLY=1 BYTEPLEAT_STARTUP_ARGS_ROOT="$RUNNER_TEMP/bytepleat-startup-$action" BYTEPLEAT_STARTUP_ACTION="$action" npm test
           done
         working-directory: desktop/e2e
 

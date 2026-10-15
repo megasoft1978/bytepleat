@@ -5,9 +5,14 @@ import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '../..');
-const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'bytepleat-ui-smoke-'));
+const sharedStartupRoot = process.env.BYTEPLEAT_STARTUP_ARGS_ONLY
+  ? process.env.BYTEPLEAT_STARTUP_ARGS_ROOT
+  : undefined;
+const tempRoot = sharedStartupRoot
+  ? path.resolve(sharedStartupRoot)
+  : fs.mkdtempSync(path.join(os.tmpdir(), 'bytepleat-ui-smoke-'));
 const fixtureDir = path.join(tempRoot, 'fixture');
-fs.mkdirSync(fixtureDir);
+fs.mkdirSync(fixtureDir, { recursive: true });
 const fixture = path.join(fixtureDir, 'sample.zip');
 const createFixture = path.join(fixtureDir, 'startup-create.txt');
 const startupAction = process.env.BYTEPLEAT_STARTUP_ACTION || 'open';
