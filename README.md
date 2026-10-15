@@ -2,52 +2,12 @@
 
 **Compress files. Pack folders. Restore the same bytes.**
 
-Bytepleat is a Rust archiver built around familiar formats and careful file handling. Everything runs on your device; inputs are never moved or removed.
+Bytepleat is a Rust archiver built around familiar formats and careful file handling. Everything runs on your device; inputs are never moved or removed. Bytepleat uses established codecs and archive formats; it does not introduce a proprietary archive format.
 
 | | Status | Get it |
 | --- | --- | --- |
 | **Command-line tool 0.5.1** | Released. Native CI passed on macOS Apple silicon, Linux x86-64 and Windows x86-64. | [Install](#install) |
-| **Desktop app** | Alpha, in development. No consumer installer is published. | [Build and try it](#desktop-app-alpha) |
-
-```sh
-bytepleat compress report.pdf
-bytepleat test report.pdf.zst
-bytepleat decompress report.pdf.zst -o report-restored.pdf
-
-bytepleat pack project -o project.tar.zst
-bytepleat test project.tar.zst
-bytepleat unpack project.tar.zst -o project-restored
-```
-
-Your originals stay in place. Named outputs are published after successful completion, and unpacking requires a new destination directory. Bytepleat uses established codecs and archive formats; it does not introduce a proprietary archive format.
-
-## Desktop app (alpha)
-
-A calm desktop window for everyday archive work, built on the same bounded archive engine as the CLI. It uses your system's file dialogs and has three views:
-
-- **Create:** choose files or a folder, pick a format, and save a new archive.
-- **Extract:** unpack one archive into a new folder. An existing destination is refused, never overwritten.
-- **Inspect:** list an archive's entries without extracting. Listing does not verify file contents. Extracting selected entries still decodes the whole archive before keeping the ones you chose.
-
-There is no desktop installer yet; the packages under [Install](#install) are the CLI release. To try the alpha, build it from source (Rust 1.93 or newer, Node.js/npm and the [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/)):
-
-```sh
-cd desktop
-npm install --ignore-scripts
-npm run tauri -- dev
-```
-
-Desktop operations are capped at 1 GiB of output and 100,000 entries; listings preview up to 5,000 entries. ZIP is classic Stored/Deflate only, 7z is a bounded subset, and compressed tar uses Zstandard, gzip or LZ4. RAR, password-protected archives and ZIP64 are not supported. See [supported formats](docs/formats.md).
-
-**Platform evidence.** Platform validation is incomplete. This summarizes [desktop validation](docs/desktop-validation.md), which has the exact scope, versions and open items:
-
-| Platform | What has been checked |
-| --- | --- |
-| macOS 27.0.1 · Apple silicon | Interactive GUI runs of create, inspect, selected and full extraction, overwrite refusal, cancellation, and selected Finder handoffs. Unsigned local build; not notarized. macOS 13 (the bundle minimum) is unverified. |
-| Ubuntu 24.04.5 · ARM64 | Interactive runs in XFCE/Xorg and GNOME/Xorg, including Nautilus and Dolphin handoffs. Some GNOME checks still need repeating on the latest package. Wayland and Kubuntu are unverified. |
-| Windows | Native CI tests and MSIX package validation only. Installed GUI and Explorer behavior are unverified. |
-
-These are results from specific sessions, not a claim of support for every OS version or architecture. See [desktop/README.md](desktop/README.md) for build notes and limitations.
+| **Desktop app** | Alpha, in development. No consumer installer is published; build it from source. | [Desktop alpha](#desktop-app-alpha) |
 
 ## Install
 
@@ -59,7 +19,7 @@ These are results from specific sessions, not a claim of support for every OS ve
 | Linux x86-64 GNU | `bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz` |
 | Windows x86-64 MSVC | `bytepleat-0.5.1-x86_64-pc-windows-msvc.zip` |
 
-Native CI builds, tests, and package execution passed on all three targets. See [release notes](RELEASE.md) for the tested runner baselines. Other OS versions and architectures are outside that verification.
+Native CI builds, tests, and package execution passed on all three targets. See [release notes](RELEASE.md) for the tested runner baselines. Other OS versions and architectures are outside that verification; there is no Linux ARM64 CLI package.
 
 The Windows package requires the x64 [Microsoft Visual C++ v14 runtime](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist); it is not bundled. If Windows reports `VCRUNTIME140.dll` missing, install the current x64 redistributable from Microsoft.
 
@@ -83,6 +43,16 @@ cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.
 
 ## Quick start
 
+```sh
+bytepleat compress report.pdf
+bytepleat test report.pdf.zst
+bytepleat decompress report.pdf.zst -o report-restored.pdf
+
+bytepleat pack project -o project.tar.zst
+bytepleat test project.tar.zst
+bytepleat unpack project.tar.zst -o project-restored
+```
+
 Zstandard is the default. Use `--format` to choose another codec or archive format. Inspect metadata with `bytepleat info project.tar.zst --json`; run `bytepleat test project.tar.zst` to fully decode and check supported content before extraction.
 
 Windows PowerShell uses the same commands and options; substitute paths as needed. For a directory with ZIP compatibility:
@@ -99,6 +69,36 @@ Bytepleat never removes the input. Named output files are staged and published a
 Choose `--preset fast`, `--preset balanced` (the default), or `--preset compact` for Zstandard and gzip. Fine-tune with `--level`; compression time and output size depend on your files and settings. The [guide](docs/user-guide.md) documents the exact levels. LZ4 has one supported level; Pco requires an explicit numeric `--type`.
 
 See the [user guide](docs/user-guide.md) for pipes, archive options, and numeric buffers, and [supported formats](docs/formats.md) for the precise compatibility boundaries.
+
+## Desktop app (alpha)
+
+A desktop window for everyday archive work, built on the same bounded archive engine as the CLI. It uses your system's file dialogs and has three views:
+
+- **Create:** choose files or a folder, pick a format, and save a new archive.
+- **Extract:** unpack one archive into a new folder. The desktop app never overwrites an existing file or folder; the CLI does so only with `--force` on a named output file.
+- **Inspect:** list an archive's entries without extracting. Listing does not verify file contents. ZIP and 7z are listed from their metadata; a compressed tar can only be listed by fully decoding it into private temporary staging, which is removed afterwards. Extracting selected entries decodes the whole archive again before keeping the ones you chose.
+
+There is no desktop installer yet; the packages under [Install](#install) are the CLI release. To try the alpha, build it from source (Rust 1.93 or newer, Node.js/npm and the [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/)):
+
+```sh
+cd desktop
+npm install --ignore-scripts
+npm run tauri -- dev
+```
+
+Desktop operations are capped at 1 GiB of output and 100,000 entries; listings preview up to 5,000 entries. ZIP is classic Stored/Deflate only, 7z is a bounded subset, and compressed tar uses Zstandard, gzip or LZ4. RAR, password-protected archives and ZIP64 are not supported. See [supported formats](docs/formats.md).
+
+### Desktop validation
+
+Platform validation is incomplete. These are desktop results from specific sessions, not a claim of support for every OS version or architecture; [desktop validation](docs/desktop-validation.md) has the exact scope, versions and open items.
+
+| Platform | What has been checked |
+| --- | --- |
+| macOS 27.0.1 · Apple silicon | Interactive GUI runs of create, inspect, selected and full extraction, overwrite refusal, cancellation, and selected Finder handoffs. Unsigned local build, not notarized. macOS 13 (the bundle minimum) is unverified. |
+| Ubuntu 24.04.5 · ARM64 | Interactive runs in XFCE/Xorg and GNOME/Xorg, including Nautilus and Dolphin handoffs. On GNOME, cancellation, overwrite refusal and selected extraction passed on an earlier package and are not yet repeated on the v10 package. Wayland and Kubuntu are unverified. |
+| Windows | Native CI tests, plus x64 and ARM64 MSIX schema and payload validation. No installed app, Explorer or ARM64 runtime check. |
+
+The Linux desktop checks were on ARM64; the Linux CLI package is x86-64, tested separately by CI. See [desktop/README.md](desktop/README.md) for build notes and limitations.
 
 ## Supported formats
 

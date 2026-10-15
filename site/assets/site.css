@@ -59,7 +59,7 @@ code,pre{font-family:var(--mono)}
 
 /* Type roles */
 .eyebrow{margin:0;color:var(--spruce);font-weight:700;font-size:.95rem;letter-spacing:0}
-.section h2,.status-layout h2{margin:.35rem 0 0;font-size:clamp(1.8rem,3.4vw,2.6rem);line-height:1.12;letter-spacing:-.035em}
+.section h2,.status-layout h2{margin:.35rem 0 0;font-size:clamp(1.8rem,3.4vw,2.6rem);line-height:1.12;letter-spacing:-.02em}
 .section-head{display:flex;align-items:end;justify-content:space-between;gap:2rem;margin-bottom:2.2rem}
 .section-intro{max-width:36rem;margin:0;color:var(--muted)}
 .section{padding:4.5rem 0;border-top:1px solid var(--line)}
@@ -70,9 +70,10 @@ code,pre{font-family:var(--mono)}
 .hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.02fr);align-items:center;gap:3.5rem;padding:4rem 0 4.5rem}
 .status-pill{display:inline-flex;flex-wrap:wrap;gap:.2rem .6rem;margin:0;padding:.3rem .8rem;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface);color:var(--muted);font-size:.88rem}
 .status-pill strong{color:var(--caution-ink)}
-.hero h1{max-width:13ch;margin:1.1rem 0 1rem;font-size:clamp(2.4rem,5.4vw,4.3rem);line-height:1;letter-spacing:-.05em}
+.hero h1{max-width:13ch;margin:1.1rem 0 1rem;font-size:clamp(2.4rem,5.4vw,4.3rem);line-height:1.04;letter-spacing:-.025em}
 .lead{max-width:34rem;margin:0 0 1.6rem;color:var(--muted);font-size:1.15rem}
 .release-note{max-width:34rem;margin:1rem 0 0;color:var(--muted);font-size:.9rem}
+.release-note a{color:inherit}
 
 /* Illustration of the desktop window (HTML/CSS, not a screenshot). Mirrors the Inspect tab. */
 .app-preview{min-width:0;margin:0}
@@ -97,18 +98,18 @@ code,pre{font-family:var(--mono)}
 .app-entries .size{flex:none;color:var(--muted);font-size:.8rem}
 .app-button{display:inline-block;margin:.9rem 0 0;padding:.5rem .9rem;border:1px solid var(--line-strong);border-radius:6px;font-weight:600}
 
-/* How it works: a ruled list, not a grid of identical cards. */
-.steps{margin:0;padding:0;list-style:none;counter-reset:step;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2rem}
-.steps li{counter-increment:step;padding-top:1rem;border-top:3px solid var(--mint)}
-.steps li::before{content:counter(step);display:inline-grid;place-items:center;width:1.7rem;height:1.7rem;margin-bottom:.6rem;border-radius:50%;background:var(--mint-soft);color:var(--spruce);font-size:.85rem;font-weight:700}
-.steps h3{margin:0 0 .35rem;font-size:1.3rem;letter-spacing:-.02em}
-.steps p{margin:0;max-width:32ch;color:var(--muted)}
+/* How it works: three views, not a sequence, so no step numbers. A ruled list, not a grid of identical cards. */
+.steps{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2rem}
+.steps li{padding-top:1rem;border-top:3px solid var(--mint)}
+.steps h3{margin:0 0 .35rem;font-size:1.3rem;letter-spacing:-.01em}
+.steps p{margin:0;max-width:36ch;color:var(--muted)}
 
 /* Careful by default */
 .careful{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.5rem 3rem;margin:0}
 .careful div{padding-left:1rem;border-left:4px solid var(--spruce)}
 .careful dt{font-weight:700;font-size:1.05rem}
 .careful dd{margin:.2rem 0 0;color:var(--muted)}
+.careful code{color:var(--ink);font-size:.9em}
 
 /* Formats */
 .format-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem 1.5rem;margin:0;padding:0;list-style:none}

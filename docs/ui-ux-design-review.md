@@ -44,6 +44,14 @@ Calculated from the sRGB hex values with the WCAG contrast formula, the sampled 
 - **Site.** Primary action is the CLI download (the only released download); the desktop alpha is a secondary, labeled link. The hero illustration mirrors the real Inspect tab and is labeled as an illustration with sample file names. Platform status labels use words ("Partly checked", "CI only"), not color or icons alone. The site mark and favicon now match the app's pleat mark; the site palette matches the app, with a system dark mode.
 - **Small fixes found on the way.** The site's copy-confirmation element was missing, so "Command copied" never appeared; the CLI guide links to `#install`, which now exists on the home page.
 
+## Follow-up polish (copy and Inspect flow)
+
+- **Site trust copy.** The stale link to the merged PR is gone. The released CLI and the desktop alpha are separated in the hero, the no-overwrite claim is scoped to the desktop app with the CLI's `--force` disclosed, platform cards say "Desktop" and name the ARM64 desktop checks versus the x86-64 CLI package, and the Linux card names the v10 package instead of "latest". The "Create, Extract, Inspect" list is no longer numbered because those are views, not steps. Headline tracking was loosened. No Open Graph or social-card tags were added because no correct share image exists; a native screenshot would be needed and none has been captured.
+- **Inspect to Extract hand-off.** Choosing Extract selected… used to switch tabs and clear the listing, leaving the chosen entries invisible. The Extract tab now shows an "Entries to extract" review with Change selection (restores the earlier listing from memory, without re-reading the archive) and Extract everything instead. The Inspect list says what to do when nothing is ticked.
+- **Explicit destination.** Extract shows the full result folder before running, and a completed job labels its path "Extracted to" or "Saved to".
+- **Limits beside controls.** The 1 GiB output cap, 100,000-entry limit and 5,000-entry preview sit in each tab's source hint instead of one generic line, and the sidebar note follows the active tab.
+- **TAR listing disclosed before Inspect.** When the chosen file name ends in .tar.zst, .tar.gz or .tar.lz4, a note says listing fully decodes into private temporary staging. The note is based on the file name only; the engine still detects the format from content.
+
 ## Recommendations deferred
 
 - **Windows Explorer verbs.** Modern Explorer commands need `IExplorerCommand` and package identity; that is packaging and backend work outside this change.
