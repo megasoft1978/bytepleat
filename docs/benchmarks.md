@@ -27,14 +27,14 @@ A second run used the checked-in harness with RARLAB's [official RAR 7.23 macOS 
 
 | LZ4 source tree, measured setting | Tool | Archive bytes | Encode median (s) | Decode median (s) |
 | --- | --- | ---: | ---: | ---: |
-| ZIP Deflate 6 | Bytepleat | 480,556 | 0.03515 | 0.02165 |
-| ZIP Deflate 6 | 7-Zip 26.04 | 478,266 | 0.09703 | 0.02665 |
-| 7z LZMA2 5, solid, 16 MiB dictionary | Bytepleat | 269,846 | 0.25404 | 0.02794 |
-| 7z LZMA2 5, solid, 16 MiB dictionary | 7-Zip 26.04 | 270,414 | 0.20503 | 0.02466 |
-| RAR5 m3, solid, 16 MiB dictionary | RAR 7.23 trial | 298,367 | 0.05941 | 0.02976 |
-| RAR5 m5, solid, 16 MiB dictionary | RAR 7.23 trial | 295,577 | 0.08873 | 0.02867 |
+| ZIP Deflate 6 | Bytepleat | 480,556 | 0.04327 | 0.03199 |
+| ZIP Deflate 6 | 7-Zip 26.04 | 478,266 | 0.10841 | 0.02950 |
+| 7z LZMA2 5, solid, 16 MiB dictionary | Bytepleat | 269,846 | 0.46664 | 0.03639 |
+| 7z LZMA2 5, solid, 16 MiB dictionary | 7-Zip 26.04 | 270,414 | 0.37629 | 0.03268 |
+| RAR5 m3, solid, 16 MiB dictionary | RAR 7.23 trial | 298,367 | 0.14220 | 0.04095 |
+| RAR5 m5, solid, 16 MiB dictionary | RAR 7.23 trial | 295,577 | 0.14878 | 0.03386 |
 
-On this corpus, Bytepleat 7z made a smaller archive than either RAR setting, while RAR encoded faster than Bytepleat 7z. On the generated repeated-text control, RAR5 m5 produced 519 bytes versus Bytepleat 7z's 1,442 bytes; on the pseudorandom control, RAR5 m5 produced 8,404,415 bytes versus Bytepleat 7z's 8,389,101 bytes. These workload-specific results do not establish an overall winner. RAR itself restored every archive exactly, while 7-Zip 26.04 reported `Unsupported Method` on all six RAR warmup attempts. The harness records that explicit response as an interoperability limitation; other decoder errors still fail the run. Host quiescence was not checked, so timing differences remain exploratory.
+On this corpus, Bytepleat 7z made a smaller archive than either RAR setting, while RAR encoded faster than Bytepleat 7z. On the generated repeated-text control, RAR5 m5 produced 519 bytes versus Bytepleat 7z's 1,442 bytes; on the pseudorandom control, RAR5 m5 produced 8,404,415 bytes versus Bytepleat 7z's 8,389,101 bytes. These workload-specific results do not establish an overall winner. RAR itself restored every archive exactly, while 7-Zip 26.04 reported `Unsupported Method` on all six RAR warmup attempts. The sanitized provenance records each decoder exit code and complete-log diagnostic counts; every diagnostic line in these attempts was `Unsupported Method`, with no other diagnostics. The harness records that explicit response as an interoperability limitation; other decoder errors still fail the run. Host quiescence was not checked, so timing differences remain exploratory.
 
 ## Earlier full-suite result: LZ4 v1.10.0 source tree
 

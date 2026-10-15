@@ -1,18 +1,19 @@
 {
   "schema": "bytepleat-macos-rar-reproduction-v1",
   "run": {
-    "started_utc": "2026-10-15T16:03:13Z",
-    "ended_utc": "2026-10-15T16:04:22Z",
-    "elapsed_seconds": 68.487
+    "started_utc": "2026-10-15T16:08:52Z",
+    "ended_utc": "2026-10-15T16:10:05Z",
+    "elapsed_seconds": 73.816
   },
   "scope": "macOS ARM64 single-host measurement; exploratory timings only, not a cross-platform or general performance ranking.",
   "repository": {
+    "bytepleat_source_commit": "bf3cacbcc586510178e62a90de16d7243605dfc7",
     "bytepleat_version": "0.5.1",
-    "benchmark_harness_sha256": "02fc7cf488892f9b094d57da4cde4a84d32e165002df037a62deb9f5c7316679",
+    "benchmark_harness_sha256": "d197a3821467cdc1b5a9d53201b2e712036fac703faf6dc0d9ea8153a4a404d6",
     "corpus_manifest_sha256": "5275aa164e90d8e5e443a968d21fb36cb741b28e2ea086bb89385e5bde280b98",
-    "prepared_manifest_sha256": "e70427cb503c05b6ff3b87e34ee4965debf2e60eedfe4a0e4ab012af819c0f22",
-    "bytepleat_source_commit": "bf3cacbcc586510178e62a90de16d7243605dfc7"
+    "prepared_manifest_sha256": "e70427cb503c05b6ff3b87e34ee4965debf2e60eedfe4a0e4ab012af819c0f22"
   },
+  "benchmark_command": "python3 scripts/benchmarks/bench_macos.py --bytepleat <release-binary> --7zz <7zz> --rar <local-RAR-trial> --rar-license-note <local-evaluation-terms> --prepared <verified-corpus> --output <new-path-outside-repository> --repeats 5",
   "host": {
     "cpu": "Apple M5 Max",
     "architecture": "arm64",
@@ -20,9 +21,9 @@
     "logical_cpu_count": 18,
     "memory_bytes": 68719476736,
     "load_average_at_start": [
-      8.4482421875,
-      7.50634765625,
-      6.14453125
+      10.46484375,
+      8.97412109375,
+      7.30517578125
     ]
   },
   "build": {
@@ -95,14 +96,6 @@
     "verification": "exact relative paths, byte counts, SHA-256 hashes and directory paths; encode process startup and file IO included; extraction startup and IO included; fsync excluded",
     "external_worker_quiescence": "not_checked; system load was recorded, so timing comparisons may be affected"
   },
-  "rar_independent_decode": {
-    "decoder": "7-Zip 26.04",
-    "warmup_outcomes": {
-      "unsupported-method": 6
-    },
-    "interpretation": "RAR 7.23 archives restored exactly through RAR itself; 7-Zip reported Unsupported Method on RAR warmups. This is a version-specific interoperability observation, not a claim that RAR output is corrupt."
-  },
-  "results_csv": "macos-rar-reproduction-2026-10-15.csv",
   "methods": {
     "measured": [
       "7zz-7z-5",
@@ -527,5 +520,86 @@
       ]
     }
   ],
-  "benchmark_command": "python3 scripts/benchmarks/bench_macos.py --bytepleat <release-binary> --7zz <7zz> --rar <local-RAR-trial> --rar-license-note <local-evaluation-terms> --prepared <verified-corpus> --output <new-path-outside-repository> --repeats 5"
+  "rar_independent_decode": {
+    "decoder": "7-Zip 26.04",
+    "warmup_outcomes": {
+      "unsupported-method": 6
+    },
+    "attempt_evidence": [
+      {
+        "case_id": "lz4-source",
+        "method_id": "rar5-m3",
+        "decoder_exit_code": 2,
+        "timed_out": false,
+        "status": "unsupported-method",
+        "diagnostics": {
+          "diagnostic_lines": 208,
+          "unsupported_method_lines": 208,
+          "other_diagnostic_lines": 0
+        }
+      },
+      {
+        "case_id": "lz4-source",
+        "method_id": "rar5-m5",
+        "decoder_exit_code": 2,
+        "timed_out": false,
+        "status": "unsupported-method",
+        "diagnostics": {
+          "diagnostic_lines": 208,
+          "unsupported_method_lines": 208,
+          "other_diagnostic_lines": 0
+        }
+      },
+      {
+        "case_id": "synthetic-text-8m",
+        "method_id": "rar5-m5",
+        "decoder_exit_code": 2,
+        "timed_out": false,
+        "status": "unsupported-method",
+        "diagnostics": {
+          "diagnostic_lines": 1,
+          "unsupported_method_lines": 1,
+          "other_diagnostic_lines": 0
+        }
+      },
+      {
+        "case_id": "synthetic-text-8m",
+        "method_id": "rar5-m3",
+        "decoder_exit_code": 2,
+        "timed_out": false,
+        "status": "unsupported-method",
+        "diagnostics": {
+          "diagnostic_lines": 1,
+          "unsupported_method_lines": 1,
+          "other_diagnostic_lines": 0
+        }
+      },
+      {
+        "case_id": "synthetic-random-8m",
+        "method_id": "rar5-m3",
+        "decoder_exit_code": 2,
+        "timed_out": false,
+        "status": "unsupported-method",
+        "diagnostics": {
+          "diagnostic_lines": 1,
+          "unsupported_method_lines": 1,
+          "other_diagnostic_lines": 0
+        }
+      },
+      {
+        "case_id": "synthetic-random-8m",
+        "method_id": "rar5-m5",
+        "decoder_exit_code": 2,
+        "timed_out": false,
+        "status": "unsupported-method",
+        "diagnostics": {
+          "diagnostic_lines": 1,
+          "unsupported_method_lines": 1,
+          "other_diagnostic_lines": 0
+        }
+      }
+    ],
+    "interpretation": "Each RAR 7.23 archive restored exactly through RAR itself. For all six RAR warmups, the complete 7-Zip stderr diagnostics consisted only of Unsupported Method lines; per-attempt counts are listed above. This is a version-specific interoperability observation, not a claim that RAR output is corrupt."
+  },
+  "results_csv": "macos-rar-reproduction-2026-10-15.csv"
 }

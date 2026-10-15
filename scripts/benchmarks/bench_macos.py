@@ -26,14 +26,20 @@ def dirs(root):
     root = Path(root)
     return sorted(p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_dir())
 
-def independent_decode_status(record, content_matches):
+def independent_decode_status(record, content_matches, stderr_text=None):
     if record.get('exit_code') == 0 and content_matches:
         return 'pass'
-    errors = [line.strip() for line in record.get('stderr_tail', '').splitlines() if line.startswith('ERROR:')]
-    if (record.get('exit_code') == 2 and not record.get('timed_out') and errors
-            and all(line.startswith('ERROR: Unsupported Method :') for line in errors)):
+    diagnostics = [line.strip() for line in (stderr_text if stderr_text is not None else record.get('stderr_tail', '')).splitlines() if line.strip()]
+    if (record.get('exit_code') == 2 and not record.get('timed_out') and diagnostics
+            and all(line.startswith('ERROR: Unsupported Method :') for line in diagnostics)):
         return 'unsupported-method'
     return 'fail'
+
+def unsupported_method_diagnostics(stderr_text):
+    diagnostics = [line.strip() for line in stderr_text.splitlines() if line.strip()]
+    unsupported = [line for line in diagnostics if line.startswith('ERROR: Unsupported Method :')]
+    return {'diagnostic_lines': len(diagnostics), 'unsupported_method_lines': len(unsupported),
+            'other_diagnostic_lines': len(diagnostics) - len(unsupported)}
 
 def _kill_group(proc):
     try: os.killpg(proc.pid, signal.SIGKILL)
@@ -258,8 +264,11 @@ def main():
                   xd=wd/'independent-7zz-restore'; xd.mkdir(); xr=run([zz,'x','-y','-bd','-o'+str(xd),arc],ROOT,a.timeout,wd/'rar-7zz.err')
                   try: xv=xr['exit_code']==0 and tree(xd)==expected[cid][0] and dirs(xd)==expected[cid][1]
                   except Exception: xv=False
-                  independent_status=independent_decode_status(xr,xv)
+                  full_stderr=(wd/'rar-7zz.err').read_text(errors='replace')
+                  independent_status=independent_decode_status(xr,xv,full_stderr)
                   item['independent_warmup_decode']={'decoder':'7zz','record':xr,'verification':independent_status}
+                  if independent_status=='unsupported-method':
+                    item['independent_warmup_decode']['diagnostics']=unsupported_method_diagnostics(full_stderr)
                   if independent_status=='fail': failures.append({'case':cid,'phase':'warmup-independent-7zz-restore','method':m,'record':xr})
               else:
                 item.update(verification='encode-fail'); failures.append({'case':cid,'phase':item['phase'],'method':m,'encode':enc})

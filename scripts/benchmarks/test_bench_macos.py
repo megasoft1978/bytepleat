@@ -30,6 +30,19 @@ class IndependentDecodeStatusTests(unittest.TestCase):
         }
         self.assertEqual(independent_decode_status(record, False), "fail")
 
+    def test_unsupported_method_mixed_with_non_error_diagnostic_still_fails(self):
+        record = {
+            "exit_code": 2,
+            "timed_out": False,
+            "stderr_tail": "ERROR: Unsupported Method : sample.txt\nData Error\n",
+        }
+        self.assertEqual(independent_decode_status(record, False), "fail")
+
+    def test_full_log_is_used_when_recorded_tail_was_truncated(self):
+        record = {"exit_code": 2, "timed_out": False, "stderr_tail": ": trailing filename.txt"}
+        full_log = "ERROR: Unsupported Method : filename.txt\n"
+        self.assertEqual(independent_decode_status(record, False, full_log), "unsupported-method")
+
     def test_timed_out_decoder_is_never_classified_as_unsupported(self):
         record = {
             "exit_code": 2,
