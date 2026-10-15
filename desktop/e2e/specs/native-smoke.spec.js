@@ -36,41 +36,54 @@ async function waitJob(id) {
 }
 
 function writeSlowExtractionZip(archivePath) {
-  // A highly compressible, deterministic 512 MiB member keeps the fixture
-  // small while making mid-decode cancellation observable on fast machines.
-  const name = Buffer.from('payload.bin');
-  const payload = Buffer.alloc(512 * 1024 * 1024);
+  // Decode the marker before thousands of small repeated files. This makes
+  // cancellation observable early while keeping the ZIP and fixture RAM small.
+  const payload = Buffer.alloc(32 * 1024);
   const compressed = zlib.deflateRawSync(payload, { level: 1 });
   const crc = typeof zlib.crc32 === 'function' ? zlib.crc32(payload) : crc32(payload);
-  const local = Buffer.alloc(30 + name.length);
-  local.writeUInt32LE(0x04034b50, 0);
-  local.writeUInt16LE(20, 4);
-  local.writeUInt16LE(8, 8);
-  local.writeUInt32LE(crc, 14);
-  local.writeUInt32LE(compressed.length, 18);
-  local.writeUInt32LE(payload.length, 22);
-  local.writeUInt16LE(name.length, 26);
-  name.copy(local, 30);
+  const entries = ['ready.bin', ...Array.from(
+    { length: 4096 },
+    (_, index) => `payload-${String(index).padStart(5, '0')}.bin`
+  )];
+  const locals = [];
+  const centrals = [];
+  let offset = 0;
+  for (const entry of entries) {
+    const name = Buffer.from(entry);
+    const local = Buffer.alloc(30 + name.length);
+    local.writeUInt32LE(0x04034b50, 0);
+    local.writeUInt16LE(20, 4);
+    local.writeUInt16LE(8, 8);
+    local.writeUInt32LE(crc, 14);
+    local.writeUInt32LE(compressed.length, 18);
+    local.writeUInt32LE(payload.length, 22);
+    local.writeUInt16LE(name.length, 26);
+    name.copy(local, 30);
+    locals.push(local, compressed);
 
-  const central = Buffer.alloc(46 + name.length);
-  central.writeUInt32LE(0x02014b50, 0);
-  central.writeUInt16LE(20, 4);
-  central.writeUInt16LE(20, 6);
-  central.writeUInt16LE(8, 10);
-  central.writeUInt32LE(crc, 16);
-  central.writeUInt32LE(compressed.length, 20);
-  central.writeUInt32LE(payload.length, 24);
-  central.writeUInt16LE(name.length, 28);
-  name.copy(central, 46);
+    const central = Buffer.alloc(46 + name.length);
+    central.writeUInt32LE(0x02014b50, 0);
+    central.writeUInt16LE(20, 4);
+    central.writeUInt16LE(20, 6);
+    central.writeUInt16LE(8, 10);
+    central.writeUInt32LE(crc, 16);
+    central.writeUInt32LE(compressed.length, 20);
+    central.writeUInt32LE(payload.length, 24);
+    central.writeUInt16LE(name.length, 28);
+    central.writeUInt32LE(offset, 42);
+    name.copy(central, 46);
+    centrals.push(central);
+    offset += local.length + compressed.length;
+  }
 
-  const centralOffset = local.length + compressed.length;
+  const centralBytes = Buffer.concat(centrals);
   const end = Buffer.alloc(22);
   end.writeUInt32LE(0x06054b50, 0);
-  end.writeUInt16LE(1, 8);
-  end.writeUInt16LE(1, 10);
-  end.writeUInt32LE(central.length, 12);
-  end.writeUInt32LE(centralOffset, 16);
-  fs.writeFileSync(archivePath, Buffer.concat([local, compressed, central, end]));
+  end.writeUInt16LE(entries.length, 8);
+  end.writeUInt16LE(entries.length, 10);
+  end.writeUInt32LE(centralBytes.length, 12);
+  end.writeUInt32LE(offset, 16);
+  fs.writeFileSync(archivePath, Buffer.concat([...locals, centralBytes, end]));
 }
 
 describe('Bytepleat native Tauri smoke', () => {
@@ -166,7 +179,7 @@ describe('Bytepleat native Tauri smoke', () => {
         try {
           for (const entry of fs.readdirSync(candidate, { withFileTypes: true })) {
             if (!entry.isDirectory() || !entry.name.startsWith('.bytepleat-extract-')) continue;
-            const partial = path.join(candidate, entry.name, 'payload.bin');
+            const partial = path.join(candidate, entry.name, 'ready.bin');
             if (fs.statSync(partial).size > 0) {
               stagePath = candidate;
               return true;
@@ -182,10 +195,28 @@ describe('Bytepleat native Tauri smoke', () => {
     });
 
     const cancelControl = await $(`[data-job="${id}"][data-action="cancel"]`);
-    await cancelControl.waitForDisplayed({
-      timeout: 10000,
-      timeoutMsg: 'The active extraction did not show its Cancel control'
-    });
+    try {
+      await cancelControl.waitForDisplayed({
+        timeout: 10000,
+        timeoutMsg: 'The active extraction did not show its Cancel control'
+      });
+    } catch {
+      const latestJob = (await invoke('jobs')).find(item => item.id === id);
+      const rendered = await browser.execute(({ id }) => {
+        const card = document.querySelector('#job-now');
+        return {
+          hidden: card?.hidden ?? null,
+          className: card?.className ?? null,
+          stateText: card?.querySelector('.job-state')?.innerText ?? null,
+          hasCancel: [...document.querySelectorAll('[data-action="cancel"]')]
+            .some(button => button.dataset.job === id)
+        };
+      }, { id });
+      throw new Error(
+        `Cancel control was not displayed; native state=${latestJob?.state ?? 'missing'}, ` +
+        `rendered job=${JSON.stringify(rendered)}`
+      );
+    }
     await cancelControl.waitForEnabled({
       timeout: 10000,
       timeoutMsg: 'The active extraction Cancel control was disabled'
