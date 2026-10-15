@@ -28,6 +28,12 @@ def elf_fixture(path: Path, machine: int = 62, elf_class: int = 2) -> Path:
 
 @unittest.skipUnless(os.name == "posix", "Linux package tests require POSIX executable modes and symlink/mtime semantics")
 class LinuxPackageTests(unittest.TestCase):
+    def test_packaged_launcher_advertises_startup_notification(self):
+        entry = builder.desktop_entry_text()
+        self.assertIn("StartupNotify=true", entry)
+        self.assertIn("Icon=bytepleat", entry)
+        self.assertIn("Exec=/usr/bin/bytepleat-desktop --open -- %F", entry)
+
     def test_native_loader_dependencies_keep_the_required_libc_floor(self):
         for loader in ("ld-linux-aarch64.so.1", "ld-linux-x86-64.so.2"):
             self.assertEqual(builder.package_dependencies([loader, "libc.so.6"], "2.39"), "libc6 (>= 2.39)")
@@ -136,6 +142,11 @@ class LinuxPackageTests(unittest.TestCase):
                 builder.build(executable, "x86_64-unknown-linux-gnu", notices, first, 1_700_000_000)
                 builder.build(executable, "x86_64-unknown-linux-gnu", notices, second, 1_700_000_000)
             self.assertEqual(hashlib.sha256(first.read_bytes()).digest(), hashlib.sha256(second.read_bytes()).digest())
+            extracted = root / "extracted"
+            extracted.mkdir()
+            subprocess.run(["dpkg-deb", "-x", str(first), str(extracted)], check=True)
+            desktop_entry = (extracted / "usr/share/applications/bytepleat.desktop").read_text(encoding="utf-8")
+            self.assertIn("StartupNotify=true", desktop_entry)
 
     def test_rejects_wrong_collector_version_and_notice_hash(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -144,6 +144,14 @@ def package_dependencies(needed: list[str], glibc_floor: str | None = None) -> s
     return ", ".join(sorted(packages))
 
 
+def desktop_entry_text() -> str:
+    return (
+        "[Desktop Entry]\nType=Application\nName=Bytepleat\nComment=Create and extract archives with Bytepleat\n"
+        "Exec=/usr/bin/bytepleat-desktop --open -- %F\nIcon=bytepleat\nTerminal=false\nStartupNotify=true\nCategories=Utility;Archiving;\n"
+        "MimeType=application/zip;application/x-7z-compressed;application/gzip;application/zstd;application/x-lz4;\n"
+    )
+
+
 def add_file(stage: Path, destination: str, source: Path, mode: int, epoch: int, seen: set[str]) -> None:
     rel = safe_relative(destination, "package destination").as_posix()
     if any(rel == prior or rel.startswith(prior + "/") or prior.startswith(rel + "/") for prior in seen):
@@ -203,12 +211,7 @@ def build(executable: Path, target: str, notices_dir: Path, output: Path, epoch:
         icon = source_file(ROOT, PurePosixPath("desktop/src-tauri/icons/bytepleat.svg"), "application icon")
         add_file(stage, "usr/share/icons/hicolor/scalable/apps/bytepleat.svg", icon, 0o644, epoch, seen)
         launcher = work / "bytepleat.desktop"
-        launcher.write_text(
-            "[Desktop Entry]\nType=Application\nName=Bytepleat\nComment=Create and extract archives with Bytepleat\n"
-            "Exec=/usr/bin/bytepleat-desktop %F\nIcon=bytepleat\nTerminal=false\nCategories=Utility;Archiving;\n"
-            "MimeType=application/zip;application/x-7z-compressed;application/gzip;application/zstd;application/x-lz4;\n",
-            encoding="utf-8",
-        )
+        launcher.write_text(desktop_entry_text(), encoding="utf-8")
         add_file(stage, "usr/share/applications/bytepleat.desktop", launcher, 0o644, epoch, seen)
 
         # Preserve the installer's expected relative layout, enabling explicit

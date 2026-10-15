@@ -22,6 +22,7 @@ class LinuxInstallerTests(unittest.TestCase):
     def test_desktop_exec_quotes_unusual_application_path(self):
         executable = "/tmp/Bytepleat O'Brien 🧵/bytepleat-desktop"
         line = next(line for line in installer.launcher_text(executable).splitlines() if line.startswith("Exec="))
+        self.assertIn("StartupNotify=true", installer.launcher_text(executable))
         self.assertTrue(line.startswith('Exec="/tmp/Bytepleat O\'Brien 🧵/bytepleat-desktop" '))
         self.assertIn(" --open -- %F", line)
 

@@ -69,6 +69,62 @@ fn path_strings(paths: impl IntoIterator<Item = PathBuf>) -> Result<Vec<String>,
 }
 
 fn argument_selection(args: &[OsString]) -> Selection {
+    const STARTUP_PREFIX: &str = "--bytepleat-internal-startup-v1=";
+    const INVALID_PREFIX: &str = "--bytepleat-internal-invalid-selection-v1";
+    let offset = usize::from(args.first().and_then(|v| v.to_str()).is_some_and(|v| {
+        Path::new(v)
+            .file_name()
+            .and_then(|n| n.to_str())
+            .is_some_and(|n| n.starts_with("bytepleat-desktop"))
+    }));
+    let marker = args.get(offset).and_then(|v| v.to_str());
+    let structured = marker.is_some_and(|v| v == INVALID_PREFIX || v.starts_with(STARTUP_PREFIX))
+        && args.get(offset + 1).and_then(|v| v.to_str()) == Some("--open")
+        && args.get(offset + 2).and_then(|v| v.to_str()) == Some("--");
+    let owned: Vec<OsString>;
+    let startup_frame = structured;
+    let args = if structured {
+        if marker == Some(INVALID_PREFIX) {
+            return Selection {
+                action: "open".into(),
+                paths: vec![],
+                error: Some(
+                    "A selected path cannot be represented as UTF-8 by the desktop interface"
+                        .into(),
+                ),
+            };
+        }
+        owned = args[..offset]
+            .iter()
+            .chain(args[offset + 3..].iter())
+            .cloned()
+            .collect();
+        owned.as_slice()
+    } else {
+        args
+    };
+    let offset = usize::from(args.first().and_then(|v| v.to_str()).is_some_and(|v| {
+        Path::new(v)
+            .file_name()
+            .and_then(|n| n.to_str())
+            .is_some_and(|n| n.starts_with("bytepleat-desktop"))
+    }));
+    let duplicated_open_prefix = startup_frame
+        && args.get(offset).and_then(|v| v.to_str()) == Some("--open")
+        && args.get(offset + 1).and_then(|v| v.to_str()) == Some("--")
+        && args.get(offset + 2).and_then(|v| v.to_str()) == Some("--open")
+        && args.get(offset + 3).and_then(|v| v.to_str()) == Some("--");
+    let owned_duplicate: Vec<OsString>;
+    let args = if duplicated_open_prefix {
+        owned_duplicate = args[..offset]
+            .iter()
+            .chain(args[offset + 2..].iter())
+            .cloned()
+            .collect();
+        owned_duplicate.as_slice()
+    } else {
+        args
+    };
     let mut it = args.iter();
     if it.next().and_then(|v| v.to_str()).is_some_and(|v| {
         Path::new(v)
@@ -138,6 +194,31 @@ fn argument_selection(args: &[OsString]) -> Selection {
             error: Some(error),
         },
     }
+}
+
+#[cfg(target_os = "linux")]
+fn startup_id(args: &[String]) -> Option<String> {
+    const PREFIX: &str = "--bytepleat-internal-startup-v1=";
+    let offset = usize::from(args.first().is_some_and(|arg| {
+        Path::new(arg)
+            .file_name()
+            .and_then(|n| n.to_str())
+            .is_some_and(|n| n.starts_with("bytepleat-desktop"))
+    }));
+    let marker = args.get(offset)?;
+    if args.get(offset + 1).map(String::as_str) != Some("--open")
+        || args.get(offset + 2).map(String::as_str) != Some("--")
+    {
+        return None;
+    }
+    marker
+        .strip_prefix(PREFIX)
+        .filter(|id| {
+            !id.is_empty()
+                && id.len() <= 4096
+                && !id.bytes().any(|b| b == 0 || b.is_ascii_control())
+        })
+        .map(str::to_owned)
 }
 
 fn remember_selection(state: &Broker, selection: Selection) {
@@ -754,12 +835,14 @@ fn run_job(app: tauri::AppHandle, broker: Arc<Broker>, id: String, request: Oper
                     ),
                 }
             } else {
+                let error =
+                    worker_exit_error(&status.to_string(), read_worker_result(&result_path));
                 finish(
                     &broker,
                     &id,
                     "failed",
-                    "Worker stopped unexpectedly",
-                    Some(format!("Worker exited with {status}")),
+                    "Operation failed",
+                    Some(error),
                     None,
                 );
             }
@@ -876,6 +959,15 @@ fn read_worker_result(path: &Path) -> Result<WorkerResponse, String> {
     }
     serde_json::from_slice(&fs::read(path).map_err(|e| e.to_string())?).map_err(|e| e.to_string())
 }
+fn worker_exit_error(status: &str, response: Result<WorkerResponse, String>) -> String {
+    match response {
+        Ok(response) if !response.ok => response
+            .error
+            .unwrap_or_else(|| format!("Worker exited with {status}")),
+        Ok(_) => format!("Worker exited with {status} despite reporting success"),
+        Err(error) => format!("Worker exited with {status}; result unavailable: {error}"),
+    }
+}
 fn set_job(
     broker: &Broker,
     id: &str,
@@ -910,8 +1002,8 @@ fn finish(
         if let Some(job) = jobs.iter_mut().find(|j| j.id == id) {
             job.state = state.into();
             job.phase = phase.into();
-            job.message = error.clone().unwrap_or_else(|| phase.into());
             if state == "failed" {
+                job.message = phase.into();
                 job.error = error;
             } else {
                 job.message = error.unwrap_or_else(|| phase.into());
@@ -932,16 +1024,39 @@ pub fn run() {
         .plugin(
             tauri_plugin_single_instance::Builder::new()
                 .callback(move |app, args, _cwd| {
+                    #[cfg(target_os = "linux")]
+                    let activation_id = startup_id(&args);
                     let parsed = argument_selection(
                         &args.into_iter().map(OsString::from).collect::<Vec<_>>(),
                     );
                     remember_selection(&single_instance_broker, parsed.clone());
-                    let _ = app.emit("selection", parsed);
-                    if let Some(window) = app.get_webview_window("main") {
-                        let _ = window.unminimize();
-                        let _ = window.show();
-                        let _ = window.set_focus();
-                    }
+                    let app_handle = app.clone();
+                    let _ = app.run_on_main_thread(move || {
+                        let _ = app_handle.emit("selection", parsed);
+                        if let Some(window) = app_handle.get_webview_window("main") {
+                            #[cfg(target_os = "linux")]
+                            if let Some(startup_id) = activation_id.as_deref() {
+                                match window.gtk_window() {
+                                    Ok(gtk_window) => gtk::prelude::GtkWindowExt::set_startup_id(
+                                        &gtk_window,
+                                        startup_id,
+                                    ),
+                                    Err(_) => eprintln!(
+                                        "Bytepleat could not apply launch activation context"
+                                    ),
+                                }
+                            }
+                            if window.unminimize().is_err() {
+                                eprintln!("Bytepleat could not unminimize its window");
+                            }
+                            if window.show().is_err() {
+                                eprintln!("Bytepleat could not show its window");
+                            }
+                            if window.set_focus().is_err() {
+                                eprintln!("Bytepleat could not request window focus");
+                            }
+                        }
+                    });
                 })
                 .build(),
         )
@@ -1045,6 +1160,60 @@ mod tests {
     }
 
     #[test]
+    fn failed_job_keeps_summary_and_detail_separate() {
+        let broker = running_broker();
+
+        finish(
+            &broker,
+            "job-1",
+            "failed",
+            "Operation failed",
+            Some("archive entry limit exceeded".into()),
+            None,
+        );
+
+        let jobs = broker.jobs.lock().unwrap();
+        assert_eq!(jobs[0].message, "Operation failed");
+        assert_eq!(
+            jobs[0].error.as_deref(),
+            Some("archive entry limit exceeded")
+        );
+    }
+
+    #[test]
+    fn nonzero_worker_exit_preserves_reported_archive_limit_error() {
+        let response = WorkerResponse {
+            ok: false,
+            result: None,
+            error: Some("archive entry limit exceeded".into()),
+        };
+
+        assert_eq!(
+            worker_exit_error("exit status: 1", Ok(response)),
+            "archive entry limit exceeded"
+        );
+    }
+
+    #[test]
+    fn nonzero_worker_exit_distinguishes_missing_or_inconsistent_result() {
+        let success = WorkerResponse {
+            ok: true,
+            result: None,
+            error: None,
+        };
+
+        assert_eq!(
+            worker_exit_error("exit status: 1", Ok(success)),
+            "Worker exited with exit status: 1 despite reporting success"
+        );
+        assert_eq!(
+            worker_exit_error("exit status: 1", Err("result file missing".into())),
+            "Worker exited with exit status: 1; result unavailable: result file missing"
+        );
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
     fn invocation_preserves_path_order_with_or_without_argv_zero() {
         let direct = vec![
             OsString::from("--create"),
@@ -1064,6 +1233,162 @@ mod tests {
             assert_eq!(selected.action, "create");
             assert_eq!(selected.paths, ["/tmp/first file", "/tmp/second"]);
         }
+    }
+
+    #[test]
+    fn private_startup_prefix_preserves_order_and_literal_flag_filename() {
+        for args in [
+            vec![
+                OsString::from("--bytepleat-internal-startup-v1=activation-token"),
+                OsString::from("--open"),
+                OsString::from("--"),
+                OsString::from("--extract"),
+                OsString::from("--"),
+                OsString::from("/tmp/a file.zip"),
+                OsString::from("--bytepleat-internal-startup-v1=ordinary-file"),
+                OsString::from("/tmp/雪だるま.zip"),
+            ],
+            vec![
+                OsString::from("/usr/bin/bytepleat-desktop"),
+                OsString::from("--bytepleat-internal-startup-v1=activation-token"),
+                OsString::from("--open"),
+                OsString::from("--"),
+                OsString::from("--extract"),
+                OsString::from("--"),
+                OsString::from("/tmp/a file.zip"),
+                OsString::from("--bytepleat-internal-startup-v1=ordinary-file"),
+                OsString::from("/tmp/雪だるま.zip"),
+            ],
+        ] {
+            let selected = argument_selection(&args);
+            assert_eq!(selected.action, "extract");
+            assert_eq!(
+                selected.paths,
+                [
+                    "/tmp/a file.zip",
+                    "--bytepleat-internal-startup-v1=ordinary-file",
+                    "/tmp/雪だるま.zip"
+                ]
+            );
+        }
+    }
+
+    #[test]
+    fn invalid_path_rejection_never_creates_a_replacement_alias() {
+        let selected = argument_selection(&[
+            OsString::from("--bytepleat-internal-invalid-selection-v1"),
+            "--open".into(),
+            "--".into(),
+        ]);
+        assert!(selected.paths.is_empty());
+        assert!(selected
+            .error
+            .as_deref()
+            .unwrap()
+            .contains("cannot be represented as UTF-8"));
+    }
+
+    #[test]
+    fn startup_prefix_filename_is_preserved_after_separator() {
+        let args =
+            ["--open", "--", "--bytepleat-internal-startup-v1=token-like"].map(OsString::from);
+        let selected = argument_selection(&args);
+        assert_eq!(
+            selected.paths,
+            ["--bytepleat-internal-startup-v1=token-like"]
+        );
+        assert_eq!(selected.error, None);
+    }
+
+    #[test]
+    fn literal_open_and_delimiter_paths_are_preserved() {
+        for args in [
+            ["--open", "--", "--open", "--", "/tmp/archive.zip"]
+                .map(OsString::from)
+                .to_vec(),
+            [
+                "/usr/bin/bytepleat-desktop",
+                "--open",
+                "--",
+                "--open",
+                "--",
+                "/tmp/archive.zip",
+            ]
+            .map(OsString::from)
+            .to_vec(),
+        ] {
+            let selected = argument_selection(&args);
+            assert_eq!(selected.action, "open");
+            assert_eq!(selected.paths, ["--open", "--", "/tmp/archive.zip"]);
+            assert_eq!(selected.error, None);
+        }
+    }
+
+    #[test]
+    fn internal_startup_frame_strips_launcher_open_prefix() {
+        for args in [
+            [
+                "--bytepleat-internal-startup-v1=token",
+                "--open",
+                "--",
+                "--open",
+                "--",
+                "/tmp/archive.zip",
+            ]
+            .map(OsString::from)
+            .to_vec(),
+            [
+                "/usr/bin/bytepleat-desktop",
+                "--bytepleat-internal-startup-v1=token",
+                "--open",
+                "--",
+                "--open",
+                "--",
+                "/tmp/archive.zip",
+            ]
+            .map(OsString::from)
+            .to_vec(),
+        ] {
+            let selected = argument_selection(&args);
+            assert_eq!(selected.action, "open");
+            assert_eq!(selected.paths, ["/tmp/archive.zip"]);
+            assert_eq!(selected.error, None);
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn startup_id_parser_accepts_bounded_private_metadata() {
+        let id = startup_id(&[
+            "/usr/bin/bytepleat-desktop".into(),
+            "--bytepleat-internal-startup-v1=token value".into(),
+            "--open".into(),
+            "--".into(),
+        ]);
+        assert_eq!(id.as_deref(), Some("token value"));
+        assert_eq!(
+            startup_id(&[
+                "--open".into(),
+                "--".into(),
+                "--bytepleat-internal-startup-v1=ordinary".into()
+            ]),
+            None
+        );
+        assert_eq!(
+            startup_id(&[
+                "--bytepleat-internal-startup-v1=bad\nvalue".into(),
+                "--open".into(),
+                "--".into()
+            ]),
+            None
+        );
+        assert_eq!(
+            startup_id(&[format!(
+                "--bytepleat-internal-startup-v1={}",
+                "x".repeat(4097)
+            )]),
+            None
+        );
     }
 
     #[test]

@@ -434,6 +434,7 @@ name = "bytepleat-desktop"
 version = "0.1.0"
 dependencies = [
  "bytepleat-desktop-core",
+ "gtk",
  "serde",
  "serde_json",
  "tauri",

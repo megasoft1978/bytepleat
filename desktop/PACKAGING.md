@@ -86,24 +86,54 @@ this development packager makes no legal-clearance claim.
 
 ## Scope
 
-The local ARM64 development package v4 was built twice with identical bytes:
-SHA-256 `17b1e9bb1c75330167c77f923dcd80e6da21eb7c7ad2c4ea4a4a06a397de4469`.
+The local ARM64 development package v6 was built twice with identical bytes:
+SHA-256 `82457192c7c573ad452b6bdf16b48278ca78b012bfbc57b2f465dc7fd9b44571`.
 It contains 377 notice packages, 673 literal notice files, and zero literal
-gaps. Zero literal gaps do not establish legal clearance. The v4 upgrade
-installed successfully on Ubuntu 24.04.5 ARM64 XFCE/Xorg, and the installed
-executable retained SHA-256
-`3165b8d6e48515401d1b8278151b468d9489c46b5bcd4eb75c790f5a2ebd08b5`.
-The installed app was opened cold through Nautilus Open With with “Always use”
-off; it listed four entries and selected extraction restored the Japanese-named
-file with SHA-256
-`291de3adfe866500865cc97d48754b76b09c00abb6fd1ebf31fde81af49f0621`. In
-separate installed-worker subprocess smoke checks, 21 checks passed across
-five formats (five create/extract pairs, five selected extractions, and six
-bounded rejections); these do not constitute GUI coverage across all formats.
+gaps. Zero literal gaps do not establish legal clearance. The package installed
+on Ubuntu 24.04.5 ARM64 GNOME/Xorg, and the installed executable SHA-256 was
+`efb4a7221de0ff6d6d96acdc30e6e72e0c3d6610cabc00634ca93528c5160883`. The
+installed app passed a cold TAR+Gzip open and bounded inspection of 40,001
+items, displaying 5,000. Cancelling inspection showed a cancelled state with
+no partial preview; closing the window during inspection cleaned up the worker
+and decoded staging. GUI workflows also passed ZIP creation, full and selective
+extraction, overwrite refusal, and Nautilus context actions. In that earlier
+v6 run, warm Open With forwarded the archive to the running app but did not
+foreground it; the later v10 samples below supersede that limited observation.
+
+Separate installed-worker subprocess smoke checks on the latest source revision
+passed 38 operations (20 successes and 18 expected rejections) across macOS
+and Ubuntu ARM64. These include all five listing formats and are not GUI
+coverage across all formats.
+
+The subsequent Linux activation worktree passed native Ubuntu 24.04.5 ARM64
+formatting, warnings-as-errors Clippy, 14 desktop library tests plus one
+Linux-only startup test, and the 17 installer/package tests. Its v10 unsigned
+Debian package has executable SHA-256
+`c0ac97eff1de3235f637c8bc79bf3606422a97a029923499271688f3f48bbd77` and
+package SHA-256
+`5763af5c5fca5a49b7b6d3a38e4e4d69ddec29507d425a78aac09cb496cf530a`. Two
+packages built with the same source-date epoch were byte-identical. The
+installed GNOME/Xorg package passed one cold and ten warm Nautilus Open With
+checks with “Always use” off: each handoff brought the app to the foreground
+with only the selected ZIP. At final inspection one app process remained with
+no repeated startup handoff markers in its arguments. Cold Compress from
+Nautilus created a ZIP that passed
+`unzip -t`; cold Extract completed into an initially empty test folder, and
+the extracted file bytes matched the archive contents. A prior direct-launch
+test on v9 reproduced a startup-argument growth loop and selected the injected
+`--open --` tokens as paths; v10 includes loop and duplicate-argument fixes.
+These ten serial warm samples do not establish behavior across other GNOME or
+Wayland configurations.
+
+The current source further limits duplicate-argument removal to a recognized
+private startup frame and preserves literal selected files named `--open` or
+`--`. Its macOS formatting, Clippy, and 16 applicable Tauri library tests pass.
+This follow-up has not yet been rebuilt as a Linux package or rechecked in the
+GNOME guest; the v10 hashes and runtime observations above apply to the tested
+v10 binary only.
 
 This is evidence for that package and system only. It does not claim support for
-all Debian or Ubuntu releases, distributions, architectures, or consumer release readiness. Installed-copy GNOME/Xorg
-listing and selected extraction were separately verified; see the
+all Debian or Ubuntu releases, distributions, architectures, or consumer release readiness. Earlier installed-copy XFCE/Xorg listing and selected extraction remain separately verified; see the
 [desktop validation record](../docs/desktop-validation.md) for exact scope.
 
 This script packages an existing ELF; it does not establish GUI behavior,
