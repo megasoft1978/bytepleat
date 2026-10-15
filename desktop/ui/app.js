@@ -13,15 +13,16 @@ let selectedEntries = [];
 let selectiveExtraction = false;
 let inspectionRequest = 0;
 let inspectionInFlight = false;
+let listingCache = null;
 const lastJobStates = new Map();
 
 const NO_DESTINATION = 'No location chosen yet.';
 const THEME_KEY = 'bytepleat-theme';
 // The same words are used for the tab, heading, button, job title and completion message.
 const MODES = {
-  create: { title: 'Create an archive', hint: 'Pack files or folders into a new archive. Your originals stay where they are.', inputTitle: 'Choose what to archive', inputHint: 'Select files or folders from your device.', dropTitle: 'Drop files or a folder here', dropSub: 'or choose them with the system file dialog', destTitle: 'Save archive as', destHint: 'Choose where the finished archive will go.', destStep: '3', run: 'Create archive' },
-  extract: { title: 'Extract an archive', hint: 'Unpack one archive into a new folder. Existing files and folders are never overwritten.', inputTitle: 'Choose an archive to extract', inputHint: 'Select one ZIP, 7z or compressed tar archive.', dropTitle: 'Drop an archive here', dropSub: 'or choose it with the system file dialog', destTitle: 'Extract to folder', destHint: 'Choose the folder that will hold the new extracted folder.', destStep: '2', run: 'Extract archive' },
-  open: { title: 'Inspect an archive', hint: 'See what is inside an archive without extracting it. Listing does not check file contents.', inputTitle: 'Choose an archive to inspect', inputHint: 'Select one ZIP, 7z or compressed tar archive.', dropTitle: 'Drop an archive here', dropSub: 'or choose it with the system file dialog', destTitle: '', destHint: '', destStep: '2', run: 'Inspect archive' }
+  create: { title: 'Create an archive', hint: 'Pack files or folders into a new archive. Your originals stay where they are.', inputTitle: 'Choose what to archive', inputHint: 'Select files or folders from your device. Archive output is capped at 1 GiB.', dropTitle: 'Drop files or a folder here', dropSub: 'or choose them with the system file dialog', destTitle: 'Save archive as', destHint: 'Choose where the finished archive will go.', destStep: '3', run: 'Create archive', fine: 'Source files stay in place. An existing file is never replaced.', aside: 'Files are copied into the archive. Originals are never moved or removed.' },
+  extract: { title: 'Extract an archive', hint: 'Unpack one archive into a new folder. Existing files and folders are never overwritten.', inputTitle: 'Choose an archive to extract', inputHint: 'Select one ZIP, 7z or compressed tar archive. Decoded output is capped at 1 GiB, and archives at 100,000 entries.', dropTitle: 'Drop an archive here', dropSub: 'or choose it with the system file dialog', destTitle: 'Choose a destination', destHint: 'Bytepleat adds a new folder here for the extracted files.', destStep: '2', run: 'Extract archive', fine: 'The archive stays in place. An existing folder is never overwritten.', aside: 'Extraction decodes into private staging before anything is published.' },
+  open: { title: 'Inspect an archive', hint: 'See what is inside an archive without extracting it. Listing does not check file contents.', inputTitle: 'Choose an archive to inspect', inputHint: 'Select one ZIP, 7z or compressed tar archive. The entry limit is 100,000; the list previews up to 5,000.', dropTitle: 'Drop an archive here', dropSub: 'or choose it with the system file dialog', destTitle: '', destHint: '', destStep: '2', run: 'Inspect archive', fine: 'Nothing is extracted to your folders, and the archive is not changed.', aside: 'Listing does not verify file contents. A compressed tar is fully decoded in private staging to list it.' }
 };
 const JOB_LABEL = { create: 'Create archive', extract: 'Extract archive', inspect: 'Inspect archive' };
 const STATE_LABEL = { queued: 'Queued', running: 'Running', cancelling: 'Stopping…', completed: 'Completed', failed: 'Failed', cancelled: 'Cancelled' };
@@ -29,7 +30,12 @@ const isActive = job => ['queued', 'running', 'cancelling'].includes(job.state);
 
 const esc = (value) => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const basename = path => path.replace(/[\\/]$/, '').split(/[\\/]/).pop() || path;
+const isTar = path => /\.tar\.(zst|gz|lz4)$/i.test(path);
 const extractedName = path => `${basename(path).replace(/\.(tar\.(?:zst|gz|lz4)|zip|7z)$/i, '')}-extracted`;
+const pathSeparator = path => (/^[A-Za-z]:[\\/]|^\\\\/.test(path) || (path.includes('\\') && !path.includes('/'))) ? '\\' : '/';
+const extractTarget = () => `${destination.replace(/[\\/]$/, '')}/${extractedName(selected[0])}`;
+const extractTargetDisplay = () => `${destination.replace(/[\\/]+$/, '')}${pathSeparator(destination)}${extractedName(selected[0])}`;
+const REVIEW_STATUS = 'Review the chosen entries, then choose a destination folder.';
 const multiArchiveMessage = count => `${count} archives were selected. Choose exactly one archive; nothing was processed.`;
 function status(message, error=false) {
   const el = $('#status-message');
@@ -45,12 +51,14 @@ function resetInspection() {
   $('#archive-inspection').hidden=true;
   $('#inspection-summary').textContent='';
   $('#entry-list').replaceChildren();
+  renderReview();
 }
 function updateDestinationNote(override) {
   const note = $('#destination-note');
   if (override) note.textContent = override;
-  else if (mode === 'extract' && destination && selected.length === 1) note.textContent = `Files go into a new folder named “${extractedName(selected[0])}”. If it already exists, the job stops.`;
-  else if (mode === 'extract') note.textContent = 'A new folder named after the archive plus “-extracted” is created inside it.';
+  else if (mode === 'extract' && destination && selected.length === 1) note.textContent = `Extracts into a new folder: ${extractTargetDisplay()}. If it already exists, the job stops.`;
+  else if (mode === 'extract' && selected.length === 1) note.textContent = `Creates a new folder named “${extractedName(selected[0])}” inside the folder you choose.`;
+  else if (mode === 'extract') note.textContent = 'Creates a new folder named after the archive plus “-extracted” inside the folder you choose.';
   else if (mode === 'create') note.textContent = 'If a file already exists there, the job stops instead of replacing it.';
   else note.textContent = '';
 }
@@ -76,9 +84,37 @@ function runHint(busy, unsupportedMulti, emptyExtract) {
   if (unsupportedMulti) return 'Choose exactly one archive.';
   if (emptyExtract) return 'Select at least one entry to extract.';
   if (mode!=='open' && !destination) return mode==='create' ? 'Choose where to save the archive.' : 'Choose a destination folder.';
-  return mode==='create' ? 'Ready. Your originals stay in place.' : mode==='extract' ? 'Ready. Files go into a new folder.' : 'Ready. Nothing is extracted.';
+  if (mode==='create') return 'Ready. Your originals stay in place.';
+  if (mode==='extract') return selectiveExtraction ? `Ready. Extracts ${selectedEntries.length} chosen ${selectedEntries.length===1?'entry':'entries'} into a new folder.` : 'Ready. Files go into a new folder.';
+  return $('#archive-inspection').hidden ? 'Ready. Nothing is extracted.' : 'Listing shown above. Tick entries to extract them, or inspect again to refresh it.';
 }
-function updateRunState() { const busy=currentJobs.some(isActive); const unsupportedMulti=(mode==='open'||mode==='extract')&&selected.length>1; const emptyExtract=mode==='extract'&&selectiveExtraction&&selectedEntries.length===0; $('#run-job').disabled=!native || busy || inspectionInFlight || selected.length===0 || unsupportedMulti || emptyExtract || (mode!=='open'&&!destination); $('#run-job').title=unsupportedMulti?'Select one archive at a time':emptyExtract?'Select at least one entry to extract':inspectionInFlight?'Reading archive listing…':busy?'One archive job can run at a time':''; $('#run-hint').textContent=runHint(busy,unsupportedMulti,emptyExtract); $('#selection-count').textContent=selected.length?`${selected.length} ${selected.length===1?'item':'items'} selected`:''; $('#extract-selected').disabled=selectedEntries.length===0; }
+function updateEntryHint() {
+  $('#entry-hint').textContent = selectedEntries.length
+    ? `${selectedEntries.length} selected. Next, choose a destination folder on the Extract tab. Bytepleat decodes the whole archive, then keeps only these.`
+    : 'No entries ticked yet. Tick the entries you want, then choose Extract selected. To extract everything, use the Extract tab.';
+}
+function updateSelectionNote() {
+  const note = $('#selection-note');
+  const text = mode==='open' && selected.length===1 && isTar(selected[0]) ? 'Compressed tar: listing fully decodes the archive into private temporary staging, which is removed afterwards. Extracting selected entries later decodes it again.' : '';
+  note.textContent = text; note.hidden = !text;
+}
+function renderReview() {
+  const show = mode==='extract' && selectiveExtraction && selectedEntries.length>0;
+  $('#selected-review').hidden = !show;
+  if (!show) { $('#review-list').replaceChildren(); return; }
+  $('#review-summary').textContent = `${selectedEntries.length} ${selectedEntries.length===1?'entry':'entries'} from ${basename(selected[0])}`;
+  $('#review-list').innerHTML = selectedEntries.map(name=>`<li>${esc(name)}</li>`).join('');
+}
+function startSelectiveExtract(archive, entries) {
+  // setMode clears the listing; keep the cache so Change selection can restore it without re-reading the archive.
+  const cache = listingCache;
+  setMode('extract'); showSelection([archive]);
+  listingCache = cache; selectedEntries = entries; selectiveExtraction = true;
+  renderReview(); updateRunState(); updateDestinationNote();
+  status(REVIEW_STATUS);
+  $('#review-title').focus();
+}
+function updateRunState() { const busy=currentJobs.some(isActive); const unsupportedMulti=(mode==='open'||mode==='extract')&&selected.length>1; const emptyExtract=mode==='extract'&&selectiveExtraction&&selectedEntries.length===0; $('#run-job').disabled=!native || busy || inspectionInFlight || selected.length===0 || unsupportedMulti || emptyExtract || (mode!=='open'&&!destination); $('#run-job').title=unsupportedMulti?'Select one archive at a time':emptyExtract?'Select at least one entry to extract':inspectionInFlight?'Reading archive listing…':busy?'One archive job can run at a time':''; $('#run-hint').textContent=runHint(busy,unsupportedMulti,emptyExtract); $('#selection-count').textContent=selected.length?`${selected.length} ${selected.length===1?'item':'items'} selected`:''; $('#extract-selected').disabled=selectedEntries.length===0; updateEntryHint(); updateSelectionNote(); }
 function setMode(next) {
   mode=next; destination=null; $('#destination-path').textContent=NO_DESTINATION;
   const text=MODES[mode];
@@ -98,6 +134,8 @@ function setMode(next) {
   $('#destination-hint').textContent=text.destHint;
   $('#destination-step').textContent=text.destStep;
   $('#run-label').textContent=text.run;
+  $('#run-fineprint').textContent=text.fine;
+  $('#aside-note').textContent=text.aside;
   showSelection([]); status('');
 }
 $$('.mode-tab').forEach(btn=>btn.addEventListener('click',()=>setMode(btn.dataset.mode)));
@@ -107,27 +145,36 @@ $$('input[name="format"]').forEach(input=>input.addEventListener('change',()=>{$
 $('#browse-inputs').addEventListener('click',async()=>{if(!native){status('Open this screen in the Bytepleat desktop app to browse files.',true);return;}try{const paths=await invoke('choose_inputs');showSelection(paths,true);}catch(e){status(String(e),true);}});
 $('#browse-folder').addEventListener('click',async()=>{if(!native){status('Native folder access requires the desktop app.',true);return;}try{const path=await invoke('choose_input_directory');if(path)showSelection([path],true);}catch(e){status(String(e),true);}});
 $('#drop-zone').addEventListener('click',e=>{if(e.target.closest('button'))return;$('#browse-inputs').click();});
-$('#choose-destination').addEventListener('click',async()=>{if(!native){status('Native save and folder dialogs require the desktop app.',true);return;}try{const value=mode==='create'?await invoke('choose_output',{format:$$('input[name="format"]').find(i=>i.checked).value}):await invoke('choose_directory');if(value){destination=value;$('#destination-path').textContent=value;updateDestinationNote();updateRunState();}}catch(e){status(String(e),true);}});
+$('#choose-destination').addEventListener('click',async()=>{if(!native){status('Native save and folder dialogs require the desktop app.',true);return;}try{const value=mode==='create'?await invoke('choose_output',{format:$$('input[name="format"]').find(i=>i.checked).value}):await invoke('choose_directory');if(value){destination=value;$('#destination-path').textContent=value;if($('#status-message').textContent===REVIEW_STATUS)status('');updateDestinationNote();updateRunState();}}catch(e){status(String(e),true);}});
 $('#run-job').addEventListener('click',async()=>{
   if(!native){status('Native backend required. No archive operation was started.',true);return;}
   if((mode==='open'||mode==='extract')&&selected.length>1){status(multiArchiveMessage(selected.length),true);return;}
   if(mode==='extract'&&selectiveExtraction&&selectedEntries.length===0){status('Select at least one entry to extract. No archive operation was started.',true);updateRunState();return;}
   if(mode==='open'&&inspectionInFlight)return;
   try {
-    if(mode==='open'){resetInspection();const isTar=/\.tar\.(zst|gz|lz4)$/i.test(selected[0]);const requestId=++inspectionRequest;const archivePath=selected[0];inspectionInFlight=true;updateRunState();status(isTar?'Reading TAR archive; listing fully decodes into private staging…':'Reading archive listing…');try{const listing=await invoke('inspect_archive',{path:archivePath});if(requestId!==inspectionRequest||mode!=='open'||selected.length!==1||selected[0]!==archivePath)return;renderArchiveListing(listing);status(`${listing.entries.length} of ${listing.total_entries} entries${listing.truncated?' (preview truncated)':''} · ${formatBytes(listing.total_bytes)} · listing only; contents have not been integrity-tested.`);}catch(error){if(requestId===inspectionRequest)status(String(error),true);}finally{if(requestId===inspectionRequest){inspectionInFlight=false;updateRunState();}}return;}
+    if(mode==='open'){resetInspection();const requestId=++inspectionRequest;listingCache=null;const archivePath=selected[0];inspectionInFlight=true;updateRunState();status(isTar(selected[0])?'Reading TAR archive; listing fully decodes into private staging…':'Reading archive listing…');try{const listing=await invoke('inspect_archive',{path:archivePath});if(requestId!==inspectionRequest||mode!=='open'||selected.length!==1||selected[0]!==archivePath)return;renderArchiveListing(listing);listingCache={path:archivePath,listing};status(`${listing.entries.length} of ${listing.total_entries} entries${listing.truncated?' (preview truncated)':''} · ${formatBytes(listing.total_bytes)} · listing only; contents have not been integrity-tested.`);}catch(error){if(requestId===inspectionRequest)status(String(error),true);}finally{if(requestId===inspectionRequest){inspectionInFlight=false;updateRunState();}}return;}
     const format=$$('input[name="format"]').find(i=>i.checked)?.value;
-    const target=mode==='extract'?`${destination.replace(/[\\/]$/,'')}/${extractedName(selected[0])}`:destination;
+    const target=mode==='extract'?extractTarget():destination;
     const request={action:mode==='create'?'create':'extract',inputs:selected.map(path=>path),destination:target,format:mode==='create'?format:null,selected_entries:mode==='extract'?[...selectedEntries]:[],max_output_bytes:1073741824};
     await invoke('start_job',{request});status(`${MODES[mode].run} started.`);await refreshJobs();
   } catch(error){status(String(error),true);}
 });
-function renderArchiveListing(listing){
+function renderArchiveListing(listing,preselected=[]){
   const section=$('#archive-inspection');section.hidden=false;const total=listing.total_entries??listing.entries.length;const shown=Math.min(listing.entries.length,5000);$('#inspection-summary').textContent=`Showing ${shown} of ${total} items · ${formatBytes(listing.total_bytes)}${listing.truncated?' · preview limited':''}`;
-  const host=$('#entry-list');host.innerHTML=listing.entries.slice(0,shown).map((entry,index)=>`<label class="entry-row"><input type="checkbox" data-entry="${index}"><span class="entry-name">${esc(entry.name)}</span><span class="entry-size">${entry.is_dir?'Folder':formatBytes(entry.size)}</span></label>`).join('') || '<p class="selection-empty">No entries listed.</p>';
+  selectedEntries=listing.entries.slice(0,shown).map(entry=>entry.name).filter(name=>preselected.includes(name));
+  const host=$('#entry-list');host.innerHTML=listing.entries.slice(0,shown).map((entry,index)=>`<label class="entry-row"><input type="checkbox" data-entry="${index}"${selectedEntries.includes(entry.name)?' checked':''}><span class="entry-name">${esc(entry.name)}</span><span class="entry-size">${entry.is_dir?'Folder':formatBytes(entry.size)}</span></label>`).join('') || '<p class="selection-empty">No entries listed.</p>';
   if(total>shown){const note=document.createElement('p');note.className='entry-limit';note.textContent=`Showing ${shown} of ${total} entries. Only listed entries can be selected for extraction.`;host.append(note);}
   host.querySelectorAll('[data-entry]').forEach(box=>box.addEventListener('change',()=>{const entry=listing.entries[Number(box.dataset.entry)].name;if(box.checked){selectedEntries.push(entry);}else{selectedEntries=selectedEntries.filter(name=>name!==entry);}updateRunState();}));
-  $('#extract-selected').onclick=()=>{if(!selected.length||selected.length!==1||selectedEntries.length===0)return;const entries=[...selectedEntries];const archive=selected[0];setMode('extract');showSelection([archive]);selectedEntries=entries;selectiveExtraction=true;updateRunState();status(`${entries.length} ${entries.length===1?'entry':'entries'} will be kept after the whole archive is decoded. Choose a destination folder, then extract.`);};
+  $('#extract-selected').onclick=()=>{if(selected.length!==1||selectedEntries.length===0)return;startSelectiveExtract(selected[0],[...selectedEntries]);};
+  updateRunState();
 }
+$('#review-change').addEventListener('click',()=>{
+  const archive=selected[0];const entries=[...selectedEntries];const cached=listingCache?.path===archive?listingCache.listing:null;
+  setMode('open');showSelection([archive]);
+  if(cached){renderArchiveListing(cached,entries);status('Showing the listing from your earlier inspection. Inspect again to refresh it.');$('#inspection-title').focus();}
+  else status('Inspect the archive again to change which entries are chosen.');
+});
+$('#review-clear').addEventListener('click',()=>{selectedEntries=[];selectiveExtraction=false;renderReview();updateRunState();updateDestinationNote();status('The whole archive will be extracted. Choose a destination folder, then extract.');$('#choose-destination').focus();});
 function formatBytes(n){if(n===0)return '0 B';if(!n)return 'size unavailable';const units=['B','KB','MB','GB','TB'];let u=0,x=n;while(x>=1000&&u<units.length-1){x/=1000;u++;}return `${x.toFixed(u?1:0)} ${units[u]}`;}
 
 function jobProgress(job){
@@ -157,7 +204,7 @@ function renderJobNow(job){
   const label=JOB_LABEL[job.action]||job.action;
   const message=job.message&&job.message!==job.error?`<p class="job-message">${esc(job.message)}</p>`:'';
   const error=job.error?`<p class="job-error">${esc(job.error)}</p>`:'';
-  const output=job.state==='completed'&&job.output?`<p class="job-output">${esc(job.output)}</p>`:'';
+  const output=job.state==='completed'&&job.output?`<p class="job-output"><span class="job-output-label">${job.action==='extract'?'Extracted to':'Saved to'}</span>${esc(job.output)}</p>`:'';
   const assurance=jobAssurance(job);
   const button=jobActionButton(job,'button button-secondary');
   host.hidden=false;

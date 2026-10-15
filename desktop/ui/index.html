@@ -47,11 +47,19 @@
               </div>
               <div id="selection" class="selection-list"><div class="selection-empty">Nothing selected yet.</div></div>
               <div id="selection-count" class="selection-count" aria-live="polite"></div>
+              <p id="selection-note" class="selection-note" hidden></p>
               <section id="archive-inspection" class="archive-inspection" hidden aria-labelledby="inspection-title">
-                <div class="inspection-heading"><h3 id="inspection-title">Archive contents</h3><span id="inspection-summary"></span></div>
+                <div class="inspection-heading"><h3 id="inspection-title" tabindex="-1">Archive contents</h3><span id="inspection-summary"></span></div>
                 <p class="caveat"><strong>Listing only.</strong> File contents have not been checked. Extracting selected entries still decodes the whole archive before keeping them.</p>
                 <div id="entry-list" class="entry-list"></div>
-                <button id="extract-selected" class="button button-secondary" type="button" disabled>Extract selected entries</button>
+                <p id="entry-hint" class="entry-hint" aria-live="polite"></p>
+                <button id="extract-selected" class="button button-secondary" type="button" disabled>Extract selected…</button>
+              </section>
+              <section id="selected-review" class="archive-inspection selected-review" hidden aria-labelledby="review-title">
+                <div class="inspection-heading"><h3 id="review-title" tabindex="-1">Entries to extract</h3><span id="review-summary"></span></div>
+                <p class="review-note">Chosen from the listing you inspected. If the archive has changed since, inspect it again; extraction stops if a chosen entry is missing. Bytepleat still decodes the whole archive before keeping only these.</p>
+                <ul id="review-list" class="review-list"></ul>
+                <div class="review-actions"><button id="review-change" class="button button-secondary" type="button">Change selection</button><button id="review-clear" class="button button-quiet" type="button">Extract everything instead</button></div>
               </section>
 
               <div id="format-section" class="configuration-section">
@@ -78,7 +86,7 @@
                 <p id="run-hint" class="run-hint">Choose what to archive to continue.</p>
                 <button id="run-job" class="button button-primary" type="button" aria-describedby="run-hint" disabled><span id="run-label">Create archive</span></button>
               </div>
-              <p class="run-fineprint">Output is capped at 1 GiB. Source files stay in place, and an existing destination is never overwritten.</p>
+              <p id="run-fineprint" class="run-fineprint"></p>
               <div id="native-notice" class="notice" role="status" hidden>This screen is a browser preview. Start the Tauri desktop app to use native file access and archive operations.</div>
               <div id="status-message" class="status-message" role="status" aria-live="polite"></div>
               <section id="job-now" class="job-now" aria-label="Current job" hidden></section>
@@ -94,7 +102,7 @@
                 <li><strong>TAR</strong> with Zstandard, Gzip or LZ4.</li>
                 <li class="limit-no"><strong>Not supported</strong> RAR, password-protected archives, ZIP64.</li>
               </ul>
-              <p class="aside-note">Inspecting an archive lists it only. It does not verify file contents. Extraction decodes into private staging before anything is published.</p>
+              <p id="aside-note" class="aside-note"></p>
             </section>
             <section class="aside-block" aria-labelledby="local-title">
               <h2 id="local-title">Local and careful</h2>
