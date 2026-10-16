@@ -209,16 +209,16 @@ as an installed GNOME package remains pending.
 
 ## Current automated baseline · 2026-10-15
 
-The current merged source tree is `5f45d4ce02d483c86655754fe25f92452d2b9b18`.
-Its [native UI smoke](https://github.com/megasoft1978/bytepleat/actions/runs/38756329912)
-passed on macOS ARM64, Linux x64/ARM64, and Windows x64/ARM64. The Windows
-WebView test launched the app with `--create`, `--extract`, and `--open` and
-checked the resulting selected paths and visible UI state. The [native Rust CI](https://github.com/megasoft1978/bytepleat/actions/runs/38756329946)
-also passed.
-The [desktop alpha checks](https://github.com/megasoft1978/bytepleat/actions/runs/38754501942)
-passed on the exact same source tree (the tested PR head and merge commit have
-identical Git tree `2a4295b17c0cfb9793887e3b512e3e26fb494554`); that run includes
-Linux packaging and Windows x64/ARM64 adapter and package checks.
+The current merged source tree is `d1ed936aac3fd28093377e3ac1aca39f5d60d90f`.
+The [desktop workflow](https://github.com/megasoft1978/bytepleat/actions/runs/38770917796)
+passed builds and tests on macOS ARM64, Linux x64, and Windows x64, compiled the
+Windows ARM64 app and adapters, and passed Windows x64/ARM64 package checks.
+The [native Rust CI](https://github.com/megasoft1978/bytepleat/actions/runs/38770917965)
+also passed. The latest [native WebView smoke](https://github.com/megasoft1978/bytepleat/actions/runs/38766872361)
+exercised the real app UI on macOS ARM64, Linux x64/ARM64, and Windows x64/ARM64;
+its WebView tests covered generated-ZIP inspection, selected-extraction review,
+create, selective extract, existing-destination preservation, and Windows
+startup arguments. It did not exercise native file dialogs or shell menus.
 
 The native UI workflow built and launched the Tauri app on GitHub-hosted
 macOS ARM64, Ubuntu Linux x64 and ARM64, Windows x64, and Windows 11 ARM64
@@ -244,6 +244,17 @@ These runs verify app behavior in CI and development-package construction; they 
 not verify interactive Finder/Explorer/Nautilus/Dolphin menu behavior, signed
 public distribution, or behavior on every OS version.
 
+The current desktop workflow additionally builds the normal Linux development
+`.deb` reproducibly, installs it on Ubuntu 24.04 x64, launches it under private
+D-Bus and Xvfb, and captures its visible nonblank window. The archived screenshot
+from run `38770917796` was inspected and showed the rendered app. This validates
+package startup and window rendering in that isolated environment. It does not
+validate an interactive GNOME session, file-manager actions, or archive workflows.
+The same run's Windows 11 ARM64 packaged smoke installed a test MSIX and checked
+package registration, alias activation, packaged Explorer COM enumeration, and
+argument handoff to a test receiver; it does not prove a visible Explorer menu
+launches the production GUI.
+
 ### Isolated Nautilus integration runtime · Ubuntu 24.04 · 2026-10-15
 
 The new headless Nautilus smoke was run three consecutive times in an isolated
@@ -260,7 +271,19 @@ not run compression or extraction, and do not establish behavior in an
 interactive GNOME Shell session, on Wayland, or on other distributions. The
 first hosted Nautilus runtime job passed in [GitHub Actions run
 38762493952](https://github.com/megasoft1978/bytepleat/actions/runs/38762493952).
-A subsequent validation run is in progress.
+The same job passed again in [run 38770917796](https://github.com/megasoft1978/bytepleat/actions/runs/38770917796).
+
+### Packaged Linux window render · Ubuntu 24.04 x64 · 2026-10-15
+
+Run `38770917796` built the ordinary Linux development `.deb` twice and checked
+the package files were byte-for-byte identical. In a dependent hosted job, CI
+installed that package on Ubuntu 24.04 x64, started `/usr/bin/bytepleat-desktop`
+inside a private D-Bus session and Xvfb, found the visible `Bytepleat` window,
+and waited for a nonblank capture. The retained 1200×800 screenshot contains
+2,146 colors and visibly shows the Create view. This catches a blank or missing
+window after package installation; it does not establish live GNOME Files
+behavior or any create/extract workflow. Current GNOME workflow repetition,
+including cancellation, no-overwrite, and selective extraction, remains pending.
 
 ## Windows ARM64 packaged integration smoke
 
@@ -333,8 +356,8 @@ for the exact script and cleanup scope.
   registration, and COM activation, but not interactive menu use.
 - Install the latest Linux development package in GNOME and re-run inspection
   cancellation, no-overwrite, and selective extraction; those flows passed on
-  the earlier installed v6 package. The current source was rebuilt and packaged
-  in CI, but has not received this installed runtime check. Wayland remains
+  the earlier installed v6 package. The current x64 package was launched in
+  isolated Xvfb, but has not received this installed GNOME workflow check. Wayland remains
   unverified. Package validation covers Ubuntu 24.04.5 ARM64, not other
   distributions or architectures.
 - Qualify signed packages, including Developer ID/notarized macOS distribution
