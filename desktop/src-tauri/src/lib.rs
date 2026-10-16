@@ -68,15 +68,24 @@ fn path_strings(paths: impl IntoIterator<Item = PathBuf>) -> Result<Vec<String>,
         .collect()
 }
 
-fn argument_selection(args: &[OsString]) -> Selection {
-    const STARTUP_PREFIX: &str = "--bytepleat-internal-startup-v1=";
-    const INVALID_PREFIX: &str = "--bytepleat-internal-invalid-selection-v1";
-    let offset = usize::from(args.first().and_then(|v| v.to_str()).is_some_and(|v| {
-        Path::new(v)
+fn is_program_name(arg: &str) -> bool {
+    // Internal startup markers embed a desktop startup id that can contain
+    // slashes, so a leading `-` token is never argv[0].
+    !arg.starts_with('-')
+        && Path::new(arg)
             .file_name()
             .and_then(|n| n.to_str())
             .is_some_and(|n| n.starts_with("bytepleat-desktop"))
-    }));
+}
+
+fn argument_selection(args: &[OsString]) -> Selection {
+    const STARTUP_PREFIX: &str = "--bytepleat-internal-startup-v1=";
+    const INVALID_PREFIX: &str = "--bytepleat-internal-invalid-selection-v1";
+    let offset = usize::from(
+        args.first()
+            .and_then(|v| v.to_str())
+            .is_some_and(is_program_name),
+    );
     let marker = args.get(offset).and_then(|v| v.to_str());
     let structured = marker.is_some_and(|v| v == INVALID_PREFIX || v.starts_with(STARTUP_PREFIX))
         && args.get(offset + 1).and_then(|v| v.to_str()) == Some("--open")
@@ -103,12 +112,11 @@ fn argument_selection(args: &[OsString]) -> Selection {
     } else {
         args
     };
-    let offset = usize::from(args.first().and_then(|v| v.to_str()).is_some_and(|v| {
-        Path::new(v)
-            .file_name()
-            .and_then(|n| n.to_str())
-            .is_some_and(|n| n.starts_with("bytepleat-desktop"))
-    }));
+    let offset = usize::from(
+        args.first()
+            .and_then(|v| v.to_str())
+            .is_some_and(is_program_name),
+    );
     let duplicated_open_prefix = startup_frame
         && args.get(offset).and_then(|v| v.to_str()) == Some("--open")
         && args.get(offset + 1).and_then(|v| v.to_str()) == Some("--")
@@ -126,12 +134,11 @@ fn argument_selection(args: &[OsString]) -> Selection {
         args
     };
     let mut it = args.iter();
-    if it.next().and_then(|v| v.to_str()).is_some_and(|v| {
-        Path::new(v)
-            .file_name()
-            .and_then(|n| n.to_str())
-            .is_some_and(|n| n.starts_with("bytepleat-desktop"))
-    }) {
+    if it
+        .next()
+        .and_then(|v| v.to_str())
+        .is_some_and(is_program_name)
+    {
         // The single-instance plugin forwards argv including argv[0].
     } else {
         it = args.iter();
@@ -141,12 +148,11 @@ fn argument_selection(args: &[OsString]) -> Selection {
         Some("--extract") => "extract",
         Some("--open") => "open",
         _ => {
-            let values: Vec<_> = if args.first().and_then(|v| v.to_str()).is_some_and(|v| {
-                Path::new(v)
-                    .file_name()
-                    .and_then(|n| n.to_str())
-                    .is_some_and(|n| n.starts_with("bytepleat-desktop"))
-            }) {
+            let values: Vec<_> = if args
+                .first()
+                .and_then(|v| v.to_str())
+                .is_some_and(is_program_name)
+            {
                 args.iter().skip(1).collect()
             } else {
                 args.iter().collect()
@@ -199,12 +205,7 @@ fn argument_selection(args: &[OsString]) -> Selection {
 #[cfg(target_os = "linux")]
 fn startup_id(args: &[String]) -> Option<String> {
     const PREFIX: &str = "--bytepleat-internal-startup-v1=";
-    let offset = usize::from(args.first().is_some_and(|arg| {
-        Path::new(arg)
-            .file_name()
-            .and_then(|n| n.to_str())
-            .is_some_and(|n| n.starts_with("bytepleat-desktop"))
-    }));
+    let offset = usize::from(args.first().is_some_and(|arg| is_program_name(arg)));
     let marker = args.get(offset)?;
     if args.get(offset + 1).map(String::as_str) != Some("--open")
         || args.get(offset + 2).map(String::as_str) != Some("--")
@@ -1342,6 +1343,81 @@ mod tests {
             ["--bytepleat-internal-startup-v1=token-like"]
         );
         assert_eq!(selected.error, None);
+    }
+
+    const GNOME_STARTUP_MARKER: &str = "--bytepleat-internal-startup-v1=org.gnome.Nautilus-3258-bytepleat-desktop-test-\"/usr/bin/bytepleat-desktop\"-0_TIME227341";
+
+    #[test]
+    fn startup_marker_with_slashes_is_not_mistaken_for_argv_zero() {
+        // Exact argv observed on Ubuntu/Nautilus "Open With": the startup id
+        // embeds the desktop file path, so the marker has a `bytepleat-desktop`
+        // file-name component. Cold start (argv[0] skipped) and forwarded
+        // (argv[0] present) must both yield only the archive.
+        for args in [
+            vec![
+                GNOME_STARTUP_MARKER,
+                "--open",
+                "--",
+                "--open",
+                "--",
+                "/home/ubuntu/d21/t.zip",
+            ],
+            vec![
+                "/usr/bin/bytepleat-desktop",
+                GNOME_STARTUP_MARKER,
+                "--open",
+                "--",
+                "--open",
+                "--",
+                "/home/ubuntu/d21/t.zip",
+            ],
+            vec![
+                GNOME_STARTUP_MARKER,
+                "--open",
+                "--",
+                "/home/ubuntu/d21/t.zip",
+            ],
+        ] {
+            let args: Vec<OsString> = args.into_iter().map(OsString::from).collect();
+            let selected = argument_selection(&args);
+            assert_eq!(selected.action, "open");
+            assert_eq!(selected.paths, ["/home/ubuntu/d21/t.zip"]);
+            assert_eq!(selected.error, None);
+        }
+    }
+
+    #[test]
+    fn slashed_marker_keeps_literal_flag_filenames_after_prefix() {
+        let args = [
+            GNOME_STARTUP_MARKER,
+            "--open",
+            "--",
+            "--open",
+            "--",
+            "--open",
+            "/tmp/a.zip",
+        ]
+        .map(OsString::from);
+        let selected = argument_selection(&args);
+        assert_eq!(selected.paths, ["--open", "/tmp/a.zip"]);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn startup_id_accepts_marker_with_slashes_with_and_without_argv_zero() {
+        let id = GNOME_STARTUP_MARKER.strip_prefix("--bytepleat-internal-startup-v1=");
+        for args in [
+            vec![GNOME_STARTUP_MARKER, "--open", "--"],
+            vec![
+                "/usr/bin/bytepleat-desktop",
+                GNOME_STARTUP_MARKER,
+                "--open",
+                "--",
+            ],
+        ] {
+            let args: Vec<String> = args.into_iter().map(String::from).collect();
+            assert_eq!(startup_id(&args).as_deref(), id);
+        }
     }
 
     #[test]

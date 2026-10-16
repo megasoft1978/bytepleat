@@ -46,10 +46,11 @@ const REEXEC_GUARD_ENV: &str = "BYTEPLEAT_INTERNAL_REEXEC_V1";
 #[cfg(target_os = "linux")]
 fn has_internal_metadata(args: &[std::ffi::OsString]) -> bool {
     let offset = usize::from(args.first().and_then(|v| v.to_str()).is_some_and(|v| {
-        std::path::Path::new(v)
-            .file_name()
-            .and_then(|n| n.to_str())
-            .is_some_and(|n| n.starts_with("bytepleat-desktop"))
+        !v.starts_with('-')
+            && std::path::Path::new(v)
+                .file_name()
+                .and_then(|n| n.to_str())
+                .is_some_and(|n| n.starts_with("bytepleat-desktop"))
     }));
     args.get(offset)
         .and_then(|v| v.to_str())
@@ -107,6 +108,16 @@ mod linux_startup_tests {
         assert!(has_internal_metadata(&[
             "/usr/bin/bytepleat-desktop".into(),
             INVALID_SELECTION_PREFIX.into(),
+            "--open".into(),
+            "--".into()
+        ]));
+    }
+
+    #[test]
+    fn slashed_startup_id_marker_is_not_argv_zero() {
+        let marker = format!("{STARTUP_PREFIX}org.gnome.Nautilus-1-bytepleat-desktop-\"/usr/bin/bytepleat-desktop\"-0_TIME1");
+        assert!(has_internal_metadata(&[
+            OsString::from(marker),
             "--open".into(),
             "--".into()
         ]));
