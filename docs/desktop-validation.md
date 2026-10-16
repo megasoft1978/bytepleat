@@ -346,6 +346,15 @@ No desktop is launched or controlled by this smoke. See the
 [Windows integration instructions](../desktop/integrations/windows/README.md#arm64-packaged-integration-smoke)
 for the exact script and cleanup scope.
 
+## Ubuntu 24.04.5 ARM64 VM revalidation of `6fbeec2` · 2026-10-16
+
+Run in the existing UTM virtual machine (GNOME on X11, 640x480 display) against a clean `git archive` of `main` at `6fbeec2`.
+
+- **Passed:** CLI, desktop core and Tauri tests (55, 15 and 20), `cargo fmt --check` and `cargo clippy -D warnings` on all three crates, and building the unsigned ARM64 `.deb`.
+- **Passed on a separate `ui-test` build** (same source, with the optional embedded WebDriver; the ordinary package excludes it): opening a ZIP, creating an archive, extracting checked entries, rejecting an empty selective extraction, refusing an existing destination folder with its contents unchanged, cancelling a job without staging remnants, and the single-archive message.
+- **Passed:** interrupting a 600 MB compact compression with SIGINT exited 130, left no `.tmp*` file, and left the existing output byte-identical.
+- **Not verified:** the ordinary installed package was not visually checked, because screenshots of the GNOME session did not capture the app window. Nautilus and Dolphin menu actions were not clicked. Wayland, Kubuntu and Windows are untested.
+
 ## Remaining validation
 
 - Verify macOS Dock Quit cleanup; test the minimum supported macOS version.
