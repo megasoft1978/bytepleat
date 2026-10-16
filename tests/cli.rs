@@ -144,3 +144,57 @@ fn errors_limits_pack_and_stream() {
         .spawn()
         .is_ok());
 }
+
+#[cfg(unix)]
+#[test]
+fn sigint_removes_staging_file_and_keeps_existing_output() {
+    use std::{os::unix::process::ExitStatusExt, thread, time::Duration};
+    let d = tempdir().unwrap();
+    let src = d.path().join("big.bin");
+    // Incompressible-ish data, large enough that compression outlasts the wait.
+    let mut x: u64 = 0x9e3779b97f4a7c15;
+    let data: Vec<u8> = (0..256usize << 20)
+        .map(|_| {
+            x ^= x << 13;
+            x ^= x >> 7;
+            x ^= x << 17;
+            (x >> 24) as u8
+        })
+        .collect();
+    fs::write(&src, &data).unwrap();
+    let out = d.path().join("o.zst");
+    fs::write(&out, b"previous").unwrap();
+    let mut child = cli()
+        .args([
+            "compress",
+            src.to_str().unwrap(),
+            "-o",
+            out.to_str().unwrap(),
+        ])
+        .args(["--force", "--preset", "compact"])
+        .spawn()
+        .unwrap();
+    let staged = || {
+        fs::read_dir(d.path())
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .any(|e| e.file_name().to_string_lossy().starts_with(".tmp"))
+    };
+    for _ in 0..200 {
+        if staged() {
+            break;
+        }
+        thread::sleep(Duration::from_millis(25));
+    }
+    assert!(staged(), "staging file never appeared");
+    assert_eq!(unsafe { kill(child.id() as i32, 2) }, 0);
+    let status = child.wait().unwrap();
+    assert!(!status.success());
+    assert_eq!(status.signal(), Some(2));
+    assert!(!staged(), "staging file left behind");
+    assert_eq!(fs::read(&out).unwrap(), b"previous");
+}
+#[cfg(unix)]
+extern "C" {
+    fn kill(pid: i32, sig: i32) -> i32;
+}
