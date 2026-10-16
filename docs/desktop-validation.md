@@ -353,7 +353,8 @@ Run in the existing UTM virtual machine (GNOME on X11, 640x480 display) against 
 - **Passed:** CLI, desktop core and Tauri tests (55, 15 and 20), `cargo fmt --check` and `cargo clippy -D warnings` on all three crates, and building the unsigned ARM64 `.deb`.
 - **Passed on a separate `ui-test` build** (same source, with the optional embedded WebDriver; the ordinary package excludes it): opening a ZIP, creating an archive, extracting checked entries, rejecting an empty selective extraction, refusing an existing destination folder with its contents unchanged, cancelling a job without staging remnants, and the single-archive message.
 - **Passed:** interrupting a 600 MB compact compression with SIGINT exited 130, left no `.tmp*` file, and left the existing output byte-identical.
-- **Not verified:** the ordinary installed package was not visually checked, because screenshots of the GNOME session did not capture the app window. Nautilus and Dolphin menu actions were not clicked. Wayland, Kubuntu and Windows are untested.
+- **Passed (follow-up, same VM, XFCE/Xorg 1280x800):** the ordinary installed `.deb` (ELF sha256 `3347dd67bdccfd00...`) was visually checked. The window renders the new empty state ("Drop files to compress, or an archive to inspect", "Existing files are never overwritten.", format step hidden until input is chosen), and `--open -- <zip>` forwards the archive to the running window and opens the Inspect tab with it selected. Note: reinstalling a package with the same version string needs `dpkg -i`; `apt-get install ./pkg.deb` silently kept the older build, so an earlier check of the "installed" app was of the wrong binary.
+- **Not verified:** Nautilus and Dolphin menu actions were not clicked. Wayland, Kubuntu and Windows are untested.
 
 ## Remaining validation
 
