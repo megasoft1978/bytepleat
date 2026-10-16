@@ -1,163 +1,154 @@
 (() => {
-  const repo = 'https://github.com/megasoft1978/bytepleat';
-  const releases = `${repo}/releases`;
+  const root = document.documentElement;
+  root.classList.add('js');
+
+  /* Menu */
   const menu = document.querySelector('.menu-toggle');
   const nav = document.querySelector('#nav-links');
   const setMenuOpen = open => {
-    if (!menu || !nav) return;
     menu.setAttribute('aria-expanded', String(open));
     nav.classList.toggle('open', open);
   };
   if (menu && nav) {
     menu.addEventListener('click', () => setMenuOpen(menu.getAttribute('aria-expanded') !== 'true'));
-    nav.addEventListener('click', event => {
-      if (event.target.closest('a')) setMenuOpen(false);
-    });
-    document.addEventListener('keydown', event => {
-      if (event.key === 'Escape') setMenuOpen(false);
+    nav.addEventListener('click', event => { if (event.target.closest('a')) setMenuOpen(false); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') setMenuOpen(false); });
+  }
+
+  /* Theme: follows the system unless the visitor picks one. */
+  const themeButton = document.querySelector('#theme-toggle');
+  const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
+  const currentTheme = () => root.dataset.theme || (systemDark.matches ? 'dark' : 'light');
+  try { const saved = localStorage.getItem('bytepleat-theme'); if (saved === 'light' || saved === 'dark') root.dataset.theme = saved; } catch (_) { /* storage unavailable */ }
+  if (themeButton) {
+    themeButton.hidden = false;
+    themeButton.addEventListener('click', () => {
+      const next = currentTheme() === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      try { localStorage.setItem('bytepleat-theme', next); } catch (_) { /* ignore */ }
     });
   }
 
+  /* Release data from project.json */
+  const releases = 'https://github.com/megasoft1978/bytepleat/releases';
   const targets = {
-    mac: { triple: 'aarch64-apple-darwin', label: 'macOS · Apple silicon' },
-    linux: { triple: 'x86_64-unknown-linux-gnu', label: 'Linux · x86-64' },
-    windows: { triple: 'x86_64-pc-windows-msvc', label: 'Windows · x86-64' }
+    mac: { triple: 'aarch64-apple-darwin', name: 'macOS' },
+    linux: { triple: 'x86_64-unknown-linux-gnu', name: 'Linux' },
+    windows: { triple: 'x86_64-pc-windows-msvc', name: 'Windows' }
   };
-  const status = document.querySelector('#copy-status');
-  const output = document.querySelector('#target-triple');
-  const targetStatus = document.querySelector('#target-status');
-  const details = document.querySelector('#download-details');
-  const commands = document.querySelector('#install-commands');
-  const download = document.querySelector('[data-release-link]');
-  const releaseNote = document.querySelector('[data-release-note]');
-  const installSummary = document.querySelector('[data-install-summary]');
-  const releaseStatus = document.querySelector('[data-release-status]');
-  const releaseFaq = document.querySelector('[data-release-faq]');
-  const shaCommand = document.querySelector('#checksum-command');
-  const extractCommand = document.querySelector('#extract-command');
-  const shaCopy = document.querySelector('#copy-checksum');
-  const installCopy = document.querySelector('#copy-install');
+  const $ = selector => document.querySelector(selector);
+  const download = $('[data-release-link]');
+  const installLabel = $('#install-label');
+  const installCommand = $('#install-command');
+  const details = $('#download-details');
+  const picker = $('[data-js-only]');
+  const copyStatus = $('#copy-status');
   let config = null;
-  const platform = navigator.userAgentData?.platform || navigator.platform || '';
-  let selected = /win/i.test(platform) ? 'windows' : /linux/i.test(platform) && !/android/i.test(navigator.userAgent) ? 'linux' : 'mac';
-  const configUrl = new URL('../project.json', document.currentScript.src);
+
+  const platformText = navigator.userAgentData?.platform || navigator.platform || '';
+  let selected = /win/i.test(platformText) ? 'windows'
+    : /linux/i.test(platformText) && !/android/i.test(navigator.userAgent) ? 'linux' : 'mac';
 
   const safeReleaseUrl = value => {
     if (typeof value !== 'string') return null;
     try {
       const url = new URL(value);
       if (url.protocol !== 'https:' || url.origin !== 'https://github.com' || url.username || url.password || url.search || url.hash) return null;
-      if (url.pathname === '/megasoft1978/bytepleat/releases' || /^\/megasoft1978\/bytepleat\/releases\/tag\/[A-Za-z0-9._-]+$/.test(url.pathname)) return url.href;
       if (/^\/megasoft1978\/bytepleat\/releases\/download\/[A-Za-z0-9._-]+\/[A-Za-z0-9._+-]+$/.test(url.pathname)) return url.href;
-    } catch (_) { return null; }
+    } catch (_) { /* invalid URL */ }
     return null;
   };
   const validAsset = asset => {
-    if (!asset || typeof asset !== 'object' || Array.isArray(asset)) return null;
-    if (asset.available !== true) return null;
+    if (!asset || typeof asset !== 'object' || asset.available !== true) return null;
     const url = safeReleaseUrl(asset.url);
     const filename = typeof asset.filename === 'string' && /^[A-Za-z0-9][A-Za-z0-9._+-]{0,150}$/.test(asset.filename) ? asset.filename : null;
     if (!url || !filename || !new URL(url).pathname.endsWith(`/${filename}`)) return null;
     const sha256 = typeof asset.sha256 === 'string' && /^[a-fA-F0-9]{64}$/.test(asset.sha256) ? asset.sha256.toLowerCase() : null;
-    const checksumUrl = asset.checksum_url == null ? null : safeReleaseUrl(asset.checksum_url);
-    return { url, filename, sha256, checksumUrl };
+    return { url, filename, sha256 };
   };
-  const targetData = key => {
-    const fallback = targets[key];
-    const row = config?.targets?.find(item => item?.triple === fallback.triple);
-    return { ...fallback, status: row?.status || 'planned', asset: validAsset(row?.asset) };
+  const assetFor = key => {
+    const row = config?.targets?.find(item => item?.triple === targets[key].triple);
+    return config?.release_status === 'available' ? validAsset(row?.asset) : null;
   };
-  const prettyStatus = value => ({ passed: 'Native CI passed', verified: 'Native CI passed', partial: 'Fresh 0.5.1 native CI pending', pending: 'Native CI pending', planned: 'Planned target', failed: 'Native CI failed' }[value] || 'Status unavailable');
-  const copyCommands = (checksum, extraction) => {
-    if (shaCommand) shaCommand.textContent = checksum;
-    if (extractCommand) extractCommand.textContent = extraction;
-    if (shaCopy) shaCopy.dataset.copy = checksum;
-    if (installCopy) installCopy.dataset.copy = extraction;
+
+  const installFor = (key, asset) => {
+    const { url, filename, sha256 } = asset;
+    const stem = filename.replace(/\.(tar\.gz|zip)$/, '');
+    if (key === 'windows') {
+      const check = sha256 ? `; if ((Get-FileHash .\\${filename} -Algorithm SHA256).Hash.ToLower() -ne '${sha256}') { throw 'SHA-256 mismatch' }` : '';
+      return `Invoke-WebRequest -Uri '${url}' -OutFile .\\${filename}${check}; Expand-Archive -LiteralPath .\\${filename} -DestinationPath .\\bytepleat; .\\bytepleat\\${stem}\\bytepleat.exe --help`;
+    }
+    const hasher = key === 'mac' ? 'shasum -a 256' : 'sha256sum';
+    const check = sha256 ? ` && echo '${sha256}  ${filename}' | ${hasher} -c -` : '';
+    return `curl -fsSLO '${url}'${check} && mkdir -p ./bytepleat && tar -xzf '${filename}' -C ./bytepleat && ./bytepleat/${stem}/bytepleat --help`;
   };
+
   const render = () => {
-    const item = targetData(selected);
+    if (!picker) return;
+    const asset = assetFor(selected);
+    picker.hidden = !config;
     document.querySelectorAll('.platform').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.target === selected)));
-    if (output) output.textContent = item.triple;
-    if (targetStatus) targetStatus.textContent = prettyStatus(item.status);
-    document.querySelectorAll('[data-target-status]').forEach(node => {
-      const target = targetData(node.dataset.targetStatus);
-      node.textContent = prettyStatus(target.status);
-    });
-    const available = config?.release_status === 'available' && item.asset;
+    if (!asset) {
+      if (download) { download.href = releases; download.textContent = 'See releases on GitHub'; }
+      if (details) details.hidden = true;
+      return;
+    }
     if (download) {
-      download.href = available ? item.asset.url : releases;
-      download.textContent = available ? `Download CLI for ${selected === 'windows' ? 'Windows' : selected === 'linux' ? 'Linux' : 'macOS'}` : 'View release status ↗';
-      download.setAttribute('aria-label', available ? `${download.textContent}: ${item.asset.filename}` : 'View release status on GitHub');
+      download.href = asset.url;
+      download.textContent = `Download the CLI for ${targets[selected].name} (v${config.version})`;
+      download.setAttribute('aria-label', `${download.textContent}, file ${asset.filename}`);
     }
+    if (installLabel) installLabel.textContent = `Download, verify and run (${targets[selected].name})`;
+    if (installCommand) installCommand.textContent = installFor(selected, asset);
     if (details) {
-      details.hidden = !available;
-      details.textContent = available ? `Selected build: ${item.asset.filename}${item.asset.sha256 ? ` · SHA-256 ${item.asset.sha256}` : ''}${item.asset.checksumUrl ? ` · Checksums: ${item.asset.checksumUrl}` : ''}` : '';
-    }
-    if (config?.release_status === 'available') {
-      if (releaseNote) releaseNote.textContent = `Version ${config.version || '0.5.1'} · release available · source is open on GitHub`;
-      if (releaseStatus) releaseStatus.textContent = `0.5.1 release available. Native CI: ${config.native_ci_status || 'status unavailable'}.`;
-      if (releaseFaq) releaseFaq.textContent = 'The 0.5.1 release is available. Choose a platform above to see its published asset and checksum details.';
-      if (installSummary) installSummary.textContent = 'Choose a target to view its published package, checksum, and installation commands.';
-    } else if (config?.release_status === 'pending') {
-      if (releaseNote) releaseNote.textContent = `Version ${config.version || '0.5.1'} · 0.5.1 release pending · source is open on GitHub`;
-      if (installSummary) installSummary.textContent = 'The 0.5.1 release is pending. Target CI status is shown below; no package is downloadable until an asset is published.';
-    }
-    if (commands) commands.hidden = !available;
-    if (available) {
-      const file = item.asset.filename;
-      const unixHash = selected === 'mac' ? 'shasum -a 256' : 'sha256sum';
-      const stem = file.endsWith('.tar.gz') ? file.slice(0, -7) : file.endsWith('.zip') ? file.slice(0, -4) : file;
-      const hashCmd = item.asset.sha256
-        ? selected === 'windows' ? `if ((Get-FileHash .\\${file} -Algorithm SHA256).Hash.ToLower() -ne '${item.asset.sha256}') { throw 'SHA-256 mismatch' }` : `echo '${item.asset.sha256}  ${file}' | ${unixHash} -c -`
-        : item.asset.checksumUrl
-          ? (() => {
-            const sumFile = decodeURIComponent(new URL(item.asset.checksumUrl).pathname.split('/').pop());
-            return selected === 'windows' ? `Invoke-WebRequest -Uri '${item.asset.checksumUrl}' -OutFile '.\\${sumFile}'; Get-Content '.\\${sumFile}'` : `curl -fsSLO '${item.asset.checksumUrl}'; cat '${sumFile}'`;
-          })()
-          : selected === 'windows' ? `Get-FileHash .\\${file} -Algorithm SHA256` : `${unixHash} ./${file}`;
-      const extractCmd = selected === 'windows'
-        ? `Expand-Archive -LiteralPath .\\${file} -DestinationPath .\\bytepleat; .\\bytepleat\\${stem}\\bytepleat.exe --help`
-        : `mkdir -p ./bytepleat && tar -xzf '${file}' -C ./bytepleat && chmod +x ./bytepleat/${stem}/bytepleat && ./bytepleat/${stem}/bytepleat --help`;
-      copyCommands(hashCmd, extractCmd);
+      details.hidden = false;
+      details.textContent = `File: ${asset.filename}${asset.sha256 ? `. SHA-256: ${asset.sha256}` : ''}`;
     }
   };
 
   document.querySelectorAll('.platform').forEach(button => button.addEventListener('click', () => {
     selected = button.dataset.target in targets ? button.dataset.target : 'mac';
-    document.querySelectorAll('.platform').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
     render();
   }));
 
+  /* Copy buttons */
   const fallbackCopy = value => {
     const field = document.createElement('textarea');
     field.value = value;
     field.setAttribute('readonly', '');
-    field.style.position = 'fixed';
-    field.style.opacity = '0';
+    field.style.cssText = 'position:fixed;opacity:0';
     document.body.append(field);
     field.select();
-    let copied = false;
-    try { copied = document.execCommand('copy'); } catch (_) { copied = false; }
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (_) { ok = false; }
     field.remove();
-    return copied;
+    return ok;
   };
-  document.querySelectorAll('[data-copy]').forEach(button => button.addEventListener('click', async () => {
-    const value = button.dataset.copy;
-    let copied = false;
-    try {
-      if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(value); copied = true; }
-      else copied = fallbackCopy(value);
-    } catch (_) { copied = fallbackCopy(value); }
-    if (status) status.textContent = copied ? 'Command copied.' : `Copy is unavailable here. Select and copy: ${value}`;
-  }));
+  document.querySelectorAll('[data-copy-target]').forEach(button => {
+    button.hidden = false;
+    button.addEventListener('click', async () => {
+      const value = document.getElementById(button.dataset.copyTarget)?.textContent || '';
+      let ok = false;
+      try {
+        if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(value); ok = true; }
+        else ok = fallbackCopy(value);
+      } catch (_) { ok = fallbackCopy(value); }
+      const original = button.dataset.label || button.textContent;
+      button.dataset.label = original;
+      button.textContent = ok ? 'Copied' : 'Select and copy';
+      if (copyStatus) copyStatus.textContent = ok ? 'Copied to clipboard.' : 'Copy is unavailable here. Select the text and copy it.';
+      setTimeout(() => { button.textContent = original; }, 2000);
+    });
+  });
 
   render();
-  fetch(configUrl, { credentials: 'same-origin' }).then(response => {
-    if (!response.ok) throw new Error('Configuration unavailable');
-    return response.json();
-  }).then(data => {
-    if (!data || !Array.isArray(data.targets) || !['pending', 'available'].includes(data.release_status)) throw new Error('Invalid configuration');
-    config = data;
-    render();
-  }).catch(() => { /* The static release links remain usable without configuration. */ });
+  const configUrl = new URL('../project.json', document.currentScript.src);
+  fetch(configUrl, { credentials: 'same-origin' })
+    .then(response => { if (!response.ok) throw new Error('unavailable'); return response.json(); })
+    .then(data => {
+      if (!data || !Array.isArray(data.targets) || !['pending', 'available'].includes(data.release_status)) throw new Error('invalid');
+      config = data;
+      render();
+    })
+    .catch(() => { /* Static links keep working without the config. */ });
 })();

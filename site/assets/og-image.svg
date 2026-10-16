@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Bytepleat">
+  <rect width="1200" height="630" fill="#f4f7f4"/>
+  <g transform="translate(120 190) scale(3.4)">
+    <rect width="64" height="64" rx="16" fill="#17674d"/>
+    <path d="M17 19h30v7H17zm0 10h24v7H17zm0 10h30v7H17z" fill="#f4f7f4"/>
+    <path d="m43 29 6 6-6 6" fill="none" stroke="#bce5d4" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+  </g>
+  <text x="400" y="300" font-family="system-ui, sans-serif" font-size="96" font-weight="700" fill="#17211d">Bytepleat</text>
+  <text x="400" y="370" font-family="system-ui, sans-serif" font-size="36" fill="#17211d">Pack and unpack archives from the command line</text>
+</svg>
