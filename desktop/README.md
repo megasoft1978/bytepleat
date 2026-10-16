@@ -1,42 +1,52 @@
-# Bytepleat Desktop alpha
+# Bytepleat Desktop (alpha)
 
-Bytepleat Desktop is a local Tauri 2 interface for the Bytepleat archive engine. This is an early alpha. It currently exposes ZIP, 7z, TAR+Zstandard, TAR+Gzip, and TAR+LZ4. RAR, password-protected archives, and ZIP64 are not supported. Opening an archive displays its bounded listing; listing does not validate archive contents. Extraction decodes into private staging before publication. Selecting entries still decodes the whole archive before retaining the selected entries, so it is not random access.
+A local desktop app (Tauri 2) for the Bytepleat archive tools. It is an early alpha with no installer. How it works internally: [docs/desktop-internals.md](../docs/desktop-internals.md). What has been tested: [docs/desktop-validation.md](../docs/desktop-validation.md).
 
-## Build locally
+## Prerequisites
 
-Requirements are Rust 1.93 or newer, Node.js/npm, and the platform prerequisites listed in the [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/). From this directory:
+Rust 1.93 or newer, Node.js/npm, and the [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/) for your platform. Run all commands from this directory.
+
+## Run
 
 ```sh
 npm install --ignore-scripts
 npm run tauri -- dev
 ```
 
-For a desktop bundle:
+## Test
+
+The app and core crate have separate Cargo manifests and lockfiles. In each of `core` and `src-tauri`:
+
+```sh
+cargo fmt --all -- --check
+cargo clippy --locked --all-targets -- -D warnings
+cargo test --locked
+```
+
+Native GUI checks live in `e2e/` and run in CI; these commands do not replace them.
+
+## Package
 
 ```sh
 CARGO_BUILD_JOBS=4 npm run tauri -- build
 ```
 
-The app and core crate have separate Cargo manifests and lockfiles. Build commands are run from this directory so Tauri resolves `src-tauri/tauri.conf.json`. Current GUI and integration evidence is summarized in [desktop validation](../docs/desktop-validation.md). In brief: macOS 27.0.1 ARM64 GUI and selected Finder Service workflows have been exercised; Ubuntu 24.04.5 ARM64 XFCE/Xorg has passed full GUI extraction and refusal/recovery checks. Nautilus 46.4 and Dolphin 23.08.5 Compress/Extract handoffs have also passed in that Ubuntu XFCE session. GNOME/Xorg has passed broader v6 GUI workflows and, on the v10 unsigned ARM64 development package, one cold and ten warm Nautilus Open With launches: Bytepleat reached the foreground with only the requested ZIP selected on every sample. A cold Nautilus Compress job created a ZIP that passed `unzip -t`; cold Extract completed in a fresh folder, with extracted contents matching the archive byte-for-byte. At final inspection one Bytepleat process remained, with no repeated startup handoff markers in its arguments. GNOME cancellation, overwrite refusal and selected extraction passed on the earlier v6 package and have not been repeated on v10. The current CI source now builds the Linux x64 development `.deb` reproducibly and launches its rendered window under private D-Bus/Xvfb; this is a package-startup smoke, not an installed GNOME workflow check. These results establish only the stated session scope. Kubuntu 26.04, Windows interactive behavior, and macOS 13 minimum-version behavior remain unverified. The macOS bundle minimum is set to 13.0; the locally tested build was unsigned and ad-hoc signed only, not Developer ID signed or notarized. See the [engine release verification notes](../RELEASE.md) for runner baselines and CI evidence.
+Linux `.deb` development packages: see [PACKAGING.md](PACKAGING.md). Packages are unsigned.
 
-## Operation notes
+## What it does
 
-- The interface supervises a child process of its own executable. The child receives a bounded JSON request and writes progress/result JSON inside a unique private staging directory.
-- Published results are moved from staging only after a successful worker exit. Existing destinations fail instead of being overwritten. Inputs are not moved or removed.
-- Creating a multi-selection stages copies so each selected item's basename is represented in the archive; this adds I/O and storage overhead. A single selected directory archives its contents.
-- Extraction uses the selected parent folder and creates a sibling subfolder named after the archive plus `-extracted`. Choose a location where that name does not already exist.
-- Native file paths enter the UI as UTF-8 strings. A selection containing a path that cannot be represented as UTF-8 is rejected in full with an error; it is never silently shortened. The underlying Rust CLI worker uses OS paths.
-- One operation runs at a time. The interface disables new work while a job is active, and the broker also rejects concurrent requests. Archive inspection runs in that same managed child worker and broker slot, including TAR full-decode listing; it can be cancelled and is killed, reaped, and cleaned up on app shutdown. Inspection returns a size-bounded preview with the total entry count and an explicit truncation flag, and never publishes output. Inspection cancellation is shown as a cancelled job and does not retain or display a partial listing. Jobs are retained in a bounded history. Closing the app cancels and reaps its owned worker before exit, removing its private staging directory without publishing.
-- The desktop uses the engine's fixed 1 GiB decoded-output and 100,000-entry limits. Listings preview at most 5,000 entries; exceeding an operation limit fails before publishing output, and worker validation errors are shown in the job history.
-- Windows file association launches may pass paths directly without flags; these are treated as archive-open selections. Unknown command-line options are rejected.
-- Browser preview only presents the interface and an explicit native-backend notice. It cannot browse files or report successful archive operations.
+- **Create:** pick files or a folder, choose a format, save a new archive.
+- **Extract:** unpack an archive into a new folder named after the archive plus `-extracted`. Existing files and folders are never overwritten.
+- **Inspect:** list an archive without extracting. Listing does not check file contents.
+- Formats: ZIP, 7z, TAR+Zstandard, TAR+gzip, TAR+LZ4. RAR, password-protected archives, and ZIP64 are not supported.
 
-Desktop Rust verification for the inspection worker change: `cargo fmt --all -- --check`, `cargo clippy --locked --all-targets -- -D warnings`, and `cargo test --locked` were run in both `desktop/core` and `desktop/src-tauri`; `node --check desktop/ui/app.js` was also run. These checks do not replace native GUI verification. Native macOS 27.0.1 ARM64 and Ubuntu 24.04.5 ARM64 checks cover 5,000-of-40,001-item TAR previews, inspection cancellation, and app/window close during inspection, with independent worker-exit and staging-removal observations. Dock Quit and corresponding Windows inspection workflows remain unverified. The one-active-job rule and shutdown reservation are covered by backend regression tests; GUI coverage does not establish every platform or exit path.
+## Limits
 
-## File associations
+- 1 GiB of output and 100,000 entries per operation; listings preview up to 5,000 entries.
+- One operation at a time.
+- Extracting selected entries still decodes the whole archive first.
+- A selected path that is not valid UTF-8 is rejected with an error.
+- The bundle declares `.zip`, `.7z`, `.tar.zst`, `.tar.gz`, and `.tar.lz4` file associations; how the OS registers them depends on the installer and platform.
+- A browser preview shows the interface only; it cannot open files or run archive operations.
 
-The bundle declares `.zip`, `.7z`, `.tar.zst`, `.tar.gz`, and `.tar.lz4` associations. OS registration behavior depends on the installer and platform. These declarations do not promise support for other archive formats.
-
-## Implementation references
-
-Tauri version pins and bundle settings follow the [Tauri v2 configuration reference](https://v2.tauri.app/reference/config/), its [single-instance plugin](https://docs.rs/tauri-plugin-single-instance/latest/tauri_plugin_single_instance/), and the current [macOS `Opened` run event](https://docs.rs/tauri/latest/tauri/enum.RunEvent.html). The app embeds its static frontend and makes no external CDN requests.
+References: [Tauri v2 configuration](https://v2.tauri.app/reference/config/), [single-instance plugin](https://docs.rs/tauri-plugin-single-instance/latest/tauri_plugin_single_instance/), [macOS `Opened` run event](https://docs.rs/tauri/latest/tauri/enum.RunEvent.html). The app embeds its frontend and makes no external CDN requests.

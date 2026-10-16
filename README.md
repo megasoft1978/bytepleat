@@ -1,41 +1,60 @@
 # Bytepleat
 
-**Compress files. Pack folders. Restore the same bytes.**
+Compress files, pack folders, and restore the same bytes, using standard formats.
 
-Bytepleat is a Rust archiver built around familiar formats and careful file handling. Everything runs on your device; inputs are never moved or removed. Bytepleat uses established codecs and archive formats; it does not introduce a proprietary archive format.
+[![CI](https://github.com/megasoft1978/bytepleat/actions/workflows/ci.yml/badge.svg)](https://github.com/megasoft1978/bytepleat/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/github/license/megasoft1978/bytepleat)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/megasoft1978/bytepleat)](https://github.com/megasoft1978/bytepleat/releases)
 
-- **[Install the CLI 0.5.1](#install)** — released for macOS Apple silicon, Linux x86-64 and Windows x86-64, with native CI checks on those targets.
-- **[Explore the desktop alpha](#desktop-app-alpha)** — in development; build from source. No consumer installer is published.
+## Why Bytepleat
 
-[Quick start](#quick-start) · [Supported formats](#supported-formats) · [User guide](docs/user-guide.md)
+- Uses established formats (Zstandard, gzip, LZ4, ZIP, 7z, tar). It does not add a proprietary archive format.
+- Runs on your device. Your input files are never moved or removed.
+- Careful file handling: output is written to a temporary file first, nothing is overwritten by default, and extraction goes into a new folder.
+- One command-line tool for byte streams and folder archives, with a `test` command that fully decodes an archive before you extract it.
+
+### When to use something else
+
+- You need RAR, encrypted or password-protected archives, ZIP64, or arbitrary 7z files. See [supported formats](docs/formats.md).
+- You need a full filesystem backup. Permissions, ownership, links, extended attributes, and timestamps are not restored.
+- You already rely on 7-Zip, `tar`, or `zstd` and they do what you need. They are mature, widely available tools; Bytepleat is a smaller, stricter alternative.
 
 ## Install
 
-**Downloads:** [Release packages](https://github.com/megasoft1978/bytepleat/releases). Download the archive for your platform and verify its adjacent `.sha256` file; see [verification and extraction](RELEASE.md). Packages are unsigned and macOS builds are not notarized.
+Release 0.5.1 packages are on the [releases page](https://github.com/megasoft1978/bytepleat/releases). Download the archive and its matching `.sha256` file from the same release, verify it, then extract it. Packages are unsigned and the macOS build is not notarized. More detail is in [RELEASE.md](RELEASE.md).
 
-| Tested release target | Package |
-| --- | --- |
-| macOS Apple silicon | `bytepleat-0.5.1-aarch64-apple-darwin.tar.gz` |
-| Linux x86-64 GNU | `bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz` |
-| Windows x86-64 MSVC | `bytepleat-0.5.1-x86_64-pc-windows-msvc.zip` |
-
-Native CI builds, tests, and package execution passed on all three targets. See [release notes](RELEASE.md) for the tested runner baselines. Other OS versions and architectures are outside that verification; there is no Linux ARM64 CLI package.
-
-The Windows package requires the x64 [Microsoft Visual C++ v14 runtime](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist); it is not bundled. If Windows reports `VCRUNTIME140.dll` missing, install the current x64 redistributable from Microsoft.
-
-Each archive extracts into a same-named directory containing `bytepleat` (or `bytepleat.exe` on Windows) at its root. Run it from that directory as `./bytepleat --help` on macOS/Linux or `.\bytepleat.exe --help` in PowerShell; to invoke `bytepleat` from any directory, add the extracted directory to your `PATH`.
-
-**Build from source** (Rust 1.93 or newer and a C compiler toolchain required):
+**macOS (Apple silicon)**
 
 ```sh
-git clone https://github.com/megasoft1978/bytepleat.git
-cd bytepleat
-cargo build --release --locked
+shasum -a 256 -c bytepleat-0.5.1-aarch64-apple-darwin.tar.gz.sha256
+tar -xzf bytepleat-0.5.1-aarch64-apple-darwin.tar.gz
+./bytepleat-0.5.1-aarch64-apple-darwin/bytepleat --help
 ```
 
-The executable is `target/release/bytepleat` (`target/release/bytepleat.exe` on Windows).
+**Linux (x86-64)**
 
-**Install from the Git tag** (Rust 1.93 or newer and a C compiler toolchain required):
+```sh
+sha256sum -c bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz.sha256
+tar -xzf bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz
+./bytepleat-0.5.1-x86_64-unknown-linux-gnu/bytepleat --help
+```
+
+**Windows (x86-64, PowerShell)**
+
+Needs the x64 [Microsoft Visual C++ v14 runtime](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist), which is not bundled.
+
+```powershell
+$asset = 'bytepleat-0.5.1-x86_64-pc-windows-msvc.zip'
+$entry = Get-Content -LiteralPath "$asset.sha256" -Raw
+if ($entry -notmatch '^([0-9a-fA-F]{64})\s+bytepleat-0\.5\.1-x86_64-pc-windows-msvc\.zip\s*$') { throw 'Invalid checksum sidecar or filename' }
+if ((Get-FileHash -LiteralPath $asset -Algorithm SHA256).Hash -ne $Matches[1]) { throw 'SHA-256 mismatch' }
+Expand-Archive -LiteralPath $asset -DestinationPath .
+.\bytepleat-0.5.1-x86_64-pc-windows-msvc\bytepleat.exe --help
+```
+
+Add the extracted folder to your `PATH` to run `bytepleat` from anywhere. There is no Linux ARM64 CLI package.
+
+**From source with Cargo** (Rust 1.93 or newer and a C compiler toolchain):
 
 ```sh
 cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.1
@@ -44,41 +63,42 @@ cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.
 ## Quick start
 
 ```sh
-bytepleat compress report.pdf
-bytepleat test report.pdf.zst
-bytepleat decompress report.pdf.zst -o report-restored.pdf
-
-bytepleat pack project -o project.tar.zst
-bytepleat test project.tar.zst
-bytepleat unpack project.tar.zst -o project-restored
+bytepleat compress report.pdf && bytepleat decompress report.pdf.zst -o report-restored.pdf
+bytepleat pack project -o project.tar.zst && bytepleat unpack project.tar.zst -o project-restored
+bytepleat info project.tar.zst --json    # read metadata
+bytepleat test project.tar.zst           # fully decode and check
 ```
 
-Zstandard is the default. Use `--format` to choose another codec or archive format. Inspect metadata with `bytepleat info project.tar.zst --json`; run `bytepleat test project.tar.zst` to fully decode and check supported content before extraction.
+Zstandard is the default; use `--format` for another codec or archive type. See the [user guide](docs/user-guide.md) for presets, pipes, and archive options.
 
-Windows PowerShell uses the same commands and options; substitute paths as needed. For a directory with ZIP compatibility:
+## Supported formats
 
-```powershell
-bytepleat pack .\photos --format zip -o .\photos.zip
-bytepleat unpack .\photos.zip -o .\photos-out
-```
+| Format | Write | Read and test | Limits |
+| --- | --- | --- | --- |
+| Zstandard, gzip (single file) | Yes | Yes | Only Zstandard uses multiple threads |
+| LZ4 (single file) | Yes | Yes | Concatenated LZ4 frames are rejected |
+| tar + Zstandard, gzip, or LZ4 (folder) | Yes | Yes | `pack` needs a directory; regular files and directories only |
+| ZIP | Yes | Yes | Classic Stored/Deflate only; no ZIP64, encryption, or split volumes; up to 65,534 entries |
+| 7z | Yes | Yes | Writer uses LZMA2; reader handles a bounded subset, unencrypted and single-volume; up to 100,000 entries |
+| Pco (numeric data) | Yes | Yes | Raw little-endian numbers with an explicit `--type`; not for general files or CSV |
+| RAR | No | No | Recognized by `info` only |
 
-Bytepleat never removes the input. Named output files are staged and published after successful completion; an existing output is an error unless `--force` is given. Extraction requires a new destination directory. Output to stdout can be partial if a stream operation fails; use a named output when you need all-or-nothing file publication.
+Details and exact boundaries: [docs/formats.md](docs/formats.md).
 
-### Choose a compression preset
+## Safety behavior
 
-Choose `--preset fast`, `--preset balanced` (the default), or `--preset compact` for Zstandard and gzip. Fine-tune with `--level`; compression time and output size depend on your files and settings. The [guide](docs/user-guide.md) documents the exact levels. LZ4 has one supported level; Pco requires an explicit numeric `--type`.
+- Input files are never modified, moved, or removed.
+- Named outputs are written to a temporary file and published after success. An existing output is an error unless you pass `--force`.
+- Output to stdout is a stream and can be partial if an error occurs; use a named output for all-or-nothing results.
+- Extraction requires a new destination folder, validates in staging first, and accepts only regular files and directories. Links, special files, and unsafe paths are rejected. Publishing many files is best-effort, not atomic.
+- Default caps: 1 GiB of decoded output, 100,000 archive entries, path depth 64, 128 MiB Zstandard window. Some can be changed with options.
+- `test` checks decoding and format integrity. Neither `test` nor `info` verifies who sent a file or scans for malware.
 
-See the [user guide](docs/user-guide.md) for pipes, archive options, and numeric buffers, and [supported formats](docs/formats.md) for the precise compatibility boundaries.
+See [security and limits](docs/security-limits.md).
 
 ## Desktop app (alpha)
 
-A desktop window for everyday archive work, built on the same bounded archive engine as the CLI. It uses your system's file dialogs and has three views:
-
-- **Create:** choose files or a folder, pick a format, and save a new archive.
-- **Extract:** unpack one archive into a new folder. The desktop app never overwrites an existing file or folder; the CLI does so only with `--force` on a named output file.
-- **Inspect:** list an archive's entries without extracting, then tick entries and choose **Extract selected** to carry them to the Extract tab. Listing does not verify file contents. ZIP and 7z are listed from their metadata; a compressed tar can only be listed by fully decoding it into private temporary staging, which is removed afterwards. Extracting selected entries decodes the whole archive again before keeping the ones you chose.
-
-There is no desktop installer yet; the packages under [Install](#install) are the CLI release. To try the alpha, build it from source (Rust 1.93 or newer, Node.js/npm and the [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/)):
+A desktop window for creating, extracting, and inspecting archives (ZIP, 7z, and compressed tar). It is an early alpha with no installer; build it from source (Rust 1.93 or newer, Node.js/npm, and the [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/)):
 
 ```sh
 cd desktop
@@ -86,46 +106,18 @@ npm install --ignore-scripts
 npm run tauri -- dev
 ```
 
-Desktop operations are capped at 1 GiB of output and 100,000 entries; listings preview up to 5,000 entries. ZIP is classic Stored/Deflate only, 7z is a bounded subset, and compressed tar uses Zstandard, gzip or LZ4. RAR, password-protected archives and ZIP64 are not supported. See [supported formats](docs/formats.md).
+Platform testing is incomplete. See [docs/desktop-validation.md](docs/desktop-validation.md) for what has and has not been checked, and [desktop/README.md](desktop/README.md) for the contributor guide.
 
-### Desktop validation
+## Build and contribute
 
-Platform validation is incomplete. These are desktop results from specific sessions, not a claim of support for every OS version or architecture; the [desktop validation record](docs/desktop-validation.md) has the exact scope, versions, open items, and the matching build, package, and Rust CI runs.
+```sh
+git clone https://github.com/megasoft1978/bytepleat.git
+cd bytepleat
+cargo build --release --locked
+```
 
-At merged source `d1ed936`, the [desktop workflow](https://github.com/megasoft1978/bytepleat/actions/runs/38770917796) passed app builds/tests on macOS ARM64, Linux x64, and Windows x64, compiled the Windows ARM64 app and adapters, and passed Windows x64/ARM64 MSIX package checks. It also installed the normal Linux development `.deb` under private D-Bus and Xvfb and captured a rendered, nonblank Bytepleat window. That proves packaged window rendering on Ubuntu 24.04 x64; it does not test a GNOME desktop session or archive workflows. The latest [native WebView smoke](https://github.com/megasoft1978/bytepleat/actions/runs/38766872361) exercised the app UI on macOS ARM64, Linux x64/ARM64, and Windows x64/ARM64; on Windows it checked create, extract, and open startup arguments. CI still does not establish interactive Finder, Explorer, Nautilus, or Dolphin menu behavior or signed public installers. Per-platform detail:
-
-| Platform | What has been checked |
-| --- | --- |
-| macOS 27.0.1 · Apple silicon | Interactive GUI runs of create, inspect, selected and full extraction, overwrite refusal, cancellation, and selected Finder handoffs. Unsigned local build, not notarized. macOS 13 (the bundle minimum) is unverified. |
-| Ubuntu 24.04.5 · ARM64 | Interactive runs in XFCE/Xorg and GNOME/Xorg, including Nautilus and Dolphin handoffs. On GNOME, cancellation, overwrite refusal, and selected extraction passed on an earlier package and have not been repeated on the installed v10 package. The latest Ubuntu 24.04 x64 `.deb` was installed and its window rendered under Xvfb in CI; this is not a fresh GNOME workflow test. Wayland and Kubuntu are unverified. |
-| Windows | Native WebView E2E on x64 and ARM64; MSIX schema and payload checks; Windows 11 ARM64 test-package install, alias registration, and Explorer-command COM activation and argument handoff. Interactive Explorer menu behavior and signed public installers remain unverified. |
-
-The interactive Linux desktop checks above were on ARM64; the Linux CLI package is x86-64, tested separately by CI. See [desktop/README.md](desktop/README.md) for build notes and limitations.
-
-## Supported formats
-
-| Format | Single-file streams | Folder archive | Notes |
-| --- | --- | --- | --- |
-| Zstandard, gzip, LZ4 | Compress and decompress | Compressed tar | Byte-stream codecs; presets available for Zstandard and gzip |
-| ZIP | — | Create, inspect, test, and extract a supported subset | Stored and Deflate entries |
-| 7z | — | Create, inspect, test, and extract a bounded subset | LZMA2; compatibility limits apply |
-| Pco | Typed numeric streams | — | CLI-only typed stream; raw little-endian values, explicit type required; not arbitrary files or CSV |
-
-RAR can be identified for metadata display but is not decoded. See [supported formats](docs/formats.md) for exact compatibility boundaries and [compression research](docs/compression-research.md) for the evidence behind codec and format decisions.
-
-Archive contents preserve file bytes and relative paths within the supported scope. Permissions, ownership, links, extended attributes, and portable timestamps are not restored. `test` checks decoding and format integrity; `info` reads metadata. Neither authenticates the sender or scans for malware. See [security and limits](docs/security-limits.md) for extraction checks, default caps, and publication behavior.
-
-## Project
-
-- [Changelog](CHANGELOG.md)
-- [Contributing](CONTRIBUTING.md)
-- [Security reporting](SECURITY.md)
-- [Support](SUPPORT.md)
-- [Release notes and verification](RELEASE.md)
-- [Benchmark results and reproduction](docs/benchmarks.md)
-- [GitHub repository](https://github.com/megasoft1978/bytepleat)
-- [Project website](https://megasoft1978.github.io/bytepleat/)
+The binary is `target/release/bytepleat` (`.exe` on Windows). Before opening a pull request, run the checks in [CONTRIBUTING.md](CONTRIBUTING.md). Other links: [changelog](CHANGELOG.md), [security reporting](SECURITY.md), [support](SUPPORT.md), [release notes](RELEASE.md), [benchmarks](docs/benchmarks.md), [project website](https://megasoft1978.github.io/bytepleat/).
 
 ## License
 
-Bytepleat is [MIT licensed](LICENSE). Dependencies retain their own licenses; see [THIRD-PARTY.json](THIRD-PARTY.json) and the [vendored dependency notes](vendor/README.md).
+Bytepleat is [MIT licensed](LICENSE). Dependencies keep their own licenses; see [THIRD-PARTY.json](THIRD-PARTY.json) and the [vendored dependency notes](vendor/README.md).

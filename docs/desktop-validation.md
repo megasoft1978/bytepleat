@@ -365,3 +365,9 @@ for the exact script and cleanup scope.
 - Expand interactive coverage across supported operating systems and archive
   formats. Existing GUI tests do not establish performance; no new codec or
   performance claim is made by this validation record.
+
+## Scope notes
+
+- The CLI release package for Linux is x86-64 and is tested separately by native CI. The interactive Linux desktop checks in this record were on Ubuntu 24.04.5 ARM64.
+- CI native UI smoke results cover the app's inspect, selected-extraction review, create, selected extraction, and overwrite-preservation checks on macOS ARM64, Linux x64/ARM64, and Windows x64/ARM64. They do not establish interactive Finder, Explorer, Nautilus, or Dolphin menu behavior or signed public installers.
+- Local checks for the inspection worker change: `cargo fmt --all -- --check`, `cargo clippy --locked --all-targets -- -D warnings`, and `cargo test --locked` in `desktop/core` and `desktop/src-tauri`, plus `node --check desktop/ui/app.js`. See [desktop internals](desktop-internals.md).
