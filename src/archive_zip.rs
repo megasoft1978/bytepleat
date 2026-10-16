@@ -235,6 +235,7 @@ fn preflight<R: Read + Seek>(
 ) -> io::Result<Vec<(String, bool, u64)>> {
     let mut policy = safe::EntryPolicy::default();
     let mut entries = Vec::with_capacity(a.len());
+    let mut seen_root = false;
     for i in 0..a.len() {
         let z = a.by_index(i).map_err(|e| invalid(e.to_string()))?;
         if z.encrypted() {
@@ -267,6 +268,15 @@ fn preflight<R: Read + Seek>(
             return Err(invalid("directory has nonzero size"));
         }
         let name = z.name().map_err(|e| invalid(e.to_string()))?.into_owned();
+        // bsdtar-style archives rooted at `.` carry one bare `./` directory entry.
+        // Keep an empty-named placeholder so indexes stay aligned; `decode` skips it.
+        if dir && name == "./" {
+            if std::mem::replace(&mut seen_root, true) {
+                return Err(invalid("duplicate archive entry"));
+            }
+            entries.push((String::new(), true, 0));
+            continue;
+        }
         let normalized = policy.add(&name, dir, z.size(), &l.archive)?;
         entries.push((normalized, dir, z.size()));
     }
@@ -285,6 +295,9 @@ fn decode<R: Read + Seek>(
         if *dir {
             if z.read(&mut buf[..1])? != 0 {
                 return Err(invalid("ZIP directory contains data"));
+            }
+            if name.is_empty() {
+                continue;
             }
             if let Some(root) = stage {
                 safe::write_entry(root, name, true, 0, &mut io::empty())?

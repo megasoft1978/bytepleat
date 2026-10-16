@@ -190,3 +190,64 @@ fn exact_duplicate_names_cannot_be_silently_dropped() {
     assert!(archive_zip::unpack(&p, &destination, &limits()).is_err());
     assert!(!destination.exists());
 }
+
+fn dotted_zip(entries: &[(&str, bool)]) -> Vec<u8> {
+    use std::io::Write;
+    let mut z = ZipWriter::new(Cursor::new(Vec::new()));
+    let o = SimpleFileOptions::default().compression_method(CompressionMethod::Stored);
+    for (name, dir) in entries {
+        if *dir {
+            z.add_directory(*name, o).unwrap();
+        } else {
+            z.start_file(*name, o).unwrap();
+            z.write_all(b"x").unwrap();
+        }
+    }
+    z.finish().unwrap().into_inner()
+}
+#[test]
+fn bsdtar_style_dot_root_extracts() {
+    let t = tempdir().unwrap();
+    let z = t.path().join("dot.zip");
+    fs::write(
+        &z,
+        dotted_zip(&[
+            ("./", true),
+            ("./dir/", true),
+            ("./top.txt", false),
+            ("./dir/file", false),
+        ]),
+    )
+    .unwrap();
+    let dst = t.path().join("out");
+    let s = archive_zip::unpack(&z, &dst, &limits()).unwrap();
+    assert_eq!(s.output_bytes, 2);
+    assert!(dst.join("dir").is_dir());
+    assert_eq!(fs::read(dst.join("top.txt")).unwrap(), b"x");
+    assert_eq!(fs::read(dst.join("dir/file")).unwrap(), b"x");
+    assert_eq!(archive_zip::test(&z, &limits()).unwrap().output_bytes, 2);
+}
+#[test]
+fn dot_root_does_not_weaken_path_checks() {
+    let t = tempdir().unwrap();
+    let cases: &[&[(&str, bool)]] = &[
+        &[("./", true), ("../evil", false)],
+        &[("./", true), ("./../evil", false)],
+        &[("./", true), ("/abs", false)],
+        &[("./", true), ("a\\b", false)],
+        &[("./", true), ("C:/x", false)],
+        &[("././", true)],
+        &[("./", true), (".//x", false)],
+        &[("./", true), ("./a/", true), ("A", false)],
+    ];
+    for (i, c) in cases.iter().enumerate() {
+        let z = t.path().join(format!("{i}.zip"));
+        fs::write(&z, dotted_zip(c)).unwrap();
+        let dst = t.path().join(format!("o{i}"));
+        assert!(
+            archive_zip::unpack(&z, &dst, &limits()).is_err(),
+            "case {i}"
+        );
+        assert!(!t.path().join("evil").exists());
+    }
+}
