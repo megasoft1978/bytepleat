@@ -157,7 +157,7 @@ $('#run-job').addEventListener('click',async()=>{
     if(mode==='open'){resetInspection();const requestId=++inspectionRequest;listingCache=null;const archivePath=selected[0];inspectionInFlight=true;updateRunState();status(isTar(selected[0])?'Reading TAR archive; listing fully decodes into private staging…':'Reading archive listing…');try{const listing=await invoke('inspect_archive',{path:archivePath});if(requestId!==inspectionRequest||mode!=='open'||selected.length!==1||selected[0]!==archivePath)return;renderArchiveListing(listing);listingCache={path:archivePath,listing};status(`${listing.entries.length} of ${listing.total_entries} entries${listing.truncated?' (preview truncated)':''} · ${formatBytes(listing.total_bytes)} · listing only; contents have not been integrity-tested.`);}catch(error){if(requestId===inspectionRequest)status(String(error),true);}finally{if(requestId===inspectionRequest){inspectionInFlight=false;updateRunState();}}return;}
     const format=$$('input[name="format"]').find(i=>i.checked)?.value;
     const target=mode==='extract'?extractTarget():destination;
-    const request={action:mode==='create'?'create':'extract',inputs:selected.map(path=>path),destination:target,format:mode==='create'?format:null,selected_entries:mode==='extract'?[...selectedEntries]:[],max_output_bytes:1073741824};
+    const request={action:mode==='create'?'create':'extract',inputs:selected.map(path=>path),destination:target,format:mode==='create'?format:null,selected_entries:mode==='extract'?[...selectedEntries]:[],selective:mode==='extract'&&selectiveExtraction,max_output_bytes:1073741824};
     await invoke('start_job',{request});status(`${MODES[mode].run} started.`);await refreshJobs();
   } catch(error){status(String(error),true);}
 });

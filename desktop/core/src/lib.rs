@@ -45,6 +45,10 @@ pub struct OperationRequest {
     pub format: Option<ArchiveFormat>,
     #[serde(default)]
     pub selected_entries: Vec<String>,
+    /// Explicit selective-extract mode. When true, `selected_entries` must be
+    /// non-empty; an empty selection is rejected instead of extracting everything.
+    #[serde(default)]
+    pub selective: bool,
     #[serde(default = "limit")]
     pub max_output_bytes: u64,
 }
@@ -388,6 +392,9 @@ pub fn execute(
         "inspect" | "extract" | "test" => {
             if r.inputs.len() != 1 {
                 return Err("inspect, extract, and test accept one archive".into());
+            }
+            if r.action == "extract" && r.selective && r.selected_entries.is_empty() {
+                return Err("selective extraction requires at least one selected entry".into());
             }
             let path = &r.inputs[0];
             let fmt = detect(path).map_err(ioerr)?;
@@ -841,6 +848,7 @@ mod tests {
             destination: dest,
             format,
             selected_entries: Vec::new(),
+            selective: false,
             max_output_bytes: DEFAULT_LIMIT,
         }
     }
@@ -933,6 +941,52 @@ mod tests {
         fs::create_dir(&bad).unwrap();
         x.selected_entries = vec!["../oops".into()];
         assert!(execute(&x, &bad, |_| {}).is_err());
+    }
+    #[test]
+    fn selective_extract_rejects_empty_selection_but_extract_all_works() {
+        let t = fixture();
+        let stage = t.path().join("create-stage");
+        fs::create_dir(&stage).unwrap();
+        let archive_path = t.path().join("a.zip");
+        let r = request(
+            "create",
+            vec![t.path().join("src")],
+            Some(archive_path.clone()),
+            Some(ArchiveFormat::Zip),
+        );
+        let created = execute(&r, &stage, |_| {}).unwrap();
+        publish(&r, &stage, &created).unwrap();
+        let mut x = request(
+            "extract",
+            vec![archive_path.clone()],
+            Some(t.path().join("out")),
+            None,
+        );
+        x.selective = true;
+        let rejected = t.path().join("rejected-stage");
+        fs::create_dir(&rejected).unwrap();
+        let err = execute(&x, &rejected, |_| {}).unwrap_err();
+        assert!(err.contains("at least one selected entry"), "{err}");
+        assert!(!rejected.join("decoded").exists());
+        x.selective = false;
+        let all = t.path().join("all-stage");
+        fs::create_dir(&all).unwrap();
+        execute(&x, &all, |_| {}).unwrap();
+        assert!(all.join("decoded/a.txt").exists());
+        assert!(all.join("decoded/nested/b.bin").exists());
+    }
+    #[test]
+    fn extract_rejects_multiple_archives() {
+        let t = fixture();
+        let stage = t.path().join("stage");
+        fs::create_dir(&stage).unwrap();
+        let x = request(
+            "extract",
+            vec![t.path().join("one.zip"), t.path().join("two.zip")],
+            Some(t.path().join("out")),
+            None,
+        );
+        assert!(execute(&x, &stage, |_| {}).is_err());
     }
     #[test]
     fn inspection_is_magic_based_and_rejects_truncated_zip() {

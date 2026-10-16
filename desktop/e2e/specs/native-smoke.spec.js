@@ -143,7 +143,7 @@ describe('Bytepleat native Tauri smoke', () => {
     assert.ok(listing.entries.map(entry => entry.name).includes('created-source.txt'));
 
     const selected = ['created-source.txt'];
-    const extractId = await invoke('start_job', { request: { action: 'extract', inputs: [archive], destination: path.join(output, 'selected'), format: null, selected_entries: selected, max_output_bytes: 1048576 } });
+    const extractId = await invoke('start_job', { request: { action: 'extract', inputs: [archive], destination: path.join(output, 'selected'), format: null, selected_entries: selected, selective: true, max_output_bytes: 1048576 } });
     const extracted = await waitJob(extractId);
     assert.equal(extracted.state, 'completed');
     assert.equal(fs.readFileSync(path.join(output, 'selected', 'created-source.txt'), 'utf8'), 'created by the native UI smoke\n');

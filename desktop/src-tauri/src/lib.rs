@@ -352,6 +352,7 @@ async fn inspect_archive(
         destination: None,
         format: None,
         selected_entries: Vec::new(),
+        selective: false,
         max_output_bytes: 1024 * 1024 * 1024,
     };
     let id = enqueue_job(app, Arc::clone(state.inner()), request)?;
@@ -1466,6 +1467,7 @@ mod tests {
             destination: None,
             format: None,
             selected_entries: vec![],
+            selective: false,
             max_output_bytes: 1024,
         };
         let id = reserve_job(&broker, &request).unwrap();

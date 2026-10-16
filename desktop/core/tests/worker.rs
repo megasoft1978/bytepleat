@@ -15,6 +15,7 @@ fn worker_binary_executes_a_generated_create_request() {
         destination: Some(temp.path().join("out.zip")),
         format: Some(ArchiveFormat::Zip),
         selected_entries: vec![],
+        selective: false,
         max_output_bytes: 1024 * 1024,
     };
     let request_path = temp.path().join("request.json");
@@ -61,6 +62,7 @@ fn child_worker_inspects_generated_zip_and_tar_without_publishing() {
             destination: Some(archive.clone()),
             format: Some(format),
             selected_entries: vec![],
+            selective: false,
             max_output_bytes: 1024 * 1024,
         };
         let created = bytepleat_desktop_core::execute(&create, &create_stage, |_| {}).unwrap();
@@ -74,6 +76,7 @@ fn child_worker_inspects_generated_zip_and_tar_without_publishing() {
             destination: None,
             format: None,
             selected_entries: vec![],
+            selective: false,
             max_output_bytes: 1024 * 1024,
         };
         let request_path = temp.path().join("inspect-request.json");
