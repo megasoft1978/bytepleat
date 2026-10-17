@@ -208,17 +208,17 @@ Construction rule for all pleat drawings: faces are vertical parallelograms betw
 
 ### 6.1 Window anatomy
 
-Minimum window size is 960×640; the design target is 1280×800. The OS draws the native title bar and frame. There is no custom chrome, because Tauri's custom decorations break platform conventions.
+The default window size is 960×640 and the minimum is 760×520; the design target is 1280×800. On startup the window is clamped to fit the screen's work area (the monitor minus taskbar or Dock) when the default plus a 48px margin does not fit, and then it is centred. The OS draws the native title bar and frame. There is no custom chrome, because Tauri's custom decorations break platform conventions.
 
 Regions:
-1. **Header** (56px): mark (20px) + "Bytepleat" (Subhead) + "Alpha" chip; mode switch (segmented control: Create · Extract · Inspect); on the right, History button (960 layout only) and an Appearance menu (System / Light / Dark).
+1. **Header** (56px): mark (20px) + "Bytepleat" (Subhead) + "Alpha" chip; mode switch (segmented control: Create · Extract · Inspect); on the right, History button (windows narrower than 1200px only) and an Appearance menu (System / Light / Dark).
 2. **Mode title row** (Title + one Body line explaining the mode).
-3. **Sheet**: the drop zone when empty, the file or entry list when filled. It scrolls internally, and the window never scrolls.
+3. **Sheet**: the drop zone when empty, the file or entry list when filled. Lists scroll internally. At window heights of 640px or less the empty drop zone keeps its full height and the area above the band scrolls instead. The action band stays anchored at the bottom, and the window itself never scrolls.
 4. **Options row** (Create: format group; Extract: destination note; Inspect: cap note).
 5. **Action band** (72px, fixed at the bottom, `--color-surface`, top crease line): destination on the left, primary button on the right. During a job the band becomes the pleated progress strip + Cancel.
 6. **History**: a persistent right panel (288px) at window widths ≥1200px; a right drawer opened by the History button below 1200px.
 
-**960×640 (minimum)**
+**960×640 (default)**
 
 ```
 +------------------------------------------------------------------------------+

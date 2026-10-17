@@ -1015,6 +1015,37 @@ fn finish(
     }
 }
 
+// Logical pixels. The window opens at its default size unless the screen's work area is too small for it.
+const WINDOW_WIDTH: f64 = 960.0;
+const WINDOW_HEIGHT: f64 = 640.0;
+// Room kept above and below the window for the title bar and a gap, so the action band never sits under
+// the taskbar or Dock. Tauri gives the work area (the monitor minus taskbar or Dock) via Monitor::work_area.
+const SCREEN_MARGIN: f64 = 48.0;
+
+fn fit_window_to_screen(window: &tauri::WebviewWindow) -> tauri::Result<()> {
+    let monitor = match window.current_monitor()? {
+        Some(monitor) => monitor,
+        None => match window.primary_monitor()? {
+            Some(monitor) => monitor,
+            None => return Ok(()),
+        },
+    };
+    let scale = monitor.scale_factor();
+    let area = monitor.work_area().size;
+    let usable_width = f64::from(area.width) / scale;
+    let usable_height = f64::from(area.height) / scale;
+    if usable_width >= WINDOW_WIDTH + SCREEN_MARGIN
+        && usable_height >= WINDOW_HEIGHT + SCREEN_MARGIN
+    {
+        return Ok(());
+    }
+    window.set_size(tauri::LogicalSize::new(
+        WINDOW_WIDTH.min(usable_width - SCREEN_MARGIN),
+        WINDOW_HEIGHT.min(usable_height - SCREEN_MARGIN),
+    ))?;
+    window.center()
+}
+
 pub fn run() {
     let startup = argument_selection(&std::env::args_os().skip(1).collect::<Vec<_>>());
     let broker = Arc::new(Broker {
@@ -1067,6 +1098,14 @@ pub fn run() {
         )
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
+        .setup(|app| {
+            if let Some(window) = app.get_webview_window("main") {
+                if fit_window_to_screen(&window).is_err() {
+                    eprintln!("Bytepleat could not fit its window to the screen");
+                }
+            }
+            Ok(())
+        })
         .manage(broker)
         .invoke_handler(tauri::generate_handler![
             choose_inputs,

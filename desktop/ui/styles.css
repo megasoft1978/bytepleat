@@ -480,6 +480,12 @@ body.show-outcome .band { display: none; }
   .job-now { grid-template-columns: 1fr; padding: var(--space-5); }
 }
 
+/* Short windows (minimum 760x520): the empty drop zone keeps its content height, so the panel scrolls
+   and the action band stays anchored at the bottom. Lists keep shrinking so their rows scroll inside the sheet. */
+@media (max-height: 640px) {
+  .sheet:not(.has-selection) { flex: 1 0 auto; }
+}
+
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   .button:active:not(:disabled) { transform: none; }
