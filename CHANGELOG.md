@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (0.5.2)
+## 0.5.2 (unreleased)
 
 Bytepleat 0.5.2 is not published yet. ZIP archives made by bsdtar or Windows `tar.exe` with a bare `./` root directory entry now unpack; the traversal, absolute-path and duplicate-entry rules are unchanged (`src/archive_zip.rs`). Interrupting a pack with SIGINT, SIGTERM or SIGHUP now removes the staging file; this applies on Unix only, because Windows has no handler (`src/file_io.rs`). On Windows, the Explorer commands "Extract with Bytepleat" and "Open in Bytepleat" are now enabled for `.zip` files, since Explorer reports a `.zip` as a folder (`desktop/integrations/windows/src/ExplorerCommands.cpp`). The desktop app UI, the website and the README have been redesigned. The SIL Open Font License notices for the bundled fonts now ship in the package notices. `bytepleat pack` now infers the archive format from the `-o` extension when `--format` is omitted; a `--format` that conflicts with the extension is an error. The desktop window now opens at 960x640 (minimum 760x520) and shrinks to fit small screens.
 

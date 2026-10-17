@@ -8,6 +8,18 @@ Dry run (report only, writes nothing, no network):
 python3 scripts/release_dryrun.py --from 0.5.1 --to 0.5.2
 ```
 
+## State of the release-0.5.2 branch
+
+Changed on `release-0.5.2`: `Cargo.toml` version (0.5.2); the `bytepleat` entry in the root `Cargo.lock` only; `--version` arguments in `.github/workflows/ci.yml`; tag guard, expected asset names, `SHA256SUMS`, release title and notes in `.github/workflows/release.yml`; the `.github/ISSUE_TEMPLATE/bug_report.yml` placeholder; the CHANGELOG heading (`## 0.5.2 (unreleased)`); this paragraph.
+
+Also changed: the pinned `bytepleat` version in `desktop/core/Cargo.lock` and `desktop/src-tauri/Cargo.lock` (the desktop crates depend on the CLI crate by path, so their `--locked` builds fail if this line says 0.5.1).
+
+**Known red check on this branch, by design:** `scripts/tests/test_release_instructions.py::test_windows_checksum_example_accepts_the_current_release_asset` fails until `RELEASE.md` is rewritten for 0.5.2. That test insists the Windows checksum example names the current release's asset, and `RELEASE.md` also records per-release checksums and CI evidence that can only be written once the assets exist. It is a release gate: do not weaken it. Rewrite `RELEASE.md` for 0.5.2 together with the other post-upload edits below.
+
+Deliberately unchanged, because they need real assets: download URLs, asset file names and `sha256` values in `README.md`, `RELEASE.md`, `site/project.json`, the `site/` pages, `site/assets/site.js` and the distribution drafts. Also unchanged: the `THIRD-PARTY.json` project version, the historical benchmark and desktop-validation records, and the `bytepleat` entries in `desktop/core/Cargo.lock` and `desktop/src-tauri/Cargo.lock` (they pin 0.5.1 as a path dependency, so `--locked` fails there until updated). `scripts/tests/test_release_instructions.py` fails until `RELEASE.md` names the 0.5.2 Windows ZIP.
+
+Left for the owner after the tag: build and upload the assets; fill the `sha256` values and URLs in `README.md`, `site/project.json`, `RELEASE.md` and the site pages; merge to `main` (the site goes live on merge); decide signing and registries (crates.io skipped).
+
 ## 1. Local verification (before any bump)
 
 ```sh
