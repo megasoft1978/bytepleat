@@ -1,8 +1,8 @@
 /*
-  Bytepleat design tokens v1
+  Bytepleat design tokens v1 (palette revision: see DESIGN.md, "Revision: palette")
   Source of truth: DESIGN.md (same folder).
   No external requests. Fonts are self-hosted; set the url() paths to wherever
-  the woff2 files are shipped (desktop: src-tauri bundle; site: /fonts/).
+  the woff2 files are shipped (desktop: src-tauri bundle; site: assets/fonts/).
 
   Theme selection:
     - default follows the OS via prefers-color-scheme
@@ -40,59 +40,60 @@
 
 :root {
   /* ---------- Raw palette (do not use directly in components) ---------- */
-  --raw-ink: #17211d;
-  --raw-paper: #f4f7f4;
-  --raw-sheet: #ffffff;
-  --raw-pleat: #17674d;
-  --raw-pleat-deep: #10503b;
-  --raw-mint: #bce5d4;
-  --raw-fold-light: #e3ebe6;
-  --raw-fold-shade: #cfdad3;
-  --raw-crease: #c9d3cd;
-  --raw-crease-strong: #7d8b84;
-  --raw-muted: #4f5d56;
-  --raw-caution: #9c6127;
-  --raw-danger: #a3372e;
+  /* raw-mint keeps its name for compatibility; it is now a pale indigo tint. */
+  --raw-ink: #1e2025;
+  --raw-paper: #f6f4ef;
+  --raw-sheet: #fffdf9;
+  --raw-pleat: #2f3e86;
+  --raw-pleat-deep: #232f6b;
+  --raw-mint: #dfe3f1;
+  --raw-fold-light: #ecebe6;
+  --raw-fold-shade: #dedbd2;
+  --raw-crease: #d8d5cb;
+  --raw-crease-strong: #8a877c;
+  --raw-muted: #5c5a52;
+  --raw-caution: #8a5d12;
+  --raw-danger: #a13b36;
 
-  --raw-night-paper: #0f1613;
-  --raw-night-sheet: #18211d;
-  --raw-night-raised: #1f2a25;
-  --raw-night-ink: #e4ece7;
-  --raw-night-muted: #9eada6;
-  --raw-night-pleat: #6fd0a8;
-  --raw-night-pleat-ink: #0b1a14;
-  --raw-night-mint: #1f4536;
-  --raw-night-fold-light: #24312b;
-  --raw-night-fold-shade: #141c18;
-  --raw-night-crease: #2c3a34;
-  --raw-night-crease-strong: #62716a;
-  --raw-night-caution: #e3a868;
-  --raw-night-danger: #f28b80;
+  --raw-night-paper: #121315;
+  --raw-night-sheet: #1b1d21;
+  --raw-night-raised: #23262b;
+  --raw-night-ink: #e7e5e0;
+  --raw-night-muted: #a6a39b;
+  --raw-night-pleat: #a9b8ef;
+  --raw-night-pleat-ink: #111a44;
+  --raw-night-mint: #2a3150;
+  --raw-night-fold-light: #22242a;
+  --raw-night-fold-shade: #17181c;
+  --raw-night-crease: #2e3137;
+  --raw-night-crease-strong: #6f6c65;
+  --raw-night-caution: #d9a95c;
+  --raw-night-danger: #ec8a80;
 
   /* ---------- Semantic colour: light (default) ---------- */
   color-scheme: light;
   --color-bg: var(--raw-paper);            /* window / page */
   --color-surface: var(--raw-sheet);       /* the sheet: lists, panels */
   --color-surface-raised: var(--raw-sheet);
-  --color-text: var(--raw-ink);            /* 15.3:1 on bg */
-  --color-text-muted: var(--raw-muted);    /* 6.4:1 on bg */
+  --color-text: var(--raw-ink);            /* 14.8:1 on bg */
+  --color-text-muted: var(--raw-muted);    /* 6.3:1 on bg */
   --color-border: var(--raw-crease);       /* decorative hairlines */
   --color-border-strong: var(--raw-crease-strong); /* inputs, checkboxes: 3.3:1 */
-  --color-accent: var(--raw-pleat);        /* links, primary fill: 6.3:1 */
+  --color-accent: var(--raw-pleat);        /* links, primary fill: 8.9:1 */
   --color-accent-hover: var(--raw-pleat-deep);
-  --color-on-accent: #ffffff;              /* 6.8:1 on accent */
+  --color-on-accent: #ffffff;              /* 9.8:1 on accent */
   --color-selection: var(--raw-mint);      /* selected rows, drop target */
-  --color-on-selection: var(--raw-ink);    /* 12:1 */
+  --color-on-selection: var(--raw-ink);    /* 12.7:1 */
   --color-fold-light: var(--raw-fold-light); /* pleat face lit */
   --color-fold-shade: var(--raw-fold-shade); /* pleat face in shadow */
-  --color-caution: var(--raw-caution);     /* 4.7:1 on bg */
-  --color-caution-bg: #f6ead9;
-  --color-caution-text: #8a5520;           /* 5.2:1 on caution-bg */
-  --color-danger: var(--raw-danger);       /* 6.2:1 on bg */
-  --color-danger-bg: #f8e4e1;
-  --color-danger-text: var(--raw-danger);  /* 5.5:1 on danger-bg */
+  --color-caution: var(--raw-caution);     /* 5.2:1 on bg */
+  --color-caution-bg: #f1ece0;
+  --color-caution-text: #6e4c10;           /* 6.6:1 on caution-bg */
+  --color-danger: var(--raw-danger);       /* 6.0:1 on bg */
+  --color-danger-bg: #f5e6e4;
+  --color-danger-text: var(--raw-danger);  /* 5.4:1 on danger-bg */
   --color-success: var(--raw-pleat);
-  --color-backdrop: rgb(23 33 29 / 0.32);
+  --color-backdrop: rgb(30 32 37 / 0.32);
 
   /* ---------- Typography ---------- */
   --font-sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system,
@@ -159,9 +160,9 @@
   /* ---------- Shadows by role (light) ---------- */
   --shadow-none: none;
   --shadow-sheet: 0 0 0 1px var(--color-border);
-  --shadow-raised: 0 1px 0 rgb(23 33 29 / 0.06), 0 2px 6px rgb(23 33 29 / 0.08);
-  --shadow-dialog: 0 0 0 1px rgb(23 33 29 / 0.08), 0 12px 32px rgb(23 33 29 / 0.18);
-  --shadow-fold: inset 0 -1px 0 rgb(23 33 29 / 0.10); /* crease line under a pleat face */
+  --shadow-raised: 0 1px 0 rgb(30 32 37 / 0.06), 0 2px 6px rgb(30 32 37 / 0.08);
+  --shadow-dialog: 0 0 0 1px rgb(30 32 37 / 0.08), 0 12px 32px rgb(30 32 37 / 0.18);
+  --shadow-fold: inset 0 -1px 0 rgb(30 32 37 / 0.10); /* crease line under a pleat face */
 
   /* ---------- Motion ---------- */
   --dur-instant: 83ms;       /* hover, press */
@@ -195,22 +196,22 @@
     --color-bg: var(--raw-night-paper);
     --color-surface: var(--raw-night-sheet);
     --color-surface-raised: var(--raw-night-raised);
-    --color-text: var(--raw-night-ink);           /* 15.3:1 */
-    --color-text-muted: var(--raw-night-muted);   /* 7.9:1 */
+    --color-text: var(--raw-night-ink);           /* 14.8:1 */
+    --color-text-muted: var(--raw-night-muted);   /* 7.4:1 */
     --color-border: var(--raw-night-crease);
     --color-border-strong: var(--raw-night-crease-strong); /* 3.6:1 */
-    --color-accent: var(--raw-night-pleat);       /* 9.8:1 */
-    --color-accent-hover: #8adcb9;
-    --color-on-accent: var(--raw-night-pleat-ink); /* 9.6:1 */
+    --color-accent: var(--raw-night-pleat);       /* 9.6:1 */
+    --color-accent-hover: #c4cff7;
+    --color-on-accent: var(--raw-night-pleat-ink); /* 8.6:1 */
     --color-selection: var(--raw-night-mint);
-    --color-on-selection: var(--raw-night-ink);   /* 8.9:1 */
+    --color-on-selection: var(--raw-night-ink);   /* 10.1:1 */
     --color-fold-light: var(--raw-night-fold-light);
     --color-fold-shade: var(--raw-night-fold-shade);
     --color-caution: var(--raw-night-caution);
-    --color-caution-bg: #2a2016;
+    --color-caution-bg: #2a2317;
     --color-caution-text: var(--raw-night-caution);
     --color-danger: var(--raw-night-danger);
-    --color-danger-bg: #2d1a18;
+    --color-danger-bg: #2e1d1b;
     --color-danger-text: var(--raw-night-danger);
     --color-success: var(--raw-night-pleat);
     --color-backdrop: rgb(0 0 0 / 0.5);
@@ -231,17 +232,17 @@
   --color-border: var(--raw-night-crease);
   --color-border-strong: var(--raw-night-crease-strong);
   --color-accent: var(--raw-night-pleat);
-  --color-accent-hover: #8adcb9;
+  --color-accent-hover: #c4cff7;
   --color-on-accent: var(--raw-night-pleat-ink);
   --color-selection: var(--raw-night-mint);
   --color-on-selection: var(--raw-night-ink);
   --color-fold-light: var(--raw-night-fold-light);
   --color-fold-shade: var(--raw-night-fold-shade);
   --color-caution: var(--raw-night-caution);
-  --color-caution-bg: #2a2016;
+  --color-caution-bg: #2a2317;
   --color-caution-text: var(--raw-night-caution);
   --color-danger: var(--raw-night-danger);
-  --color-danger-bg: #2d1a18;
+  --color-danger-bg: #2e1d1b;
   --color-danger-text: var(--raw-night-danger);
   --color-success: var(--raw-night-pleat);
   --color-backdrop: rgb(0 0 0 / 0.5);

@@ -43,11 +43,32 @@
 - Careful file handling: output is written to a temporary file first, nothing is overwritten by default, and extraction goes into a new folder.
 - One command-line tool for single files and folder archives, with a `test` command that fully decodes an archive before you extract it.
 
+## Benchmarks
+
+LZ4 v1.10.0 source tree, one Apple M5 Max Mac, five measured repeats, provisional. Medians from the [2026-10-15 reproduction](docs/benchmarks.md).
+
+| Workload | Bytepleat | Other tool | Result |
+| --- | ---: | ---: | --- |
+| LZ4 source, ZIP Deflate 6 | 480,556 bytes; encode 0.03356 s | 7-Zip 26.04: 478,266 bytes; encode 0.09671 s | Bytepleat encode median 2.9× lower |
+| LZ4 source, 7z LZMA2 5 | 269,846 bytes | 7-Zip 26.04: 270,414 bytes | Bytepleat encode and decode about 9% slower |
+| LZ4 source, tar + Zstandard 3 | 352,317 bytes | System tar: 354,834 bytes | tar slightly faster on encode |
+| LZ4 source, RAR5 (trial, local only) | 7z LZMA2 5: 269,846 bytes (separate trial run) | RAR5 m3: 298,367 bytes; m5: 295,577 bytes; RAR encodes faster in this run | RAR trial, macOS ARM64, not redistributed |
+| Generated repeated text, ZIP Deflate 6 | 49,350 bytes | 7-Zip 26.04: 26,450 bytes | Bytepleat is larger here |
+
+Caveats:
+
+- One machine: an Apple M5 Max Mac running macOS 27.0.1. Windows, Linux, and GUI tools were not measured.
+- Provisional. The quiescence check was not enabled, so host activity may affect timings. Treat sub-second differences as exploratory.
+- Not a general ranking. These results are for these workloads and settings only.
+- No speed claim where results show parity or a loss.
+
+Full report and method: [docs/benchmarks.md](docs/benchmarks.md).
+
 ## When to use something else
 
 Bytepleat is small and strict on purpose. Mature tools do more.
 
-- **You need RAR, encrypted or password-protected archives, ZIP64, split archives, or arbitrary 7z files.** Bytepleat does not handle these (see [supported formats](docs/formats.md)). Use a tool that does, such as 7-Zip, Keka or The Unarchiver, and check its documentation for its current format list.
+- **You need RAR, encrypted or password-protected archives, ZIP64, split archives, or arbitrary 7z files.** Bytepleat does not handle these (see [supported formats](docs/formats.md)). RAR is recognised by `info` only; extraction is not implemented. RAR is a proprietary format, and the project records no licence reason for this. Whether to add support, and which licence applies, is the owner's decision and should get licence advice. Use a tool that does, such as 7-Zip, Keka or The Unarchiver, and check its documentation for its current format list.
 - **You need a full filesystem backup.** Permissions, ownership, links, extended attributes, and timestamps are not restored. Use a backup tool, or `tar` with the options your system documents.
 - **You already use 7-Zip, `tar` with `zstd`, or your system's archive tool, and it does what you need.** Those are mature, widely available tools. Bytepleat is a smaller, stricter alternative, not a replacement.
 
@@ -95,7 +116,7 @@ $base = 'https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2'
 Invoke-WebRequest -Uri "$base/$asset" -OutFile $asset
 Invoke-WebRequest -Uri "$base/$asset.sha256" -OutFile "$asset.sha256"
 $entry = Get-Content -LiteralPath "$asset.sha256" -Raw
-if ($entry -notmatch '^([0-9a-fA-F]{64})\s+bytepleat-0\.5\.1-x86_64-pc-windows-msvc\.zip\s*$') { throw 'Invalid checksum sidecar or filename' }
+if ($entry -notmatch '^([0-9a-fA-F]{64})\s+bytepleat-0\.5\.2-x86_64-pc-windows-msvc\.zip\s*$') { throw 'Invalid checksum sidecar or filename' }
 if ((Get-FileHash -LiteralPath $asset -Algorithm SHA256).Hash -ne $Matches[1]) { throw 'SHA-256 mismatch' }
 Expand-Archive -LiteralPath $asset -DestinationPath .
 .\bytepleat-0.5.2-x86_64-pc-windows-msvc\bytepleat.exe --help
@@ -137,7 +158,9 @@ Zstandard is the default. Without `--format`, the archive type follows the `-o` 
 | ZIP | Yes | Yes | Classic Stored/Deflate only; no ZIP64, encryption, or split volumes; up to 65,534 entries |
 | 7z | Yes | Yes | Writer uses LZMA2; reader handles a bounded subset, unencrypted and single-volume; up to 100,000 entries |
 | Pco (numeric data) | Yes | Yes | Raw little-endian numbers with an explicit `--type`; not for general files or CSV |
-| RAR | No | No | Recognized by `info` only |
+| RAR | No | No | Recognised by `info` only; extraction not implemented |
+
+RAR is a proprietary format. The project records no licence reason for not supporting it. Whether to add support, and which licence applies, is the owner's decision and should get licence advice.
 
 Not supported: passwords and encryption, ZIP64, split archives, RAR extraction. Exact boundaries are in [docs/formats.md](docs/formats.md).
 

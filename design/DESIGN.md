@@ -668,3 +668,50 @@ No ASCII art and no emoji section headings. Images live in `docs/assets/`, and n
 - The CLI flag name in the "over the size cap" error must be confirmed in `docs/security-limits.md`.
 - Competitor comparison cells are deliberately left for verification at publishing time.
 - Download sizes and requirement lines on the site must be generated from the release assets, never typed by hand.
+
+---
+
+## Revision: palette
+
+Supersedes the palette values in section 2, the ratio table in 4.1, the currentColor sentence in section 5 and the hex values in section 9 (favicon, app icon). `tokens.css` and the table below govern.
+
+Kept: Instrument Sans and JetBrains Mono (type is unchanged; both are self-hosted OFL faces with the width axis). The pleat motif stays as the only expressive element, because folding is the product's one idea (archive and unarchive), and its geometry and placement are unchanged.
+
+Why the palette changed:
+- Accent moved from green `#17674d` to deep indigo-ink `#2f3e86`. Indigo reads as printed ink on paper; teal sat too close to the eco-green and mint look we rejected.
+- Paper is warm neutral `#f6f4ef` and ink is graphite `#1e2025`, so surfaces read as paper and print rather than cool SaaS grey.
+- Dark mode is graphite `#121315` with a lifted indigo accent `#a9b8ef` (9.6:1), not green-black with neon.
+- Hairlines are warm grey creases. Any boundary the user must see to operate a control uses `--color-border-strong` (3.3:1 light, 3.6:1 dark).
+- Caution is muted ochre-brown and danger is muted brick, used only with an icon and words. No gradients, glow, mint or amber tints as decoration.
+- Success reuses the accent, so no token was added. Status is never colour alone.
+- Token names and the raw-token scheme are unchanged. `--raw-mint` keeps its name but is now a pale indigo tint.
+- `mark.svg` and `pleat.svg` use explicit fills (`.bp-fill`, `.bp-line`) with a `prefers-color-scheme: dark` rule, instead of `currentColor`. Geometry is unchanged.
+
+Contrast: `python3 design/audit/contrast.py` exits 0. All 62 required text and UI pairs pass in both themes. Lowest UI pair: input border on surface, 3.22:1 (dark).
+
+Token table (copy these values; light / dark):
+
+| Token | Light | Dark |
+|---|---|---|
+| `--color-bg` | `#f6f4ef` | `#121315` |
+| `--color-surface` | `#fffdf9` | `#1b1d21` |
+| `--color-surface-raised` | `#fffdf9` | `#23262b` |
+| `--color-text` | `#1e2025` | `#e7e5e0` |
+| `--color-text-muted` | `#5c5a52` | `#a6a39b` |
+| `--color-border` | `#d8d5cb` | `#2e3137` |
+| `--color-border-strong` | `#8a877c` | `#6f6c65` |
+| `--color-accent` | `#2f3e86` | `#a9b8ef` |
+| `--color-accent-hover` | `#232f6b` | `#c4cff7` |
+| `--color-on-accent` | `#ffffff` | `#111a44` |
+| `--color-selection` | `#dfe3f1` | `#2a3150` |
+| `--color-on-selection` | `#1e2025` | `#e7e5e0` |
+| `--color-fold-light` | `#ecebe6` | `#22242a` |
+| `--color-fold-shade` | `#dedbd2` | `#17181c` |
+| `--color-caution` | `#8a5d12` | `#d9a95c` |
+| `--color-caution-bg` | `#f1ece0` | `#2a2317` |
+| `--color-caution-text` | `#6e4c10` | `#d9a95c` |
+| `--color-danger` | `#a13b36` | `#ec8a80` |
+| `--color-danger-bg` | `#f5e6e4` | `#2e1d1b` |
+| `--color-danger-text` | `#a13b36` | `#ec8a80` |
+| `--color-success` | `#2f3e86` | `#a9b8ef` |
+| `--color-backdrop` | `rgb(30 32 37 / 0.32)` | `rgb(0 0 0 / 0.5)` |

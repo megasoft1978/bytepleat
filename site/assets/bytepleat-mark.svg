@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-labelledby="t"><title id="t">Bytepleat</title><style>g{fill:#17674d}@media (prefers-color-scheme:dark){g{fill:#6fd0a8}}</style><g><polygon points="3 6 9.5 9.5 9.5 22.5 3 26" fill-opacity=".95"/><polygon points="9.5 9.5 16 6 16 26 9.5 22.5" fill-opacity=".45"/><polygon points="16 6 22.5 9.5 22.5 22.5 16 26" fill-opacity=".95"/><polygon points="22.5 9.5 29 6 29 26 22.5 22.5" fill-opacity=".45"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-labelledby="mark-t">
+<title id="mark-t">Bytepleat</title>
+<style>.bp-fill{fill:#2f3e86}@media (prefers-color-scheme: dark){.bp-fill{fill:#a9b8ef}}</style>
+<g class="bp-fill">
+<polygon points="3 6 9.5 9.5 9.5 22.5 3 26" fill-opacity=".95"/>
+<polygon points="9.5 9.5 16 6 16 26 9.5 22.5" fill-opacity=".45"/>
+<polygon points="16 6 22.5 9.5 22.5 22.5 16 26" fill-opacity=".95"/>
+<polygon points="22.5 9.5 29 6 29 26 22.5 22.5" fill-opacity=".45"/>
+</g>
+</svg>

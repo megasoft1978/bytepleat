@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#f4f7f4" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0f1613" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121315" media="(prefers-color-scheme: dark)">
   <title>Bytepleat: a careful archiver for ZIP, 7z and tar, on the command line</title>
   <meta name="description" content="Bytepleat packs files and folders into ZIP, 7z or compressed tar and gives you the same bytes back. Free and open source. It won't overwrite files unless you ask, cleans up when you cancel, and keeps your files on your device.">
   <link rel="canonical" href="https://megasoft1978.github.io/bytepleat/">
@@ -44,6 +44,7 @@
       <ul class="nav-links" id="nav-links">
         <li class="nav-links-install"><a href="#install">Install</a></li>
         <li><a href="#formats">Formats</a></li>
+        <li><a href="#benchmarks">Benchmarks</a></li>
         <li><a href="#faq">FAQ</a></li>
         <li><a href="https://github.com/megasoft1978/bytepleat">Source on GitHub</a></li>
       </ul>
@@ -322,6 +323,57 @@ bytepleat test project.tar.zst</code></pre>
       </div>
     </section>
 
+    <section class="section" id="benchmarks" aria-labelledby="benchmarks-title">
+      <div class="wrap rail">
+        <div>
+          <h2 id="benchmarks-title">Benchmarks: where it wins, ties and loses</h2>
+          <p class="rail-note">Measured on one Apple M5 Max Mac, for two workloads and one control. Not a general ranking.</p>
+          <h3>How to read this</h3>
+          <ul>
+            <li>Smaller archive bytes are better.</li>
+            <li>Encode and decode times are the median of 5 runs, in seconds. Lower is better.</li>
+            <li>Results apply to these workloads only.</li>
+          </ul>
+        </div>
+        <div>
+          <table class="stack-table">
+            <caption>Run 2026-10-15: Apple M5 Max Mac, macOS 27.0.1, 5 repeats</caption>
+            <thead><tr><th scope="col">Workload and setting</th><th scope="col">Tool</th><th scope="col">Archive bytes</th><th scope="col">Encode median (s)</th><th scope="col">Decode median (s)</th><th scope="col">Source</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">LZ4 source tree, ZIP Deflate 6</th><td data-label="Tool">Bytepleat</td><td data-label="Archive bytes">480,556</td><td data-label="Encode median (s)">0.03356</td><td data-label="Decode median (s)">0.02300</td><td data-label="Source"><a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/benchmarks/macos-reproduction-2026-10-15.csv">42-group CSV</a></td></tr>
+              <tr><th scope="row">LZ4 source tree, ZIP Deflate 6</th><td data-label="Tool">7-Zip 26.04</td><td data-label="Archive bytes">478,266</td><td data-label="Encode median (s)">0.09671</td><td data-label="Decode median (s)">0.02586</td><td data-label="Source"><a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/benchmarks/macos-reproduction-2026-10-15.csv">42-group CSV</a></td></tr>
+              <tr><th scope="row">LZ4 source tree, 7z LZMA2 5</th><td data-label="Tool">Bytepleat</td><td data-label="Archive bytes">269,846</td><td data-label="Encode median (s)">0.24432</td><td data-label="Decode median (s)">0.02965</td><td data-label="Source"><a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/benchmarks/macos-reproduction-2026-10-15.csv">42-group CSV</a></td></tr>
+              <tr><th scope="row">LZ4 source tree, 7z LZMA2 5</th><td data-label="Tool">7-Zip 26.04</td><td data-label="Archive bytes">270,414</td><td data-label="Encode median (s)">0.22349</td><td data-label="Decode median (s)">0.02707</td><td data-label="Source"><a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/benchmarks/macos-reproduction-2026-10-15.csv">42-group CSV</a></td></tr>
+              <tr><th scope="row">LZ4 source tree, tar + Zstandard 3</th><td data-label="Tool">Bytepleat</td><td data-label="Archive bytes">352,317</td><td data-label="Encode median (s)">0.02137</td><td data-label="Decode median (s)">0.02301</td><td data-label="Source"><a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/benchmarks/macos-reproduction-2026-10-15.csv">42-group CSV</a></td></tr>
+              <tr><th scope="row">LZ4 source tree, tar + Zstandard 3</th><td data-label="Tool">System tar + Zstandard 1.5.7</td><td data-label="Archive bytes">354,834</td><td data-label="Encode median (s)">0.01741</td><td data-label="Decode median (s)">0.02467</td><td data-label="Source"><a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/benchmarks/macos-reproduction-2026-10-15.csv">42-group CSV</a></td></tr>
+              <tr><th scope="row">Control: generated repeated text, ZIP Deflate 6</th><td data-label="Tool">Bytepleat</td><td data-label="Archive bytes">49,350</td><td data-label="Encode median (s)">0.01676</td><td data-label="Decode median (s)">0.00577</td><td data-label="Source"><a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/benchmarks.md">benchmarks.md</a></td></tr>
+              <tr><th scope="row">Control: generated repeated text, ZIP Deflate 6</th><td data-label="Tool">7-Zip 26.04</td><td data-label="Archive bytes">26,450</td><td data-label="Encode median (s)">0.09498</td><td data-label="Decode median (s)">0.00917</td><td data-label="Source"><a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/benchmarks.md">benchmarks.md</a></td></tr>
+            </tbody>
+          </table>
+          <p class="after-table">On the LZ4 source tree, Bytepleat ZIP 6 encoded in 0.03356 s and 7-Zip ZIP 6 in 0.09671 s, so 7-Zip took about 2.9 times as long. Its archive was 0.48% larger. Bytepleat 7z was 0.21% smaller than 7-Zip 7z, but its encode and decode were about 9% slower. Bytepleat tar + Zstandard was 0.7% smaller than system tar, but its encode was slower. On the repeated-text control, Bytepleat is worse: 49,350 bytes against 26,450. <a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/benchmarks.md">Full notes</a></p>
+          <table class="stack-table">
+            <caption>RAR trial run, separate from the table above: RARLAB RAR 7.23 command-line trial, LZ4 source tree</caption>
+            <thead><tr><th scope="col">Workload and setting</th><th scope="col">Tool</th><th scope="col">Archive bytes</th><th scope="col">Encode median (s)</th><th scope="col">Decode median (s)</th><th scope="col">Source</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">LZ4 source tree, 7z LZMA2 5</th><td data-label="Tool">Bytepleat</td><td data-label="Archive bytes">269,846</td><td data-label="Encode median (s)">0.46664</td><td data-label="Decode median (s)">0.03639</td><td data-label="Source"><a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/benchmarks/macos-rar-reproduction-2026-10-15.csv">RAR CSV</a></td></tr>
+              <tr><th scope="row">LZ4 source tree, RAR5 m3</th><td data-label="Tool">RAR 7.23 trial</td><td data-label="Archive bytes">298,367</td><td data-label="Encode median (s)">0.14220</td><td data-label="Decode median (s)">0.04095</td><td data-label="Source"><a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/benchmarks/macos-rar-reproduction-2026-10-15.csv">RAR CSV</a></td></tr>
+              <tr><th scope="row">LZ4 source tree, RAR5 m5</th><td data-label="Tool">RAR 7.23 trial</td><td data-label="Archive bytes">295,577</td><td data-label="Encode median (s)">0.14878</td><td data-label="Decode median (s)">0.03386</td><td data-label="Source"><a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/benchmarks/macos-rar-reproduction-2026-10-15.csv">RAR CSV</a></td></tr>
+            </tbody>
+          </table>
+          <p class="after-table">In this run RAR encoded faster than Bytepleat 7z, and its archives were larger on the LZ4 source tree. This run's Bytepleat 7z encode (0.46664 s) differs from the run above (0.24432 s), so compare within one table only. <a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/benchmarks.md">RAR notes</a></p>
+          <h3>Caveats</h3>
+          <ul>
+            <li>One machine: a single Apple M5 Max Mac running macOS 27.0.1.</li>
+            <li>Provisional: one run with 5 repeats per setting.</li>
+            <li>No quiescence check: host activity was not controlled, so small timing differences are exploratory.</li>
+            <li>Not a general ranking: these numbers do not say which tool is better overall.</li>
+            <li>No speed claim where results show parity or a loss: 7z encode, tar encode and the text control.</li>
+          </ul>
+          <p class="after-table">Sources: <a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/benchmarks/macos-reproduction-2026-10-15.json">run provenance</a>, <a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/benchmarks/macos-rar-reproduction-2026-10-15.json">RAR provenance</a>.</p>
+        </div>
+      </div>
+    </section>
+
     <section class="section" id="desktop" aria-labelledby="desktop-title">
       <div class="wrap rail">
         <h2 id="desktop-title">Desktop app <span class="chip chip-lg">Alpha</span></h2>
@@ -337,7 +389,7 @@ bytepleat test project.tar.zst</code></pre>
           <details><summary>Is it faster or smaller than other archivers?</summary><p>It uses the same standard codecs, so results depend on your files and settings. We make no general speed or size claim. The <a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/benchmarks.md">benchmark notes</a> show the method and results so you can judge.</p></details>
           <details><summary>Does it upload my files?</summary><p>No. Bytepleat works on files on your device, needs no account, and runs offline.</p></details>
           <details id="faq-macos"><summary>Why does macOS block the first run?</summary><p>The packages are not signed and the macOS build is not notarised yet. Check the SHA-256 checksum first. Then open System Settings, go to Privacy &amp; Security, and choose Open Anyway for <code>bytepleat</code>. Files downloaded with <code>curl</code> are usually not blocked.</p></details>
-          <details><summary>Can it open RAR or password-protected ZIP files?</summary><p>Not yet. It recognises RAR files without extracting them, and it does not support encryption, ZIP64 or split archives. Use a mature archiver for those.</p></details>
+          <details><summary>Can it open RAR or password-protected ZIP files?</summary><p>Not yet. Bytepleat recognises RAR files but does not extract them. RAR extraction is not implemented, and RAR is a proprietary format. The project records no licence reason for this. Whether to add RAR support, and what licence applies, is the owner's decision and should get licence advice. Password-protected ZIP files and encryption are not supported.</p></details>
           <details><summary>What happens if I cancel?</summary><p>The job stops. Named outputs are written to a temporary file first, so an unfinished archive never takes the final name, and your originals are untouched. Output sent to standard output is a stream and can be partial.</p></details>
           <details><summary>Is it safe to extract archives from strangers?</summary><p>Bytepleat refuses unsafe paths and links and applies size and entry limits, but that is not a security guarantee, and <code>test</code> does not scan for malware. See the <a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/security-limits.md">security and limits notes</a>.</p></details>
           <details><summary>Is the desktop app ready for daily use?</summary><p>Not yet. It is an alpha you build from source. The command-line tool is further along.</p></details>
