@@ -58,7 +58,8 @@ shows `archive entry limit exceeded` in the active workflow and retains the
 specific cause in job history, instead of surfacing only a generic worker exit
 code. The failed inspection left no Bytepleat staging directory. The latest
 native UI observation and executable hash are recorded in
-[`mac-worker-error-reporting.json`](../../../results/desktop-sprint1/qa/mac-worker-error-reporting.json).
+`results/desktop-sprint1/qa/mac-worker-error-reporting.json`.
+Paths under `results/` refer to the maintainer's local evidence folder and are not part of this repository.
 Dock-context-menu Quit remains unverified. The local
 app was unsigned/ad-hoc signed; this is not Developer ID signing or notarization.
 The bundle's macOS 13 minimum is metadata only; macOS 13 runtime behavior is
@@ -68,7 +69,7 @@ On 2026-10-15, the current native bundle repeated the 40,001-entry listing.
 The UI reported 40,001 entries, limited the preview to 5,000, and retained the
 listing-only integrity disclaimer. This does not verify archive payload
 integrity. The fixture and executable hashes are recorded in
-[`mac-large-archive-listing-2026-10-15.json`](../../../results/desktop-sprint1/qa/mac-large-archive-listing-2026-10-15.json).
+`results/desktop-sprint1/qa/mac-large-archive-listing-2026-10-15.json`.
 
 ### Ubuntu 24.04.5 · ARM64 · XFCE/Xorg
 
@@ -355,7 +356,7 @@ Run in the existing UTM virtual machine (GNOME on X11, 640x480 display) against 
 - **Passed:** interrupting a 600 MB compact compression with SIGINT exited 130, left no `.tmp*` file, and left the existing output byte-identical.
 - **Passed (follow-up, same VM, XFCE/Xorg 1280x800):** the ordinary installed `.deb` (ELF sha256 `3347dd67bdccfd00...`) was visually checked. The window renders the new empty state ("Drop files to compress, or an archive to inspect", "Existing files are never overwritten.", format step hidden until input is chosen), and `--open -- <zip>` forwards the archive to the running window and opens the Inspect tab with it selected. Note: reinstalling a package with the same version string needs `dpkg -i`; `apt-get install ./pkg.deb` silently kept the older build, so an earlier check of the "installed" app was of the wrong binary.
 - **Nautilus (XFCE/Xorg, same VM):** the first check of the ordinary package found a bug: Nautilus's startup ID contains the program path, which made the app list `--open` and `--` as archives on Open With ("3 archives selected"). Fixed in `9a45a25`. A package rebuilt from that commit (ELF sha256 `bcd891f18674fa5e...`, Linux tests passing) showed only the selected ZIP with "1 archive selected" and Inspect enabled on both a cold start and a warm start (app already running). Nautilus Compress and Extract opened the expected modes with the right selections; no archive job was run from the menus.
-- **Not verified:** Dolphin menu clicks (the context menu did not appear under `xdotool`; the installed Open With, Compress and Extract commands were run by hand and worked). Wayland and Kubuntu are untested, and the Windows desktop app and Explorer menus are untested (see the Windows section).
+- **Not verified:** Dolphin menu clicks (the context menu did not appear under `xdotool`; the installed Open With, Compress and Extract commands were run by hand and worked). Wayland and Kubuntu are untested. Windows was not tested in this session (see the Windows sections).
 
 ## Windows 11 ARM64 VM: command-line checks · 2026-10-17
 
@@ -363,30 +364,23 @@ Run in a UTM virtual machine on Apple silicon: Windows 11 Pro 26H2, build 10.0.2
 
 - **Passed (released 0.5.1 x86-64 package, which runs under Windows' x64 emulation):** the download matches its published SHA-256; `--version` prints 0.5.1; a 1.1 MB text file compressed and restored byte for byte; `pack` and `unpack` worked for ZIP, 7z and tar.gz; Windows' own `Expand-Archive` read our ZIP; compressing over an existing output was refused with a non-zero exit.
 - **Found:** a ZIP made by Windows' built-in `tar.exe` (bsdtar 3.8.8) rooted at `.` failed to unpack with "empty archive path" on 0.5.1. A build of current `main` (the CI package) unpacks it correctly, and a ZIP containing `../evil.txt` was still rejected ("non-portable archive path component") with nothing written outside the target. The fix is in `main` but not in a release yet.
-- **Note:** `pack` defaults to `--format zstd`, so `bytepleat pack dir -o out.zip` writes a tar+zstd archive under a `.zip` name. Use `--format zip`.
-- **Desktop app (native ARM64 executable built by CI from `main`, run from a folder, not installed):** it launched on the Windows desktop and rendered the redesigned interface correctly (pleat illustration, Instrument Sans type, format selector, History panel). Running it again with `--open -- C:\bp-test\proj2.zip` forwarded the ZIP to the running window, which switched to the Inspect tab with that archive listed. At this VM's screen size the bottom action bar was hidden behind the taskbar, so the window may open taller than a small screen; this was not investigated further. No create, extract or cancel job was run from the Windows UI.
+- **Note:** on 0.5.1, `pack` defaulted to `--format zstd`, so `bytepleat pack dir -o out.zip` wrote a tar+zstd archive under a `.zip` name. The current source infers the format from the `-o` extension when `--format` is omitted, and rejects a `--format` that conflicts with it. That change is not yet in a release and has not been run on this VM.
+- **Desktop app (native ARM64 executable built by CI from `main`, run from a folder, not installed):** it launched on the Windows desktop and rendered the redesigned interface correctly (pleat illustration, Instrument Sans type, format selector, History panel). Running it again with `--open -- C:\bp-test\proj2.zip` forwarded the ZIP to the running window, which switched to the Inspect tab with that archive listed. At this VM's screen size the bottom action bar was hidden behind the taskbar. A later source change clamps the window to the screen's work area; that change is in the current source, not yet in a release, and has not been re-run on this VM. No create, extract or cancel job was run from the Windows UI.
 - **Development MSIX and real Explorer menus (same VM, package signed with a temporary self-signed certificate, since removed):** the package installed and launched, and the Bytepleat group appeared in both the modern Explorer menu and under "Show more options". "Compress with Bytepleat" on two selected text files opened Create mode with both files. **A bug was found:** on a `.zip`, "Extract with Bytepleat" and "Open in Bytepleat" were greyed out, because Explorer reports a `.zip` as a compressed folder and the command rejected anything flagged as a folder. It was fixed in `f77dc23` (file versus directory is decided from the real file attributes) with a regression test that uses real files and runs in CI. With a package rebuilt from the fix, Extract and Open were enabled for `.zip`, `.7z` and `.tar.gz`; Extract opened the app in Extract mode and Open in Inspect mode, each with the chosen archive selected.
-- **Not verified:** the submenu state on a plain text file and on a directory named like an archive was not captured in Explorer (the CI test covers both); the CI packaged COM smoke test failed in this VM with `0x80040154` (class not registered) while the real Explorer integration worked, and the cause is unknown (possibly the VM or this newer Windows build); a native ARM64 command-line build (none is published), signed packages, and other Windows versions.
+- **Not verified:** the Explorer submenu on a plain `.txt` file and on a directory named like an archive was not captured interactively (the CI test covers both). The CI packaged COM smoke test failed in this VM with `0x80040154` (class not registered) while the real Explorer integration worked; this is under investigation and the cause is not known. Also not verified: a native ARM64 command-line build (none is published), signed packages, and other Windows versions.
 
 ## Remaining validation
 
-- Verify macOS Dock Quit cleanup; test the minimum supported macOS version.
-- Separately verify Kubuntu 26.04 and its newer Dolphin/Plasma combination.
-- Verify installed Windows app and Explorer interaction on x64, plus
-  interactive Explorer menu behavior and app handoff on ARM64. Native WebView
-  E2E passes on both runners; the ARM64 packaged smoke verifies installation,
-  registration, and COM activation, but not interactive menu use.
-- Install the latest Linux development package in GNOME and re-run inspection
-  cancellation, no-overwrite, and selective extraction; those flows passed on
-  the earlier installed v6 package. The current x64 package was launched in
-  isolated Xvfb, but has not received this installed GNOME workflow check. Wayland remains
-  unverified. Package validation covers Ubuntu 24.04.5 ARM64, not other
-  distributions or architectures.
-- Qualify signed packages, including Developer ID/notarized macOS distribution
-  and appropriate Windows signing.
-- Expand interactive coverage across supported operating systems and archive
-  formats. Existing GUI tests do not establish performance; no new codec or
-  performance claim is made by this validation record.
+- Dolphin: menu clicks were not reproduced under `xdotool`; the installed Open With, Compress and Extract commands were run by hand. The menu clicks remain to be verified.
+- Wayland and Kubuntu 26.04 (with its newer Dolphin/Plasma combination) are untested. Package validation covers Ubuntu 24.04.5 ARM64, not other distributions or architectures.
+- Windows 11 ARM64 CI packaged COM smoke: the `0x80040154` (class not registered) failure seen in the VM is under investigation; the cause is not known.
+- Windows Explorer submenu on a plain `.txt` file and on a directory named like an archive: not captured interactively. The CI test covers both.
+- Windows interactive checks: the installed Windows app and Explorer interaction on x64, and interactive Explorer menu use and app handoff on ARM64. The ARM64 packaged smoke verifies installation, registration and COM activation, not interactive menu use.
+- Installed GNOME/Xorg repetition of inspection cancellation, no-overwrite, and selective extraction on the latest Linux development package. These passed on the earlier installed v6 package; the current x64 package was only launched in isolated Xvfb. Wayland remains unverified. Package validation covers Ubuntu 24.04.5 ARM64, not other distributions or architectures.
+- macOS Dock Quit cleanup, and the macOS 13 minimum version.
+- Signing: Developer ID signing and notarization for macOS, and appropriate Windows signing. Packages are unsigned today.
+- Installers: no signed or public installer is published, so installer behavior is untested.
+- Interactive coverage across more operating systems and archive formats. GUI tests do not establish performance, and this record makes no new codec or performance claim.
 
 ## Scope notes
 

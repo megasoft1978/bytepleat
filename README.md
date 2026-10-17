@@ -125,7 +125,7 @@ bytepleat info project.tar.zst --json
 bytepleat test project.tar.zst
 ```
 
-Zstandard is the default. Use `--format` for another codec or archive type, for example `bytepleat pack project --format zip -o project.zip`. The [user guide](docs/user-guide.md) covers presets, pipes, and archive options.
+Zstandard is the default. Without `--format`, the archive type follows the `-o` extension (`.zip`, `.7z`, `.tar.zst`/`.tzst`, `.tar.gz`/`.tgz`, `.tar.lz4`). A `--format` that conflicts with the extension is an error. Use `--format` for another codec or archive type, for example `bytepleat pack project --format zip -o project.zip`. The [user guide](docs/user-guide.md) covers presets, pipes, and archive options.
 
 ## Supported formats
 

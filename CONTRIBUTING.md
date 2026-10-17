@@ -10,4 +10,6 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo test --locked
 ```
 
+The SIGINT/SIGTERM staging-file cleanup test is Unix-only, because Windows has no handler for those signals; it does not run on Windows.
+
 Include the commands you ran and their results. Do not present a single-machine timing result as cross-platform evidence. New dependencies and format behavior should be documented with provenance and limitations. The maintainers review changes through GitHub; there is no separate submission address.

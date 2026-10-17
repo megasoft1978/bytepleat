@@ -1,5 +1,13 @@
 # Bytepleat redesign audit: contrast, static HTML, type size
 
+## Status
+
+Checked against `git log` on 2026-10-17. Findings below are as written at audit time; this note records what changed since.
+
+- Fixed in `6e1dd9e`: #1 (404 skip link; `<base>` removed from `site/404.html`, root-absolute links) and #2 (`aria-disabled` controls use token colours instead of opacity, `desktop/ui/styles.css`).
+- Still open: #3 (`.button-primary` border under forced colours; no change in the log), #4 (dark caution and danger tints still literals in `design/tokens.css`), #5 (`--color-danger-text` still unused), #6 (hand-copied tokens, no CI diff), #7 (`0.875em` in `site/assets/site.css:49`).
+- #8 is informational; no action required.
+
 Scope: design/tokens.css, desktop/ui/{index.html,styles.css}, site/{index.html,docs/index.html,404.html,assets/site.css}. Read-only. No files outside design/audit/ were changed. Root: release-workspace/bytepleat/.
 
 ## Method

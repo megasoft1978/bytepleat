@@ -47,6 +47,7 @@ Linux `.deb` development packages: see [PACKAGING.md](PACKAGING.md). Packages ar
 - Extracting selected entries still decodes the whole archive first.
 - A selected path that is not valid UTF-8 is rejected with an error.
 - The bundle declares `.zip`, `.7z`, `.tar.zst`, `.tar.gz`, and `.tar.lz4` file associations; how the OS registers them depends on the installer and platform.
+- The window opens at 960×640 with a 760×520 minimum. On a screen too small for the default plus a 48 px margin, it is shrunk to the work area and centred.
 - A browser preview shows the interface only; it cannot open files or run archive operations.
 
 References: [Tauri v2 configuration](https://v2.tauri.app/reference/config/), [single-instance plugin](https://docs.rs/tauri-plugin-single-instance/latest/tauri_plugin_single_instance/), [macOS `Opened` run event](https://docs.rs/tauri/latest/tauri/enum.RunEvent.html). The app embeds its frontend and makes no external CDN requests.

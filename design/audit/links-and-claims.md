@@ -1,5 +1,14 @@
 # Links and claims audit
 
+## Status
+
+Checked against `git log` on 2026-10-17. Findings below are as written at audit time; this note records what changed since.
+
+- Fixed in `72b2f2c`: #1 for the site (`site/index.html` meta and lead now say "won't overwrite files unless you ask"); #2 for the desktop copy (`desktop/ui/index.html` now says "Opens in 7-Zip and Keka.").
+- Partly fixed in `72b2f2c`: #3 (`desktop/ui/app.js:386` reworded; the "not atomic" caveat was not added); #4 (`app.js:386` uses "temporary folder"; `app.js:354` still says "staging folder").
+- Still open: #1 in `design/DESIGN.md:57` and `:560`; #2 in `design/DESIGN.md:320`; #5 (network and offline claims in `site/index.html:140` and `:338`, `desktop/ui/index.html:53`, `design/DESIGN.md:601`); #7 (`docs/security-limits.md:11` still says 128 MiB "by default"); #8 (`design/DESIGN.md:399`, "1 GB" and `--max-output 8GiB`); #9 (`site/index.html:227`); #10 to #13; #14 ("notarised", "recognised" in site and DESIGN copy); #15 ("bounded" in site copy).
+- Partly: #6. `72b2f2c` added desktop caps to `docs/security-limits.md`; the preview and 1 GiB wording was not re-checked.
+
 Date: 2026-10-17. Read-only audit. Checker: `/private/tmp/claude-501/-Users-megasoft78-Desktop-Freelance-mosaic-byte-compression-lab/563fbee7-d3b9-494a-be57-e30a1d84f0a9/scratchpad/check_links.py` (run with `python3 -I`; raw results in the sibling `links.json`).
 
 ## 1. Links
