@@ -80,6 +80,51 @@ jobs:
         run: python scripts/native_smoke.py --binary "target/release/${{ matrix.exe }}" --output .ci-results/native-smoke.json --require-tools
       - name: Verify archive interoperability
         run: python scripts/ci_archive_smoke.py --binary "target/release/${{ matrix.exe }}" --output .ci-results/archive-smoke.json
+      - name: Verify Windows tar.exe ZIP interoperability
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $bin = Join-Path $PWD 'target/release/bytepleat.exe'
+          $work = Join-Path $env:RUNNER_TEMP 'zip-interop'
+          New-Item -ItemType Directory -Force -Path $work | Out-Null
+          $src = Join-Path $work 'src'
+          New-Item -ItemType Directory -Force -Path (Join-Path $src 'nested/deeper') | Out-Null
+          New-Item -ItemType Directory -Force -Path (Join-Path $src 'empty') | Out-Null
+          [IO.File]::WriteAllText((Join-Path $src 'top.txt'), "top`n")
+          [IO.File]::WriteAllText((Join-Path $src 'nested/deeper/leaf.txt'), "leaf`n")
+          function Get-Tree([string]$root) {
+            Get-ChildItem -LiteralPath $root -Recurse | ForEach-Object {
+              $rel = $_.FullName.Substring($root.Length).TrimStart('\', '/').Replace('\', '/')
+              if ($_.PSIsContainer) { "DIR  $rel" }
+              else { "{0}  {1}" -f (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash, $rel }
+            } | Sort-Object
+          }
+          function Assert-SameTree([string]$expected, [string]$actual) {
+            $a = @(Get-Tree $expected)
+            $b = @(Get-Tree $actual)
+            if ($a.Count -eq 0) { throw "source tree is empty" }
+            if (Compare-Object $a $b) { throw "tree mismatch: $expected vs $actual" }
+          }
+          # 1. bytepleat writes ZIP, the runner's bsdtar lists and extracts it.
+          $zip = Join-Path $work 'x.zip'
+          & $bin pack $src --format zip -o $zip
+          if ($LASTEXITCODE -ne 0) { throw "bytepleat pack failed: $LASTEXITCODE" }
+          & tar.exe -tf $zip
+          if ($LASTEXITCODE -ne 0) { throw "tar.exe listing failed: $LASTEXITCODE" }
+          $ext = Join-Path $work 'tar-extract'
+          New-Item -ItemType Directory -Path $ext | Out-Null
+          & tar.exe -xf $zip -C $ext
+          if ($LASTEXITCODE -ne 0) { throw "tar.exe extraction failed: $LASTEXITCODE" }
+          Assert-SameTree $src $ext
+          # 2. bsdtar writes the './' rooted ZIP shape, bytepleat must unpack it.
+          $win = Join-Path $work 'win.zip'
+          & tar.exe -a -cf $win -C $src .
+          if ($LASTEXITCODE -ne 0) { throw "tar.exe ZIP creation failed: $LASTEXITCODE" }
+          $out = Join-Path $work 'bytepleat-unpack'
+          & $bin unpack $win -o $out
+          if ($LASTEXITCODE -ne 0) { throw "bytepleat unpack of tar.exe ZIP failed: $LASTEXITCODE" }
+          Assert-SameTree $src $out
       - name: Collect target dependency notices
         run: python scripts/collect_notices.py --target "${{ matrix.target }}" --output-dir .ci-results/notices
       - name: Package and execute verified native release archive

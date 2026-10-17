@@ -251,3 +251,75 @@ fn dot_root_does_not_weaken_path_checks() {
         assert!(!t.path().join("evil").exists());
     }
 }
+
+/// Hand-built ZIP of stored directory entries. The zip crate's writer refuses
+/// duplicate names, so duplicates are emitted byte by byte here.
+fn hand_dir_zip(names: &[&str]) -> Vec<u8> {
+    let mut out = Vec::new();
+    let mut central = Vec::new();
+    for name in names {
+        let n = name.as_bytes();
+        let offset = out.len() as u32;
+        // Local file header: version 2.0, stored, no payload, DOS date 1980-01-01.
+        out.extend_from_slice(&[0x50, 0x4b, 0x03, 0x04]);
+        out.extend_from_slice(&20u16.to_le_bytes());
+        out.extend_from_slice(&0u16.to_le_bytes());
+        out.extend_from_slice(&0u16.to_le_bytes());
+        out.extend_from_slice(&0u16.to_le_bytes());
+        out.extend_from_slice(&0x21u16.to_le_bytes());
+        out.extend_from_slice(&[0; 12]);
+        out.extend_from_slice(&(n.len() as u16).to_le_bytes());
+        out.extend_from_slice(&0u16.to_le_bytes());
+        out.extend_from_slice(n);
+        // Central directory record: made by unix 3.0, unix dir mode 0755 plus DOS dir bit.
+        central.extend_from_slice(&[0x50, 0x4b, 0x01, 0x02]);
+        central.extend_from_slice(&0x031eu16.to_le_bytes());
+        central.extend_from_slice(&20u16.to_le_bytes());
+        central.extend_from_slice(&0u16.to_le_bytes());
+        central.extend_from_slice(&0u16.to_le_bytes());
+        central.extend_from_slice(&0u16.to_le_bytes());
+        central.extend_from_slice(&0x21u16.to_le_bytes());
+        central.extend_from_slice(&[0; 12]);
+        central.extend_from_slice(&(n.len() as u16).to_le_bytes());
+        central.extend_from_slice(&0u16.to_le_bytes());
+        central.extend_from_slice(&0u16.to_le_bytes());
+        central.extend_from_slice(&0u16.to_le_bytes());
+        central.extend_from_slice(&0u16.to_le_bytes());
+        central.extend_from_slice(&((0o040755u32 << 16) | 0x10).to_le_bytes());
+        central.extend_from_slice(&offset.to_le_bytes());
+        central.extend_from_slice(n);
+    }
+    let cd_offset = out.len() as u32;
+    let cd_size = central.len() as u32;
+    out.extend_from_slice(&central);
+    // End of central directory record, no comment.
+    out.extend_from_slice(&[0x50, 0x4b, 0x05, 0x06, 0, 0, 0, 0]);
+    out.extend_from_slice(&(names.len() as u16).to_le_bytes());
+    out.extend_from_slice(&(names.len() as u16).to_le_bytes());
+    out.extend_from_slice(&cd_size.to_le_bytes());
+    out.extend_from_slice(&cd_offset.to_le_bytes());
+    out.extend_from_slice(&0u16.to_le_bytes());
+    out
+}
+#[test]
+fn duplicate_dot_root_is_rejected_and_single_dot_root_extracts() {
+    let t = tempdir().unwrap();
+    let dup = t.path().join("dup.zip");
+    fs::write(&dup, hand_dir_zip(&["./", "./"])).unwrap();
+    let err = archive_zip::test(&dup, &limits()).unwrap_err();
+    assert!(
+        err.to_string()
+            .contains("ZIP duplicate names or metadata index mismatch"),
+        "unexpected error: {err}"
+    );
+    let dst = t.path().join("dup-out");
+    assert!(archive_zip::unpack(&dup, &dst, &limits()).is_err());
+    assert!(!dst.exists());
+
+    let good = t.path().join("good.zip");
+    fs::write(&good, hand_dir_zip(&["./", "dir/"])).unwrap();
+    let dst = t.path().join("good-out");
+    archive_zip::unpack(&good, &dst, &limits()).unwrap();
+    assert!(dst.join("dir").is_dir());
+    assert_eq!(archive_zip::test(&good, &limits()).unwrap().output_bytes, 0);
+}
