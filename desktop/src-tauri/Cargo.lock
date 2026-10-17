@@ -459,7 +459,7 @@ checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
 
 [[package]]
 name = "bytepleat"
-version = "0.5.1"
+version = "0.5.2"
 dependencies = [
  "better_io",
  "clap",
