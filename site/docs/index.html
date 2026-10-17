@@ -1,17 +1,130 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="theme-color" content="#f4f7f4" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0f1613" media="(prefers-color-scheme: dark)"><meta name="description" content="Getting started with the Bytepleat command line."><title>Command-line guide · Bytepleat</title><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../assets/site.css"></head>
-<body><a class="skip" href="#main">Skip to content</a><header class="site-header"><nav class="wrap nav" aria-label="Main navigation"><a class="brand" href="../"><img src="../assets/bytepleat-mark.svg" alt=""><span>Bytepleat</span></a><div class="nav-links"><a href="../#quick-start">Quick start</a><a href="../#formats">Formats</a><a href="https://github.com/megasoft1978/bytepleat">GitHub</a></div></nav></header>
-<main id="main" class="wrap docs-main"><span class="eyebrow">Bytepleat · version 0.5.1</span><h1>Compress files. Pack folders.</h1><p>Use one command family for file streams and folder archives: compress, pack, inspect, test, and restore supported data in established formats. Successful lossless file workflows restore the same input bytes.</p><nav class="docs-nav" aria-label="Guide sections"><a href="#install">Install</a><a href="#files">Files</a><a href="#folders">Folders</a><a href="#formats">Formats</a><a href="#presets">Presets</a><a href="#safety">Limits</a></nav>
-<h2 id="install">Install</h2><p>Version 0.5.1 is available for the tested targets. Check the <a href="https://github.com/megasoft1978/bytepleat/releases">GitHub releases list</a> for an available package and its SHA-256 sidecar. Follow the platform-specific verification and extraction steps in <a href="https://github.com/megasoft1978/bytepleat/blob/main/RELEASE.md">RELEASE.md</a>. A checksum detects accidental corruption when compared with the sidecar; it is not a signature.</p><p>Rust users with a C compiler toolchain can install the tagged source with:</p><pre><code>cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.1</code></pre><p>See the <a href="../">home page</a> for the download button. Packages are unsigned and macOS builds are not notarized.</p>
-<p>Windows packages require the x64 <a href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist">Microsoft Visual C++ v14 runtime</a>, which is not bundled.</p><h2 id="files">Compress one file</h2><pre><code>bytepleat compress ./notes.txt --format gzip
-bytepleat decompress ./notes.txt.gz -o ./notes-restored.txt</code></pre><p>zstd is the default; gzip and LZ4 are also supported. Decompression detects the stream format and writes a new output file, leaving the input archive intact. Already-compressed or encrypted data may not shrink.</p>
-<h2 id="folders">Package a directory</h2><pre><code>bytepleat pack ./project --format zstd -o project.tar.zst
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f4f7f4" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0f1613" media="(prefers-color-scheme: dark)">
+  <title>Command-line guide: compress, pack, inspect and test archives · Bytepleat</title>
+  <meta name="description" content="Getting started with the Bytepleat command line: install, compress single files, pack and unpack folders, formats, codec presets and limits.">
+  <link rel="canonical" href="https://megasoft1978.github.io/bytepleat/docs/">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Bytepleat">
+  <meta property="og:title" content="Bytepleat command-line guide">
+  <meta property="og:description" content="Install, compress single files, pack and unpack folders, formats, codec presets and limits.">
+  <meta property="og:url" content="https://megasoft1978.github.io/bytepleat/docs/">
+  <meta property="og:image" content="https://megasoft1978.github.io/bytepleat/assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Bytepleat. Pack files into ZIP, 7z or tar. Get the same bytes back.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://megasoft1978.github.io/bytepleat/assets/og-image.png">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="../assets/fonts/InstrumentSans-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <link rel="stylesheet" href="../assets/site.css">
+  <script>try{var t=new URLSearchParams(location.search).get('theme');if(t!=='light'&&t!=='dark')t=localStorage.getItem('bytepleat-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <nav class="wrap nav" aria-label="Main">
+      <a class="brand" href="../" aria-label="Bytepleat home">
+        <svg class="mark" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true" focusable="false"><polygon points="3 6 9.5 9.5 9.5 22.5 3 26" fill-opacity=".95"/><polygon points="9.5 9.5 16 6 16 26 9.5 22.5" fill-opacity=".45"/><polygon points="16 6 22.5 9.5 22.5 22.5 16 26" fill-opacity=".95"/><polygon points="22.5 9.5 29 6 29 26 22.5 22.5" fill-opacity=".45"/></svg>
+        <span>Bytepleat</span>
+      </a>
+      <a class="nav-install" href="../#install">Install</a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="nav-links" hidden>Menu</button>
+      <ul class="nav-links" id="nav-links">
+        <li class="nav-links-install"><a href="../#install">Install</a></li>
+        <li><a href="../#formats">Formats</a></li>
+        <li><a href="../#faq">FAQ</a></li>
+        <li><a href="https://github.com/megasoft1978/bytepleat">Source on GitHub</a></li>
+      </ul>
+      <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Use dark theme" hidden>
+        <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="7.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 2.75a7.25 7.25 0 0 1 0 14.5z" fill="currentColor"/></svg>
+      </button>
+    </nav>
+  </header>
+
+  <main id="main" class="wrap doc">
+    <nav class="doc-toc" aria-label="Guide sections">
+      <p>On this page</p>
+      <ul>
+        <li><a href="#install">Install</a></li>
+        <li><a href="#files">Compress one file</a></li>
+        <li><a href="#folders">Pack a folder</a></li>
+        <li><a href="#formats">Formats</a></li>
+        <li><a href="#presets">Codec settings</a></li>
+        <li><a href="#safety">Limits</a></li>
+        <li><a href="#help">Help improve it</a></li>
+      </ul>
+    </nav>
+
+    <article class="doc-body">
+      <p class="doc-meta">Command-line guide · version 0.5.1</p>
+      <h1>Compress files. Pack folders.</h1>
+      <p class="doc-intro">One command family for single files and folder archives: compress, pack, inspect, test and restore, in established formats. A successful round trip gives you the same bytes back.</p>
+
+      <h2 id="install">Install</h2>
+      <p>Version 0.5.1 is available for macOS on Apple silicon, Linux x86-64 and Windows x86-64. The <a href="../#install">install section</a> on the home page has the download and checksum commands for each system, and <a href="https://github.com/megasoft1978/bytepleat/blob/main/RELEASE.md">RELEASE.md</a> has the full details. A checksum detects accidental corruption when compared with the sidecar file; it is not a signature.</p>
+      <p>With Rust 1.93 or newer and a C compiler toolchain, install the tagged source:</p>
+      <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="cmd-install" aria-label="Copy command" hidden>Copy</button></div><pre><code id="cmd-install">cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.1</code></pre></div>
+      <p>Packages are unsigned and macOS builds are not notarised. Windows packages need the x64 <a href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist">Microsoft Visual C++ v14 runtime</a>, which is not bundled.</p>
+
+      <h2 id="files">Compress one file</h2>
+      <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="cmd-files" aria-label="Copy command" hidden>Copy</button></div><pre><code id="cmd-files">bytepleat compress ./notes.txt --format gzip
+bytepleat decompress ./notes.txt.gz -o ./notes-restored.txt</code></pre></div>
+      <p>Zstandard is the default; gzip and LZ4 are also supported. Decompression detects the stream format and writes a new output file, leaving the input intact. Data that is already compressed or encrypted may not shrink.</p>
+
+      <h2 id="folders">Pack a folder</h2>
+      <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="cmd-folders" aria-label="Copy command" hidden>Copy</button></div><pre><code id="cmd-folders">bytepleat pack ./project --format zstd -o project.tar.zst
 bytepleat info project.tar.zst
 bytepleat test project.tar.zst
-bytepleat unpack project.tar.zst --output ./restored-project</code></pre><p>ZIP and 7z also package supported subsets of directory archives. Directory archives store file contents and relative paths; ownership, permissions, and other filesystem metadata are not all preserved. Extract to a new destination directory.</p>
-<h2 id="formats">Formats at a glance</h2><ul><li><strong>Zstandard, gzip, LZ4 frames:</strong> single-file streams and compressed tar archives.</li><li><strong>ZIP:</strong> classic Stored/Deflate subset. <strong>7z:</strong> bounded LZMA2 subset. Both can be packaged, inspected, tested, and unpacked within those limits.</li><li><strong>RAR:</strong> metadata recognition only; Bytepleat does not decode it.</li><li><strong>Pco:</strong> typed numeric data from raw little-endian values. Supply an explicit <code>--type</code>; this does not parse CSV text.</li></ul><p>For fuller read/write boundaries, see <a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/formats.md">the format notes</a>.</p>
-<h2 id="presets">Choose a codec setting</h2><p>For Zstandard, <code>--preset fast</code>, <code>balanced</code> (default), and <code>compact</code> select levels 1, 3, and 9. For gzip, they select levels 1, 6, and 9. They are codec settings, not Bytepleat speed or size guarantees; results depend on the input. <code>--level</code> overrides the preset where supported. LZ4 has one level. Pco requires an explicit numeric <code>--type</code>.</p>
-<h2 id="safety">Limits and careful use</h2><p><code>test</code> reads the supported payload fully and checks format integrity and available checksums without extracting files. <code>info</code> reports bounded metadata and does not decode the full payload. Neither proves source identity or content safety. Path checks and configured limits address specific extraction risks, but they are not a general security guarantee or total process-memory cap. Extraction needs a new destination; multi-file publication is not atomic. Folder archives restore file contents and relative paths, not permissions, ownership, links, extended attributes, or portable timestamps. See <a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/security-limits.md">security and limits</a>.</p>
-<h2>Help improve Bytepleat</h2><p>Share a reproducible command and safe sample input. Read <a href="https://github.com/megasoft1978/bytepleat/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> or <a href="https://github.com/megasoft1978/bytepleat/issues">open an issue</a>.</p></main>
-<footer class="footer"><div class="wrap footer-inner"><a class="brand" href="../"><img src="../assets/bytepleat-mark.svg" alt=""><span>Bytepleat</span></a><div class="footer-links"><a href="../">Home</a><a href="https://github.com/megasoft1978/bytepleat">Source</a><a href="https://github.com/megasoft1978/bytepleat/releases">Releases</a><a href="https://github.com/megasoft1978/bytepleat/blob/main/SECURITY.md">Security</a><a href="https://github.com/megasoft1978/bytepleat/blob/main/CONTRIBUTING.md">Contributing</a></div></div></footer></body></html>
+bytepleat unpack project.tar.zst --output ./restored-project</code></pre></div>
+      <p>ZIP and 7z can also package folders, within their supported subsets. Folder archives store file contents and relative paths; ownership, permissions and other filesystem metadata are not all preserved. Always extract to a new destination folder.</p>
+
+      <h2 id="formats">Formats at a glance</h2>
+      <ul>
+        <li><strong>Zstandard, gzip, LZ4 frames:</strong> single-file streams and compressed tar archives.</li>
+        <li><strong>ZIP:</strong> classic Stored and Deflate subset. <strong>7z:</strong> bounded LZMA2 subset. Both can be packed, inspected, tested and unpacked within those limits.</li>
+        <li><strong>RAR:</strong> recognised from its metadata only; Bytepleat does not decode it.</li>
+        <li><strong>Pco:</strong> typed numeric data from raw little-endian values. Supply an explicit <code>--type</code>; this does not parse CSV text.</li>
+      </ul>
+      <p>For the full read and write boundaries, see <a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/formats.md">the format notes</a>.</p>
+
+      <h2 id="presets">Choose a codec setting</h2>
+      <p>For Zstandard, <code>--preset fast</code>, <code>balanced</code> (default) and <code>compact</code> select levels 1, 3 and 9. For gzip they select levels 1, 6 and 9. They are codec settings, not speed or size guarantees; results depend on the input. <code>--level</code> overrides the preset where supported. LZ4 has one level. Pco needs an explicit numeric <code>--type</code>.</p>
+
+      <h2 id="safety">Limits and careful use</h2>
+      <p><code>test</code> reads the supported payload fully and checks format integrity and available checksums without extracting files. <code>info</code> reports bounded metadata and does not decode the full payload. Neither proves where a file came from or that its contents are safe.</p>
+      <p>Path checks and configured limits address specific extraction risks, but they are not a general security guarantee or a cap on total process memory. Extraction needs a new destination, and publishing many files is not atomic. Folder archives restore file contents and relative paths, not permissions, ownership, links, extended attributes or portable timestamps. See <a href="https://github.com/megasoft1978/bytepleat/blob/main/docs/security-limits.md">security and limits</a>.</p>
+
+      <h2 id="help">Help improve Bytepleat</h2>
+      <p>Share a reproducible command and a safe sample input. Read <a href="https://github.com/megasoft1978/bytepleat/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> or <a href="https://github.com/megasoft1978/bytepleat/issues">open an issue</a>.</p>
+    </article>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <p class="footer-id">
+        <svg class="mark" viewBox="0 0 32 32" width="24" height="24" aria-hidden="true" focusable="false"><polygon points="3 6 9.5 9.5 9.5 22.5 3 26" fill-opacity=".95"/><polygon points="9.5 9.5 16 6 16 26 9.5 22.5" fill-opacity=".45"/><polygon points="16 6 22.5 9.5 22.5 22.5 16 26" fill-opacity=".95"/><polygon points="22.5 9.5 29 6 29 26 22.5 22.5" fill-opacity=".45"/></svg>
+        <span>Bytepleat 0.5.1 · <a href="https://github.com/megasoft1978/bytepleat/blob/main/LICENSE">MIT licence</a></span>
+      </p>
+      <ul class="footer-links">
+        <li><a href="../">Home</a></li>
+        <li><a href="https://github.com/megasoft1978/bytepleat">Source</a></li>
+        <li><a href="https://github.com/megasoft1978/bytepleat/blob/main/CHANGELOG.md">Changelog</a></li>
+        <li><a href="https://github.com/megasoft1978/bytepleat/blob/main/SECURITY.md">Security</a></li>
+        <li><a href="https://github.com/megasoft1978/bytepleat/blob/main/CONTRIBUTING.md">Contributing</a></li>
+        <li><a href="https://github.com/megasoft1978/bytepleat/issues">Report a problem</a></li>
+      </ul>
+      <p class="footer-note">This site uses no cookies, trackers or external fonts.</p>
+    </div>
+  </footer>
+  <p class="sr-only" id="copy-status" role="status" aria-live="polite"></p>
+  <script src="../assets/site.js" defer></script>
+</body>
+</html>
