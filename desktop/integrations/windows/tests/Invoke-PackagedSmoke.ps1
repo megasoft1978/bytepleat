@@ -106,7 +106,11 @@ try {
   $probeExitCode = if ($null -ne $process.ExitCode) { $process.ExitCode } else { 'unknown' }
   Get-Content -LiteralPath $stdout | Write-Host
   Get-Content -LiteralPath $stderr | Write-Host
-  if ($probeExitCode -ne 0) { throw "Packaged COM smoke failed (exit code $probeExitCode; stdout: $stdout; stderr: $stderr)." }
+  if ($probeExitCode -ne 0) {
+    $probeOutput = (@($stdout, $stderr) | Where-Object { Test-Path -LiteralPath $_ } | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n"
+    $hint = if ($probeOutput -match '0x80040154') { "`nHint: packaged COM activation fails from an elevated (High integrity) token on machines with UAC enabled, while Explorer runs at Medium integrity. The package registration is per user; re-run the activation probe from a non-elevated shell or an interactive scheduled task at -RunLevel Limited. See desktop/integrations/windows/README.md." } else { '' }
+    throw "Packaged COM smoke failed (exit code $probeExitCode; stdout: $stdout; stderr: $stderr).$hint"
+  }
 } finally {
   # Attempt every cleanup even if an earlier cleanup fails; fail the step on any
   # cleanup error. No all-user uninstall, wildcard certificate deletion, alias

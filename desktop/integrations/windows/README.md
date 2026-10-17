@@ -134,6 +134,15 @@ PowerShell:
 pwsh -NoProfile -File ./tests/PackageSmokeCleanupTests.ps1
 ```
 
+## Running the packaged smoke on a local machine
+
+- Administrator rights are needed only for the temporary certificate trust entry in `LocalMachine\TrustedPeople`.
+- On machines with UAC enabled, the COM activation probe must run at Medium integrity (normal user token), because Explorer runs at Medium integrity.
+- From an elevated (High integrity) token, the first activation fails with `0x80040154` (class not registered), even though the same package activates from a Medium-integrity process in the same session.
+- Workaround: run the probe from a non-elevated shell, or from an interactive scheduled task with `-RunLevel Limited`. The package registration is per user.
+- The GitHub `windows-11-arm` runner passes because it does not behave like a UAC-filtered desktop session.
+- This is not automated: the smoke script does not switch tokens itself. The cause is understood and does not affect Explorer or the product.
+
 ## Non-Windows static checks
 
 ```sh
