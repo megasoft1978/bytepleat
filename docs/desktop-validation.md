@@ -355,7 +355,16 @@ Run in the existing UTM virtual machine (GNOME on X11, 640x480 display) against 
 - **Passed:** interrupting a 600 MB compact compression with SIGINT exited 130, left no `.tmp*` file, and left the existing output byte-identical.
 - **Passed (follow-up, same VM, XFCE/Xorg 1280x800):** the ordinary installed `.deb` (ELF sha256 `3347dd67bdccfd00...`) was visually checked. The window renders the new empty state ("Drop files to compress, or an archive to inspect", "Existing files are never overwritten.", format step hidden until input is chosen), and `--open -- <zip>` forwards the archive to the running window and opens the Inspect tab with it selected. Note: reinstalling a package with the same version string needs `dpkg -i`; `apt-get install ./pkg.deb` silently kept the older build, so an earlier check of the "installed" app was of the wrong binary.
 - **Nautilus (XFCE/Xorg, same VM):** the first check of the ordinary package found a bug: Nautilus's startup ID contains the program path, which made the app list `--open` and `--` as archives on Open With ("3 archives selected"). Fixed in `9a45a25`. A package rebuilt from that commit (ELF sha256 `bcd891f18674fa5e...`, Linux tests passing) showed only the selected ZIP with "1 archive selected" and Inspect enabled on both a cold start and a warm start (app already running). Nautilus Compress and Extract opened the expected modes with the right selections; no archive job was run from the menus.
-- **Not verified:** Dolphin menu clicks (the context menu did not appear under `xdotool`; the installed Open With, Compress and Extract commands were run by hand and worked). Wayland, Kubuntu and Windows are untested.
+- **Not verified:** Dolphin menu clicks (the context menu did not appear under `xdotool`; the installed Open With, Compress and Extract commands were run by hand and worked). Wayland and Kubuntu are untested, and the Windows desktop app and Explorer menus are untested (see the Windows section).
+
+## Windows 11 ARM64 VM: command-line checks · 2026-10-17
+
+Run in a UTM virtual machine on Apple silicon: Windows 11 Pro 26H2, build 10.0.26300, ARM64, unactivated, installed unattended from Microsoft's official ARM64 ISO. Only the **command-line tool** was tested here; the desktop app, the MSIX package and the Explorer menus were not.
+
+- **Passed (released 0.5.1 x86-64 package, which runs under Windows' x64 emulation):** the download matches its published SHA-256; `--version` prints 0.5.1; a 1.1 MB text file compressed and restored byte for byte; `pack` and `unpack` worked for ZIP, 7z and tar.gz; Windows' own `Expand-Archive` read our ZIP; compressing over an existing output was refused with a non-zero exit.
+- **Found:** a ZIP made by Windows' built-in `tar.exe` (bsdtar 3.8.8) rooted at `.` failed to unpack with "empty archive path" on 0.5.1. A build of current `main` (the CI package) unpacks it correctly, and a ZIP containing `../evil.txt` was still rejected ("non-portable archive path component") with nothing written outside the target. The fix is in `main` but not in a release yet.
+- **Note:** `pack` defaults to `--format zstd`, so `bytepleat pack dir -o out.zip` writes a tar+zstd archive under a `.zip` name. Use `--format zip`.
+- **Not verified:** the desktop app, MSIX install, Explorer context menus, a native ARM64 command-line build (none is published), signed packages, and other Windows versions.
 
 ## Remaining validation
 
