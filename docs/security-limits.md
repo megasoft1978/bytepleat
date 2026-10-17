@@ -26,3 +26,8 @@ Archives preserve file bytes and relative paths, not complete filesystem metadat
 ZIP support is classic Stored/Deflate only. ZIP64, encryption, split volumes, SFX, and unsupported methods are rejected. 7z support is unencrypted, single-volume, with a bounded set of decoder methods; it is not arbitrary 7z compatibility. RAR is not decoded by Bytepleat. Pco requires a correct explicit numeric type.
 
 Frame checksums can detect accidental corruption. They do not authenticate data or protect against malicious replacement. `info` inspects metadata and does not validate complete payload integrity; use `test` or extraction to decode and validate.
+
+## Desktop app
+
+- Output of any desktop job is capped at 1 GiB and 100,000 entries.
+- The entry list shows at most 5,000 entries; entries beyond that cannot be chosen for selective extraction in the app. Use `bytepleat info <archive> --json` for the full list.

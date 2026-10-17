@@ -383,7 +383,7 @@ function renderJobNow(job){
   let body='';
   if(isActive(job)){
     const title=job.action==='extract'?`Extracting ${subject}`:job.action==='inspect'?`Reading ${subject}`:`Creating ${subject}`;
-    const line=job.action==='extract'?'Extracting into a staging folder first. Nothing appears in the destination until it is complete.':`Writing to a temporary file. It becomes ${subject} when done.`;
+    const line=job.action==='extract'?'Extracting into a temporary folder first. The destination appears only when the extraction is complete.':`Writing to a temporary file. It becomes ${subject} when done.`;
     body=`<div class="job-glyph is-running">${ICON.mark}</div><div class="job-text"><h3 class="job-title">${esc(title)}</h3>${stateChip}<p class="job-line">${esc(line)}</p></div>`;
   } else if(job.state==='completed'){
     const title=job.action==='extract'?`Extracted to ${name}`:`${name} is ready`;
