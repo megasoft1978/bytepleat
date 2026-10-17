@@ -26,7 +26,7 @@
 </p>
 
 > [!NOTE]
-> The command-line tool is released (version 0.5.1). The desktop app is an early alpha without an installer, and release packages are unsigned.
+> The command-line tool is released (version 0.5.2). The desktop app is an early alpha without an installer, and release packages are unsigned.
 
 <p align="center">
   <picture>
@@ -53,34 +53,34 @@ Bytepleat is small and strict on purpose. Mature tools do more.
 
 ## Install
 
-Release 0.5.1 command-line packages are on the [releases page](https://github.com/megasoft1978/bytepleat/releases/tag/v0.5.1). Download the archive for your platform and its matching `.sha256` file, check it, then extract it. Packages are unsigned and the macOS build is not notarized. More detail is in [RELEASE.md](RELEASE.md).
+Release 0.5.2 command-line packages are on the [releases page](https://github.com/megasoft1978/bytepleat/releases/tag/v0.5.2). Download the archive for your platform and its matching `.sha256` file, check it, then extract it. Packages are unsigned and the macOS build is not notarized. More detail is in [RELEASE.md](RELEASE.md).
 
 | Platform | Package | SHA-256 |
 | --- | --- | --- |
-| macOS, Apple silicon | [`bytepleat-0.5.1-aarch64-apple-darwin.tar.gz`](https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-aarch64-apple-darwin.tar.gz) | `6db85206c31c15ae4f57ec855544c0f7ec47a0950f7d74f3b424964a69118cfc` |
-| Linux, x86-64 | [`bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz`](https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz) | `affec47bd8c77a817441f4d65095c741fdeafc66a73fc322c8e675876abc062b` |
-| Windows, x86-64 | [`bytepleat-0.5.1-x86_64-pc-windows-msvc.zip`](https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-x86_64-pc-windows-msvc.zip) | `a042877cad44a8e0fe406a0a11c0a06e105e91287469a67275ba50d2ecff26f4` |
+| macOS, Apple silicon | [`bytepleat-0.5.2-aarch64-apple-darwin.tar.gz`](https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-aarch64-apple-darwin.tar.gz) | `32fd52c341737946ce6525f1bd8b39f9e12a5d74ed73f513e5156d448557e483` |
+| Linux, x86-64 | [`bytepleat-0.5.2-x86_64-unknown-linux-gnu.tar.gz`](https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-x86_64-unknown-linux-gnu.tar.gz) | `5201085e7b9b4058a5339bb00f0f77dc9011b30b089c91e5faf210b7e240eee0` |
+| Windows, x86-64 | [`bytepleat-0.5.2-x86_64-pc-windows-msvc.zip`](https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-x86_64-pc-windows-msvc.zip) | `9e4e169bae45168569b7d2cafa250bf5c903860e573b2202a1535bfdffad1aa1` |
 
 A checksum detects a damaged download. It is not a signature and does not show who built the file.
 
 **macOS (Apple silicon)**
 
 ```sh
-curl -LO https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-aarch64-apple-darwin.tar.gz
-curl -LO https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-aarch64-apple-darwin.tar.gz.sha256
-shasum -a 256 -c bytepleat-0.5.1-aarch64-apple-darwin.tar.gz.sha256
-tar -xzf bytepleat-0.5.1-aarch64-apple-darwin.tar.gz
-./bytepleat-0.5.1-aarch64-apple-darwin/bytepleat --help
+curl -LO https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-aarch64-apple-darwin.tar.gz
+curl -LO https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-aarch64-apple-darwin.tar.gz.sha256
+shasum -a 256 -c bytepleat-0.5.2-aarch64-apple-darwin.tar.gz.sha256
+tar -xzf bytepleat-0.5.2-aarch64-apple-darwin.tar.gz
+./bytepleat-0.5.2-aarch64-apple-darwin/bytepleat --help
 ```
 
 **Linux (x86-64)**
 
 ```sh
-curl -LO https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz
-curl -LO https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz.sha256
-sha256sum -c bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz.sha256
-tar -xzf bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz
-./bytepleat-0.5.1-x86_64-unknown-linux-gnu/bytepleat --help
+curl -LO https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-x86_64-unknown-linux-gnu.tar.gz
+curl -LO https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-x86_64-unknown-linux-gnu.tar.gz.sha256
+sha256sum -c bytepleat-0.5.2-x86_64-unknown-linux-gnu.tar.gz.sha256
+tar -xzf bytepleat-0.5.2-x86_64-unknown-linux-gnu.tar.gz
+./bytepleat-0.5.2-x86_64-unknown-linux-gnu/bytepleat --help
 ```
 
 There is no Linux ARM64 package. Older Linux systems may need a source build.
@@ -90,15 +90,15 @@ There is no Linux ARM64 package. Older Linux systems may need a source build.
 Needs the x64 [Microsoft Visual C++ v14 runtime](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist), which is not bundled.
 
 ```powershell
-$asset = 'bytepleat-0.5.1-x86_64-pc-windows-msvc.zip'
-$base = 'https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1'
+$asset = 'bytepleat-0.5.2-x86_64-pc-windows-msvc.zip'
+$base = 'https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2'
 Invoke-WebRequest -Uri "$base/$asset" -OutFile $asset
 Invoke-WebRequest -Uri "$base/$asset.sha256" -OutFile "$asset.sha256"
 $entry = Get-Content -LiteralPath "$asset.sha256" -Raw
 if ($entry -notmatch '^([0-9a-fA-F]{64})\s+bytepleat-0\.5\.1-x86_64-pc-windows-msvc\.zip\s*$') { throw 'Invalid checksum sidecar or filename' }
 if ((Get-FileHash -LiteralPath $asset -Algorithm SHA256).Hash -ne $Matches[1]) { throw 'SHA-256 mismatch' }
 Expand-Archive -LiteralPath $asset -DestinationPath .
-.\bytepleat-0.5.1-x86_64-pc-windows-msvc\bytepleat.exe --help
+.\bytepleat-0.5.2-x86_64-pc-windows-msvc\bytepleat.exe --help
 ```
 
 To run `bytepleat` from anywhere, add the extracted folder to your `PATH`.
@@ -106,7 +106,7 @@ To run `bytepleat` from anywhere, add the extracted folder to your `PATH`.
 **From source with Cargo** (Rust 1.93 or newer and a C compiler toolchain)
 
 ```sh
-cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.1
+cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.2
 ```
 
 ## Quick start

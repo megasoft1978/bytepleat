@@ -64,14 +64,14 @@
     </nav>
 
     <article class="doc-body">
-      <p class="doc-meta">Command-line guide · version 0.5.1</p>
+      <p class="doc-meta">Command-line guide · version 0.5.2</p>
       <h1>Compress files. Pack folders.</h1>
       <p class="doc-intro">One command family for single files and folder archives: compress, pack, inspect, test and restore, in established formats. A successful round trip gives you the same bytes back.</p>
 
       <h2 id="install">Install</h2>
-      <p>Version 0.5.1 is available for macOS on Apple silicon, Linux x86-64 and Windows x86-64. The <a href="../#install">install section</a> on the home page has the download and checksum commands for each system, and <a href="https://github.com/megasoft1978/bytepleat/blob/main/RELEASE.md">RELEASE.md</a> has the full details. A checksum detects accidental corruption when compared with the sidecar file; it is not a signature.</p>
+      <p>Version 0.5.2 is available for macOS on Apple silicon, Linux x86-64 and Windows x86-64. The <a href="../#install">install section</a> on the home page has the download and checksum commands for each system, and <a href="https://github.com/megasoft1978/bytepleat/blob/main/RELEASE.md">RELEASE.md</a> has the full details. A checksum detects accidental corruption when compared with the sidecar file; it is not a signature.</p>
       <p>With Rust 1.93 or newer and a C compiler toolchain, install the tagged source:</p>
-      <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="cmd-install" aria-label="Copy command" hidden>Copy</button></div><pre><code id="cmd-install">cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.1</code></pre></div>
+      <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="cmd-install" aria-label="Copy command" hidden>Copy</button></div><pre><code id="cmd-install">cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.2</code></pre></div>
       <p>Packages are unsigned and macOS builds are not notarised. Windows packages need the x64 <a href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist">Microsoft Visual C++ v14 runtime</a>, which is not bundled.</p>
 
       <h2 id="files">Compress one file</h2>
@@ -111,7 +111,7 @@ bytepleat unpack project.tar.zst --output ./restored-project</code></pre></div>
     <div class="wrap footer-inner">
       <p class="footer-id">
         <svg class="mark" viewBox="0 0 32 32" width="24" height="24" aria-hidden="true" focusable="false"><polygon points="3 6 9.5 9.5 9.5 22.5 3 26" fill-opacity=".95"/><polygon points="9.5 9.5 16 6 16 26 9.5 22.5" fill-opacity=".45"/><polygon points="16 6 22.5 9.5 22.5 22.5 16 26" fill-opacity=".95"/><polygon points="22.5 9.5 29 6 29 26 22.5 22.5" fill-opacity=".45"/></svg>
-        <span>Bytepleat 0.5.1 · <a href="https://github.com/megasoft1978/bytepleat/blob/main/LICENSE">MIT licence</a></span>
+        <span>Bytepleat 0.5.2 · <a href="https://github.com/megasoft1978/bytepleat/blob/main/LICENSE">MIT licence</a></span>
       </p>
       <ul class="footer-links">
         <li><a href="../">Home</a></li>

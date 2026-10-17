@@ -64,11 +64,11 @@
           <a class="text-link" href="https://github.com/megasoft1978/bytepleat">View source</a>
           <a class="text-link" href="#install">Other systems</a>
         </div>
-        <p class="meta" id="download-meta">Version 0.5.1 · command-line tool for macOS, Linux and Windows · <a href="https://github.com/megasoft1978/bytepleat/releases/tag/v0.5.1">Release notes</a></p>
+        <p class="meta" id="download-meta">Version 0.5.2 · command-line tool for macOS, Linux and Windows · <a href="https://github.com/megasoft1978/bytepleat/releases/tag/v0.5.2">Release notes</a></p>
 
         <div class="code hero-code">
           <div class="code-bar"><span id="quick-label">Install from source with Cargo</span><button class="copy" type="button" data-copy-target="quick-command" aria-label="Copy command" hidden>Copy</button></div>
-          <pre tabindex="0" aria-labelledby="quick-label"><code id="quick-command">cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.1</code></pre>
+          <pre tabindex="0" aria-labelledby="quick-label"><code id="quick-command">cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.2</code></pre>
         </div>
         <details class="full-command" hidden>
           <summary>Show the full command</summary>
@@ -78,7 +78,7 @@
             <pre><code id="install-command"></code></pre>
           </div>
         </details>
-        <p class="status-line"><span class="chip">Alpha</span> The desktop app is an early alpha. The command-line tool is released (0.5.1).</p>
+        <p class="status-line"><span class="chip">Alpha</span> The desktop app is an early alpha. The command-line tool is released (0.5.2).</p>
       </div>
 
       <figure class="fold" id="fold">
@@ -175,7 +175,7 @@
     <section class="section" id="install" aria-labelledby="install-title">
       <div class="wrap">
         <h2 id="install-title">Install</h2>
-        <p class="section-lead">Version 0.5.1 of the command-line tool, as one archive per system. Packages are not signed yet, so check the SHA-256 checksum before you run it. A checksum catches a damaged download; it does not prove who built the file.</p>
+        <p class="section-lead">Version 0.5.2 of the command-line tool, as one archive per system. Packages are not signed yet, so check the SHA-256 checksum before you run it. A checksum catches a damaged download; it does not prove who built the file.</p>
 
         <div class="tabs" role="tablist" aria-label="Choose your system" hidden>
           <button type="button" role="tab" id="tab-macos" aria-controls="install-macos" aria-selected="true">macOS</button>
@@ -187,16 +187,16 @@
         <div class="panel" id="install-macos" data-os="mac">
           <h3>macOS</h3>
           <p class="req">For Macs with Apple silicon. On an Intel Mac, install from source.</p>
-          <p class="panel-actions"><a class="button primary" href="https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-aarch64-apple-darwin.tar.gz" data-asset-link="mac">Download for macOS</a> <a class="text-link" href="https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-aarch64-apple-darwin.tar.gz.sha256" data-checksum-link="mac">SHA-256 checksum file</a></p>
+          <p class="panel-actions"><a class="button primary" href="https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-aarch64-apple-darwin.tar.gz" data-asset-link="mac">Download for macOS</a> <a class="text-link" href="https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-aarch64-apple-darwin.tar.gz.sha256" data-checksum-link="mac">SHA-256 checksum file</a></p>
           <ol class="steps">
             <li><h4>Download</h4><p>Get the archive and its checksum file.</p>
               <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="mac-1" aria-label="Copy command" hidden>Copy</button></div><pre><code id="mac-1">curl -fL --remote-name-all \
-https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-aarch64-apple-darwin.tar.gz \
-https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-aarch64-apple-darwin.tar.gz.sha256</code></pre></div></li>
+https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-aarch64-apple-darwin.tar.gz \
+https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-aarch64-apple-darwin.tar.gz.sha256</code></pre></div></li>
             <li><h4>Check the checksum</h4><p>It should print <samp>OK</samp>. Anything else means the download is damaged.</p>
-              <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="mac-2" aria-label="Copy command" hidden>Copy</button></div><pre><code id="mac-2">shasum -a 256 -c bytepleat-0.5.1-aarch64-apple-darwin.tar.gz.sha256</code></pre></div></li>
+              <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="mac-2" aria-label="Copy command" hidden>Copy</button></div><pre><code id="mac-2">shasum -a 256 -c bytepleat-0.5.2-aarch64-apple-darwin.tar.gz.sha256</code></pre></div></li>
             <li><h4>Open it</h4><p>Extract the folder and run the tool from it. Add that folder to your <code>PATH</code> to run <code>bytepleat</code> from anywhere.</p>
-              <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="mac-3" aria-label="Copy command" hidden>Copy</button></div><pre><code id="mac-3">tar -xzf bytepleat-0.5.1-aarch64-apple-darwin.tar.gz &amp;&amp; ./bytepleat-0.5.1-aarch64-apple-darwin/bytepleat --help</code></pre></div></li>
+              <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="mac-3" aria-label="Copy command" hidden>Copy</button></div><pre><code id="mac-3">tar -xzf bytepleat-0.5.2-aarch64-apple-darwin.tar.gz &amp;&amp; ./bytepleat-0.5.2-aarch64-apple-darwin/bytepleat --help</code></pre></div></li>
           </ol>
           <p class="note">Packages are not signed yet and the macOS build is not notarised. If macOS blocks the first run, <a href="#faq-macos">here is how to open it anyway</a>.</p>
         </div>
@@ -204,20 +204,20 @@ https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5
         <div class="panel" id="install-windows" data-os="windows">
           <h3>Windows</h3>
           <p class="req">For 64-bit Windows on x86-64. Commands are for PowerShell.</p>
-          <p class="panel-actions"><a class="button primary" href="https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-x86_64-pc-windows-msvc.zip" data-asset-link="windows">Download for Windows</a> <a class="text-link" href="https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-x86_64-pc-windows-msvc.zip.sha256" data-checksum-link="windows">SHA-256 checksum file</a></p>
+          <p class="panel-actions"><a class="button primary" href="https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-x86_64-pc-windows-msvc.zip" data-asset-link="windows">Download for Windows</a> <a class="text-link" href="https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-x86_64-pc-windows-msvc.zip.sha256" data-checksum-link="windows">SHA-256 checksum file</a></p>
           <ol class="steps">
             <li><h4>Download</h4><p>Get the archive and its checksum file.</p>
-              <div class="code"><div class="code-bar"><span>PowerShell</span><button class="copy" type="button" data-copy-target="windows-1" aria-label="Copy command" hidden>Copy</button></div><pre><code id="windows-1">Invoke-WebRequest -Uri 'https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-x86_64-pc-windows-msvc.zip' -OutFile bytepleat-0.5.1-x86_64-pc-windows-msvc.zip
-Invoke-WebRequest -Uri 'https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-x86_64-pc-windows-msvc.zip.sha256' -OutFile bytepleat-0.5.1-x86_64-pc-windows-msvc.zip.sha256</code></pre></div></li>
+              <div class="code"><div class="code-bar"><span>PowerShell</span><button class="copy" type="button" data-copy-target="windows-1" aria-label="Copy command" hidden>Copy</button></div><pre><code id="windows-1">Invoke-WebRequest -Uri 'https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-x86_64-pc-windows-msvc.zip' -OutFile bytepleat-0.5.2-x86_64-pc-windows-msvc.zip
+Invoke-WebRequest -Uri 'https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-x86_64-pc-windows-msvc.zip.sha256' -OutFile bytepleat-0.5.2-x86_64-pc-windows-msvc.zip.sha256</code></pre></div></li>
             <li><h4>Check the checksum</h4><p>It should print <samp>SHA-256 verified</samp>.</p>
-              <div class="code"><div class="code-bar"><span>PowerShell</span><button class="copy" type="button" data-copy-target="windows-2" aria-label="Copy command" hidden>Copy</button></div><pre><code id="windows-2">$asset = 'bytepleat-0.5.1-x86_64-pc-windows-msvc.zip'
+              <div class="code"><div class="code-bar"><span>PowerShell</span><button class="copy" type="button" data-copy-target="windows-2" aria-label="Copy command" hidden>Copy</button></div><pre><code id="windows-2">$asset = 'bytepleat-0.5.2-x86_64-pc-windows-msvc.zip'
 $entry = Get-Content -LiteralPath "$asset.sha256" -Raw
 if ($entry -notmatch '^([0-9a-fA-F]{64})\s+bytepleat-0\.5\.1-x86_64-pc-windows-msvc\.zip\s*$') { throw 'Invalid checksum sidecar or filename' }
 if ((Get-FileHash -LiteralPath $asset -Algorithm SHA256).Hash -ne $Matches[1]) { throw 'SHA-256 mismatch' }
 'SHA-256 verified'</code></pre></div></li>
             <li><h4>Open it</h4><p>Extract the folder and run the tool from it. Add that folder to your <code>PATH</code> to run <code>bytepleat</code> from anywhere.</p>
-              <div class="code"><div class="code-bar"><span>PowerShell</span><button class="copy" type="button" data-copy-target="windows-3" aria-label="Copy command" hidden>Copy</button></div><pre><code id="windows-3">Expand-Archive -LiteralPath .\bytepleat-0.5.1-x86_64-pc-windows-msvc.zip -DestinationPath .
-.\bytepleat-0.5.1-x86_64-pc-windows-msvc\bytepleat.exe --help</code></pre></div></li>
+              <div class="code"><div class="code-bar"><span>PowerShell</span><button class="copy" type="button" data-copy-target="windows-3" aria-label="Copy command" hidden>Copy</button></div><pre><code id="windows-3">Expand-Archive -LiteralPath .\bytepleat-0.5.2-x86_64-pc-windows-msvc.zip -DestinationPath .
+.\bytepleat-0.5.2-x86_64-pc-windows-msvc\bytepleat.exe --help</code></pre></div></li>
           </ol>
           <p class="note">Windows needs the <a href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist">Microsoft Visual C++ runtime (x64)</a>, which is not bundled. If Windows reports that <code>VCRUNTIME140.dll</code> is missing, install it from Microsoft.</p>
         </div>
@@ -225,16 +225,16 @@ if ((Get-FileHash -LiteralPath $asset -Algorithm SHA256).Hash -ne $Matches[1]) {
         <div class="panel" id="install-linux" data-os="linux">
           <h3>Linux</h3>
           <p class="req">For x86-64 with the GNU C library. The package was tested on Ubuntu 24.04; older systems may need a source build.</p>
-          <p class="panel-actions"><a class="button primary" href="https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz" data-asset-link="linux">Download for Linux</a> <a class="text-link" href="https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz.sha256" data-checksum-link="linux">SHA-256 checksum file</a></p>
+          <p class="panel-actions"><a class="button primary" href="https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-x86_64-unknown-linux-gnu.tar.gz" data-asset-link="linux">Download for Linux</a> <a class="text-link" href="https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-x86_64-unknown-linux-gnu.tar.gz.sha256" data-checksum-link="linux">SHA-256 checksum file</a></p>
           <ol class="steps">
             <li><h4>Download</h4><p>Get the archive and its checksum file.</p>
               <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="linux-1" aria-label="Copy command" hidden>Copy</button></div><pre><code id="linux-1">curl -fL --remote-name-all \
-https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz \
-https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz.sha256</code></pre></div></li>
+https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-x86_64-unknown-linux-gnu.tar.gz \
+https://github.com/megasoft1978/bytepleat/releases/download/v0.5.2/bytepleat-0.5.2-x86_64-unknown-linux-gnu.tar.gz.sha256</code></pre></div></li>
             <li><h4>Check the checksum</h4><p>It should print <samp>OK</samp>. Anything else means the download is damaged.</p>
-              <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="linux-2" aria-label="Copy command" hidden>Copy</button></div><pre><code id="linux-2">sha256sum -c bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz.sha256</code></pre></div></li>
+              <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="linux-2" aria-label="Copy command" hidden>Copy</button></div><pre><code id="linux-2">sha256sum -c bytepleat-0.5.2-x86_64-unknown-linux-gnu.tar.gz.sha256</code></pre></div></li>
             <li><h4>Open it</h4><p>Extract the folder and run the tool from it. Add that folder to your <code>PATH</code> to run <code>bytepleat</code> from anywhere.</p>
-              <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="linux-3" aria-label="Copy command" hidden>Copy</button></div><pre><code id="linux-3">tar -xzf bytepleat-0.5.1-x86_64-unknown-linux-gnu.tar.gz &amp;&amp; ./bytepleat-0.5.1-x86_64-unknown-linux-gnu/bytepleat --help</code></pre></div></li>
+              <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="linux-3" aria-label="Copy command" hidden>Copy</button></div><pre><code id="linux-3">tar -xzf bytepleat-0.5.2-x86_64-unknown-linux-gnu.tar.gz &amp;&amp; ./bytepleat-0.5.2-x86_64-unknown-linux-gnu/bytepleat --help</code></pre></div></li>
           </ol>
           <p class="note">There is no Linux ARM64 build yet. On ARM64, install from source.</p>
         </div>
@@ -244,7 +244,7 @@ https://github.com/megasoft1978/bytepleat/releases/download/v0.5.1/bytepleat-0.5
           <p class="req">Any system with Rust 1.93 or newer and a C compiler toolchain.</p>
           <ol class="steps">
             <li><h4>Install the tagged release</h4><p>Cargo builds it with the locked dependency versions and puts <code>bytepleat</code> on your path.</p>
-              <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="source-1" aria-label="Copy command" hidden>Copy</button></div><pre><code id="source-1">cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.1</code></pre></div></li>
+              <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="source-1" aria-label="Copy command" hidden>Copy</button></div><pre><code id="source-1">cargo install --locked --git https://github.com/megasoft1978/bytepleat --tag v0.5.2</code></pre></div></li>
             <li><h4>Check it runs</h4>
               <div class="code"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy-target="source-2" aria-label="Copy command" hidden>Copy</button></div><pre><code id="source-2">bytepleat --help</code></pre></div></li>
           </ol>
@@ -304,7 +304,7 @@ bytepleat test project.tar.zst</code></pre>
         </div>
         <div>
           <table class="stack-table compare-table">
-            <caption>Bytepleat 0.5.1, gaps included</caption>
+            <caption>Bytepleat 0.5.2, gaps included</caption>
             <thead><tr><th scope="col">Question</th><th scope="col">Bytepleat today</th></tr></thead>
             <tbody>
               <tr><th scope="row">Platforms</th><td data-label="Bytepleat today">Command-line packages for macOS on Apple silicon, Linux x86-64 and Windows x86-64. Other systems can build from source.</td></tr>
@@ -313,8 +313,8 @@ bytepleat test project.tar.zst</code></pre>
               <tr><th scope="row">Passwords and encryption</th><td data-label="Bytepleat today">No</td></tr>
               <tr><th scope="row">Full filesystem backup</th><td data-label="Bytepleat today">No. Permissions, ownership, links, extended attributes and timestamps are not restored.</td></tr>
               <tr><th scope="row">Graphical app</th><td data-label="Bytepleat today">Early alpha, built from source. No installer yet.</td></tr>
-              <tr><th scope="row">Command line</th><td data-label="Bytepleat today">Yes. Released as version 0.5.1.</td></tr>
-              <tr><th scope="row">Maturity</th><td data-label="Bytepleat today">Version 0.5.1 command-line tool; alpha desktop app</td></tr>
+              <tr><th scope="row">Command line</th><td data-label="Bytepleat today">Yes. Released as version 0.5.2.</td></tr>
+              <tr><th scope="row">Maturity</th><td data-label="Bytepleat today">Version 0.5.2 command-line tool; alpha desktop app</td></tr>
             </tbody>
           </table>
           <p class="after-table">If a “No” above matters to you, use a mature archiver such as 7-Zip, Keka, The Unarchiver, or <code>tar</code> with <code>zstd</code>. Check each project's own site for what it supports today. We do not summarise other tools here, because their features change and we have not verified them for this page.</p>
@@ -350,7 +350,7 @@ bytepleat test project.tar.zst</code></pre>
     <div class="wrap footer-inner">
       <p class="footer-id">
         <svg class="mark" viewBox="0 0 32 32" width="24" height="24" aria-hidden="true" focusable="false"><polygon points="3 6 9.5 9.5 9.5 22.5 3 26" fill-opacity=".95"/><polygon points="9.5 9.5 16 6 16 26 9.5 22.5" fill-opacity=".45"/><polygon points="16 6 22.5 9.5 22.5 22.5 16 26" fill-opacity=".95"/><polygon points="22.5 9.5 29 6 29 26 22.5 22.5" fill-opacity=".45"/></svg>
-        <span>Bytepleat 0.5.1 · <a href="https://github.com/megasoft1978/bytepleat/blob/main/LICENSE">MIT licence</a></span>
+        <span>Bytepleat 0.5.2 · <a href="https://github.com/megasoft1978/bytepleat/blob/main/LICENSE">MIT licence</a></span>
       </p>
       <ul class="footer-links">
         <li><a href="./docs/">Command-line guide</a></li>
