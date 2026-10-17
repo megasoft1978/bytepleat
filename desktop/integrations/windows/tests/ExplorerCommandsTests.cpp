@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <shobjidl.h>
 #include <shellapi.h>
+#include <shlobj.h>
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
@@ -66,6 +67,54 @@ int wmain(int argc, wchar_t** argv) {
     assert(clone->Reset() == S_OK);
     assert(clone->Next(1, &last, nullptr) == S_OK && last);
     last->Release();
+    // GetState on real files: a .zip is reported by Explorer as a compressed folder (SFGAO_FOLDER) but must
+    // still enable Extract and Open; a directory, even one named like an archive, must not.
+    {
+        assert(SUCCEEDED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED)));
+        wchar_t tmp[MAX_PATH];
+        const DWORD tmpLength = GetTempPathW(MAX_PATH, tmp);
+        assert(tmpLength > 0 && tmpLength < MAX_PATH);
+        const std::wstring dir = std::wstring(tmp) + L"bytepleat-getstate-" + std::to_wstring(GetCurrentProcessId());
+        assert(CreateDirectoryW(dir.c_str(), nullptr));
+        auto touch = [&](const std::wstring& path) {
+            HANDLE h = CreateFileW(path.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+            assert(h != INVALID_HANDLE_VALUE);
+            DWORD written = 0;
+            assert(WriteFile(h, "PK\x05\x06", 4, &written, nullptr));
+            CloseHandle(h);
+        };
+        const std::wstring zip = dir + L"\\a.zip", sevenZ = dir + L"\\a.7z", tarGz = dir + L"\\a.tar.gz", txt = dir + L"\\a.txt", folderZip = dir + L"\\folder.zip";
+        touch(zip); touch(sevenZ); touch(tarGz); touch(txt);
+        assert(CreateDirectoryW(folderZip.c_str(), nullptr));
+        IEnumExplorerCommand* stateEnum = nullptr;
+        assert(SUCCEEDED(root->EnumSubCommands(&stateEnum)) && stateEnum);
+        IExplorerCommand* all[3] = {};
+        ULONG got = 0;
+        assert(stateEnum->Next(3, all, &got) == S_OK && got == 3);  // Compress, Extract, Open
+        auto stateOf = [&](IExplorerCommand* command, const std::wstring& path) {
+            IShellItem* item = nullptr;
+            assert(SUCCEEDED(SHCreateItemFromParsingName(path.c_str(), nullptr, IID_PPV_ARGS(&item))));
+            IShellItemArray* array = nullptr;
+            assert(SUCCEEDED(SHCreateShellItemArrayFromShellItem(item, IID_PPV_ARGS(&array))));
+            EXPCMDSTATE state = ECS_ENABLED;
+            assert(SUCCEEDED(command->GetState(array, FALSE, &state)));
+            array->Release();
+            item->Release();
+            return state;
+        };
+        for (const auto& archive : {zip, sevenZ, tarGz})
+            for (int i = 0; i < 3; ++i) assert(stateOf(all[i], archive) == ECS_ENABLED);
+        assert(stateOf(all[0], txt) == ECS_ENABLED);
+        assert(stateOf(all[1], txt) == ECS_DISABLED && stateOf(all[2], txt) == ECS_DISABLED);
+        assert(stateOf(all[0], folderZip) == ECS_ENABLED);
+        assert(stateOf(all[1], folderZip) == ECS_DISABLED && stateOf(all[2], folderZip) == ECS_DISABLED);
+        for (int i = 0; i < 3; ++i) all[i]->Release();
+        stateEnum->Release();
+        DeleteFileW(zip.c_str()); DeleteFileW(sevenZ.c_str()); DeleteFileW(tarGz.c_str()); DeleteFileW(txt.c_str());
+        RemoveDirectoryW(folderZip.c_str());
+        RemoveDirectoryW(dir.c_str());
+        CoUninitialize();
+    }
     commands[0]->Release(); commands[1]->Release();
     clone->Release(); enumerator->Release(); root->Release(); factory->Release();
     assert(canUnload() == S_OK);

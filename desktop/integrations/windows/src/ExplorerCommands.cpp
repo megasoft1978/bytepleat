@@ -122,12 +122,16 @@ public:
         hr = items->GetItemAt(0, &item);
         if (FAILED(hr)) return hr;
         SFGAOF itemAttrs = 0;
-        hr = item->GetAttributes(SFGAO_FILESYSTEM | SFGAO_FOLDER, &itemAttrs);
-        if (FAILED(hr) || !(itemAttrs & SFGAO_FILESYSTEM) || (itemAttrs & SFGAO_FOLDER)) { item->Release(); return FAILED(hr) ? hr : S_OK; }
+        hr = item->GetAttributes(SFGAO_FILESYSTEM, &itemAttrs);
+        if (FAILED(hr) || !(itemAttrs & SFGAO_FILESYSTEM)) { item->Release(); return FAILED(hr) ? hr : S_OK; }
         PWSTR raw = nullptr;
         hr = item->GetDisplayName(SIGDN_FILESYSPATH, &raw);
         item->Release();
         if (FAILED(hr) || !raw) { CoTaskMemFree(raw); return S_OK; }
+        // Explorer reports a .zip as SFGAO_FOLDER (a compressed folder), so the shell attributes cannot tell
+        // an archive from a directory. Ask the file system instead.
+        const DWORD fileAttrs = GetFileAttributesW(raw);
+        if (fileAttrs == INVALID_FILE_ATTRIBUTES || (fileAttrs & FILE_ATTRIBUTE_DIRECTORY)) { CoTaskMemFree(raw); return S_OK; }
         const wchar_t* ext = PathFindExtensionW(raw);
         bool supported = ext && (_wcsicmp(ext, L".zip") == 0 || _wcsicmp(ext, L".7z") == 0);
         size_t pathLength = wcslen(raw);
