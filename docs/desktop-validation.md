@@ -359,12 +359,13 @@ Run in the existing UTM virtual machine (GNOME on X11, 640x480 display) against 
 
 ## Windows 11 ARM64 VM: command-line checks · 2026-10-17
 
-Run in a UTM virtual machine on Apple silicon: Windows 11 Pro 26H2, build 10.0.26300, ARM64, unactivated, installed unattended from Microsoft's official ARM64 ISO. Only the **command-line tool** was tested here; the desktop app, the MSIX package and the Explorer menus were not.
+Run in a UTM virtual machine on Apple silicon: Windows 11 Pro 26H2, build 10.0.26300, ARM64, unactivated, installed unattended from Microsoft's official ARM64 ISO. The **command-line tool** and the **desktop app executable** were tested here; the MSIX package and the Explorer menus were not.
 
 - **Passed (released 0.5.1 x86-64 package, which runs under Windows' x64 emulation):** the download matches its published SHA-256; `--version` prints 0.5.1; a 1.1 MB text file compressed and restored byte for byte; `pack` and `unpack` worked for ZIP, 7z and tar.gz; Windows' own `Expand-Archive` read our ZIP; compressing over an existing output was refused with a non-zero exit.
 - **Found:** a ZIP made by Windows' built-in `tar.exe` (bsdtar 3.8.8) rooted at `.` failed to unpack with "empty archive path" on 0.5.1. A build of current `main` (the CI package) unpacks it correctly, and a ZIP containing `../evil.txt` was still rejected ("non-portable archive path component") with nothing written outside the target. The fix is in `main` but not in a release yet.
 - **Note:** `pack` defaults to `--format zstd`, so `bytepleat pack dir -o out.zip` writes a tar+zstd archive under a `.zip` name. Use `--format zip`.
-- **Not verified:** the desktop app, MSIX install, Explorer context menus, a native ARM64 command-line build (none is published), signed packages, and other Windows versions.
+- **Desktop app (native ARM64 executable built by CI from `main`, run from a folder, not installed):** it launched on the Windows desktop and rendered the redesigned interface correctly (pleat illustration, Instrument Sans type, format selector, History panel). Running it again with `--open -- C:\bp-test\proj2.zip` forwarded the ZIP to the running window, which switched to the Inspect tab with that archive listed. At this VM's screen size the bottom action bar was hidden behind the taskbar, so the window may open taller than a small screen; this was not investigated further. No create, extract or cancel job was run from the Windows UI.
+- **Not verified:** MSIX install, Explorer context menus, a native ARM64 command-line build (none is published), signed packages, and other Windows versions.
 
 ## Remaining validation
 
