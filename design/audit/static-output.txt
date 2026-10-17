@@ -1,0 +1,40 @@
+## HTML findings
+
+### desktop/ui/index.html
+none
+
+### site/index.html
+none
+
+### site/docs/index.html
+none
+
+### site/404.html
+none
+
+HTML findings total: 0
+
+## CSS font-size: app (desktop/ui/styles.css), minimum 13px
+
+## CSS font-size: site (site/assets/site.css), minimum 14px (em values shown for review)
+- site.css:49 font-size 0.875em -> 14.0px [relative-em] :: font-size: 0.875em;
+
+## Site/app font-size tokens (resolved)
+- app --app-text-body: 0.875rem
+- app --app-text-body: 0.875rem
+- app --app-text-caption: 0.8125rem
+- app --app-text-caption: 0.8125rem
+- app --app-text-display: 1.75rem
+- app --app-text-display: 1.75rem
+- app --app-text-strong: 0.875rem
+- app --app-text-strong: 0.875rem
+- app --app-text-subhead: 1rem
+- app --app-text-subhead: 1rem
+- app --app-text-title: 1.25rem
+- app --app-text-title: 1.25rem
+- site --site-text-body: 1.0625rem
+- site --site-text-h1: clamp(2.375rem, 1.8rem + 2.6vw, 4rem)
+- site --site-text-h2: clamp(1.625rem, 1.4rem + 1vw, 2.25rem)
+- site --site-text-h3: clamp(1.1875rem, 1.12rem + 0.3vw, 1.375rem)
+- site --site-text-lead: clamp(1.125rem, 1.05rem + 0.35vw, 1.3125rem)
+- site --site-text-small: 0.875rem

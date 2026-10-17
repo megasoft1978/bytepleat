@@ -1,0 +1,106 @@
+Primary tokens: design/tokens.css
+
+| Pair | Theme | Foreground on background | Ratio | Result | Kind | Used at |
+|---|---|---|---|---|---|---|
+| P01 | light | page text on page bg | 15.30:1 | PASS | text | styles.css:9-10; site.css:13-14 |
+| P01 | dark | page text on page bg | 15.25:1 | PASS | text | styles.css:9-10; site.css:13-14 |
+| P02 | light | text on sheet surface (rows, status error) | 16.51:1 | PASS | text | styles.css:125, 326 |
+| P02 | dark | text on sheet surface (rows, status error) | 13.70:1 | PASS | text | styles.css:125, 326 |
+| P03 | light | text on raised surface (dialog, history) | 16.51:1 | PASS | text | styles.css:402, 441 |
+| P03 | dark | text on raised surface (dialog, history) | 12.32:1 | PASS | text | styles.css:402, 441 |
+| P04 | light | muted text on page bg | 6.42:1 | PASS | text | styles.css:116; site.css:150, 156, 269-273, 298, 304, 435, 487 |
+| P04 | dark | muted text on page bg | 7.85:1 | PASS | text | styles.css:116; site.css:150, 156, 269-273, 298, 304, 435, 487 |
+| P05 | light | muted text on sheet surface | 6.92:1 | PASS | text | styles.css:161, 173, 186, 220; site.css:178, 248, 449 |
+| P05 | dark | muted text on sheet surface | 7.05:1 | PASS | text | styles.css:161, 173, 186, 220; site.css:178, 248, 449 |
+| P06 | light | muted text on raised surface (history list) | 6.92:1 | PASS | text | styles.css:411-419 (mobile history panel) |
+| P06 | dark | muted text on raised surface (history list) | 6.34:1 | PASS | text | styles.css:411-419 (mobile history panel) |
+| P07 | light | muted text on fold-light (mode tab, segmented ctl) | 5.70:1 | PASS | text | styles.css:85-93; site.css:340 |
+| P07 | dark | muted text on fold-light (mode tab, segmented ctl) | 5.80:1 | PASS | text | styles.css:85-93; site.css:340 |
+| P08 | light | accent text (links, text buttons) on page bg | 6.31:1 | PASS | text | styles.css:56-59; site.css:26, 201, 284, 373 |
+| P08 | dark | accent text (links, text buttons) on page bg | 9.84:1 | PASS | text | styles.css:56-59; site.css:26, 201, 284, 373 |
+| P09 | light | accent text (copy button) on code surface | 6.81:1 | PASS | text | site.css:187-189 |
+| P09 | dark | accent text (copy button) on code surface | 8.84:1 | PASS | text | site.css:187-189 |
+| P10 | light | accent text on fold-light (copy on hero code) | 5.61:1 | PASS | text | site.css:194, 196 |
+| P10 | dark | accent text on fold-light (copy on hero code) | 7.27:1 | PASS | text | site.css:194, 196 |
+| P11 | light | accent-hover link text on page bg | 8.71:1 | PASS | text | site.css:27, 202, 289 |
+| P11 | dark | accent-hover link text on page bg | 11.38:1 | PASS | text | site.css:27, 202, 289 |
+| P12 | light | primary button label on accent | 6.81:1 | PASS | text | styles.css:41; site.css:67, 92, 360 |
+| P12 | dark | primary button label on accent | 9.61:1 | PASS | text | styles.css:41; site.css:67, 92, 360 |
+| P13 | light | primary button label on accent-hover | 9.41:1 | PASS | text | styles.css:42; site.css:93 |
+| P13 | dark | primary button label on accent-hover | 11.11:1 | PASS | text | styles.css:42; site.css:93 |
+| P14 | light | selected text on selection (format option, checked row) | 12.03:1 | PASS | text | styles.css:215, 301, 22 |
+| P14 | dark | selected text on selection (format option, checked row) | 8.89:1 | PASS | text | styles.css:215, 301, 22 |
+| P15 | light | text on fold-light (hover states, hero code) | 13.60:1 | PASS | text | styles.css:44, 46, 180, 299; site.css:121, 196 |
+| P15 | dark | text on fold-light (hover states, hero code) | 11.26:1 | PASS | text | styles.css:44, 46, 180, 299; site.css:121, 196 |
+| P16 | light | text on selection (drag-over sheet) | 12.03:1 | PASS | text | styles.css:136 |
+| P16 | dark | text on selection (drag-over sheet) | 8.89:1 | PASS | text | styles.css:136 |
+| P17 | light | caution text on caution tint (notes, chip) | 5.20:1 | PASS | text | styles.css:313; site.css:77, 430 |
+| P17 | dark | caution text on caution tint (notes, chip) | 7.65:1 | PASS | text | styles.css:313; site.css:77, 430 |
+| P18 | light | caution text on raised surface (limit dialog) | 5.06:1 | PASS | text | styles.css:451 |
+| P18 | dark | caution text on raised surface (limit dialog) | 7.11:1 | PASS | text | styles.css:451 |
+| P19 | light | danger text on danger tint (error glyph) | 5.46:1 | PASS | text | styles.css:253 (token defined; glyph uses --color-danger) |
+| P19 | dark | danger text on danger tint (error glyph) | 6.90:1 | PASS | text | styles.css:253 (token defined; glyph uses --color-danger) |
+| P20 | light | danger text on surface (error glyph, status ring) | 6.68:1 | PASS | text | styles.css:328, 333, 415 |
+| P20 | dark | danger text on surface (error glyph, status ring) | 6.89:1 | PASS | text | styles.css:328, 333, 415 |
+| P21 | light | caution note border on page bg (3px rule) | 4.69:1 | PASS | ui | site.css:431 |
+| P21 | dark | caution note border on page bg (3px rule) | 8.80:1 | PASS | ui | site.css:431 |
+| P22 | light | success icon on raised surface | 6.81:1 | PASS | ui | styles.css:414 |
+| P22 | dark | success icon on raised surface | 7.95:1 | PASS | ui | styles.css:414 |
+| P23 | light | input / checkbox / secondary button border on surface | 3.56:1 | PASS | ui | styles.css:43, 226, 290; site.css:357 |
+| P23 | dark | input / checkbox / secondary button border on surface | 3.21:1 | PASS | ui | styles.css:43, 226, 290; site.css:357 |
+| P24 | light | chip / toggle border on page bg | 3.30:1 | PASS | ui | styles.css:82; site.css:117, 421 |
+| P24 | dark | chip / toggle border on page bg | 3.57:1 | PASS | ui | styles.css:82; site.css:117, 421 |
+| P25 | light | checked checkbox fill vs surface | 6.81:1 | PASS | ui | styles.css:230 |
+| P25 | dark | checked checkbox fill vs surface | 8.84:1 | PASS | ui | styles.css:230 |
+| P26 | light | focus ring vs page bg | 6.31:1 | PASS | ui | styles.css:29; site.css:56 |
+| P26 | dark | focus ring vs page bg | 9.84:1 | PASS | ui | styles.css:29; site.css:56 |
+| P27 | light | focus ring vs surface | 6.81:1 | PASS | ui | styles.css:29, 205 (sheet, rows) |
+| P27 | dark | focus ring vs surface | 8.84:1 | PASS | ui | styles.css:29, 205 (sheet, rows) |
+| P28 | light | focus ring vs fold-light | 5.61:1 | PASS | ui | styles.css:299, 302 (hover / mode tabs) |
+| P28 | dark | focus ring vs fold-light | 7.27:1 | PASS | ui | styles.css:299, 302 (hover / mode tabs) |
+| P29 | light | focus ring vs raised surface | 6.81:1 | PASS | ui | styles.css:402 (history / dialog controls) |
+| P29 | dark | focus ring vs raised surface | 7.95:1 | PASS | ui | styles.css:402 (history / dialog controls) |
+| P30 | light | progress fill vs track | 5.61:1 | PASS | ui | styles.css:376-387 |
+| P30 | dark | progress fill vs track | 7.27:1 | PASS | ui | styles.css:376-387 |
+| P31 | light | decorative hairline vs surface | 1.53:1 | INFO | decor | styles.css:74, 184, 208; site.css:170 |
+| P31 | dark | decorative hairline vs surface | 1.38:1 | INFO | decor | styles.css:74, 184, 208; site.css:170 |
+| P32 | light | disabled primary label | 4.82:1 | EXEMPT | exempt | styles.css:51; site.css:361 |
+| P32 | dark | disabled primary label | 7.43:1 | EXEMPT | exempt | styles.css:51; site.css:361 |
+| P33 | light | disabled secondary label | 6.92:1 | EXEMPT | exempt | styles.css:52 |
+| P33 | dark | disabled secondary label | 7.05:1 | EXEMPT | exempt | styles.css:52 |
+| P34 | light | selected-row directory text (opacity .78) | 6.62:1 | PASS | text | styles.css:219 (opacity .78 applied) |
+| P34 | dark | selected-row directory text (opacity .78) | 6.12:1 | PASS | text | styles.css:219 (opacity .78 applied) |
+
+Required pairs checked (text+ui, both themes): 62
+Failing: 0
+
+| Token comment claim | Theme | Claimed | Computed vs reference | Match |
+|---|---|---|---|---|
+| --color-text vs --color-bg | light | 15.3:1 | 15.30:1 | yes |
+| --color-text-muted vs --color-bg | light | 6.4:1 | 6.42:1 | yes |
+| --color-border-strong vs --color-bg | light | 3.3:1 | 3.30:1 | yes |
+| --color-accent vs --color-bg | light | 6.3:1 | 6.31:1 | yes |
+| --color-on-accent vs --color-accent | light | 6.8:1 | 6.81:1 | yes |
+| --color-on-selection vs --color-selection | light | 12.0:1 | 12.03:1 | yes |
+| --color-caution vs --color-bg | light | 4.7:1 | 4.69:1 | yes |
+| --color-caution-text vs --color-caution-bg | light | 5.2:1 | 5.20:1 | yes |
+| --color-danger vs --color-bg | light | 6.2:1 | 6.19:1 | yes |
+| --color-danger-text vs --color-danger-bg | light | 5.5:1 | 5.46:1 | yes |
+| --color-text vs --color-bg | dark | 15.3:1 | 15.25:1 | yes |
+| --color-text-muted vs --color-bg | dark | 7.9:1 | 7.85:1 | yes |
+| --color-border-strong vs --color-bg | dark | 3.6:1 | 3.57:1 | yes |
+| --color-accent vs --color-bg | dark | 9.8:1 | 9.84:1 | yes |
+| --color-on-accent vs --color-accent | dark | 9.6:1 | 9.61:1 | yes |
+| --color-on-selection vs --color-selection | dark | 8.9:1 | 8.89:1 | yes |
+
+Opacity-dimmed aria-disabled controls (whole element blended over page bg):
+| Control | Theme | Label on page | Ratio | Result |
+|---|---|---|---|---|
+| primary button label (.55) | light | --color-on-accent on --color-accent | 2.58:1 | BELOW 4.5 (exempt only if truly disabled) |
+| mode tab label (.6) | light | --color-text-muted on --color-fold-light | 2.48:1 | BELOW 4.5 (exempt only if truly disabled) |
+| primary button label (.55) | dark | --color-on-accent on --color-accent | 3.74:1 | BELOW 4.5 (exempt only if truly disabled) |
+| mode tab label (.6) | dark | --color-text-muted on --color-fold-light | 3.04:1 | BELOW 4.5 (exempt only if truly disabled) |
+
+Raw colour drift vs primary (theme-resolved values):
+  desktop/ui/tokens.css
+  site/assets/tokens.css
