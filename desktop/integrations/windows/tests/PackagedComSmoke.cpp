@@ -22,6 +22,7 @@ static const CLSID classes[] = {
 static const wchar_t* titles[] = {
     L"Bytepleat", L"Compress with Bytepleat", L"Extract with Bytepleat", L"Open in Bytepleat"
 };
+static const char* classNames[] = {"Flyout", "Compress", "Extract", "Open"};
 
 static std::wstring Environment(const wchar_t* name) {
     DWORD size = GetEnvironmentVariableW(name, nullptr, 0);
@@ -143,8 +144,15 @@ int main() {
         // below are test-owned and Invoke is exercised explicitly.
         for (unsigned i = 0; i < 4; ++i) {
             ComPtr<IExplorerCommand> command;
-            Check(CoCreateInstance(classes[i], nullptr, CLSCTX_LOCAL_SERVER,
-                                   IID_PPV_ARGS(command.GetAddressOf())), "CoCreateInstance");
+            hr = CoCreateInstance(classes[i], nullptr, CLSCTX_LOCAL_SERVER,
+                                  IID_PPV_ARGS(command.GetAddressOf()));
+            if (FAILED(hr)) {
+                wchar_t clsid[39] = {};
+                StringFromGUID2(classes[i], clsid, 39);
+                std::fprintf(stderr, "CoCreateInstance failed: HRESULT 0x%08lX (index %u, %s, CLSID %ls)\n",
+                             static_cast<unsigned long>(hr), i, classNames[i], clsid);
+                throw hr;
+            }
             Check(command ? S_OK : E_UNEXPECTED, "activated command");
             Verify(command.Get(), i);
             if (i == 0) {

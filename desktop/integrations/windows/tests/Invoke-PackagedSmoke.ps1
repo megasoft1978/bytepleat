@@ -43,6 +43,7 @@ $fullName = $null
 $installAttempted = $false
 $trustOwned = $false
 $process = $null
+$probeExitCode = $null
 $priorSelectionOne = [Environment]::GetEnvironmentVariable('BYTEPLEAT_SMOKE_SELECTION_1', 'Process')
 $priorSelectionTwo = [Environment]::GetEnvironmentVariable('BYTEPLEAT_SMOKE_SELECTION_2', 'Process')
 try {
@@ -102,9 +103,10 @@ try {
   $process = Start-Process -FilePath $comTest -NoNewWindow -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
   if (-not $process.WaitForExit(120000)) { throw 'Packaged COM smoke exceeded 120 seconds.' }
   $process.WaitForExit()
+  $probeExitCode = if ($null -ne $process.ExitCode) { $process.ExitCode } else { 'unknown' }
   Get-Content -LiteralPath $stdout | Write-Host
   Get-Content -LiteralPath $stderr | Write-Host
-  if ($process.ExitCode -ne 0) { throw "Packaged COM smoke failed ($($process.ExitCode))." }
+  if ($probeExitCode -ne 0) { throw "Packaged COM smoke failed (exit code $probeExitCode; stdout: $stdout; stderr: $stderr)." }
 } finally {
   # Attempt every cleanup even if an earlier cleanup fails; fail the step on any
   # cleanup error. No all-user uninstall, wildcard certificate deletion, alias
