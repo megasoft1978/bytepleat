@@ -86,6 +86,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72f5acc6cb2ba439de613abc23857ec3d78374d8ed5ac84e9d11336e87da8649"
 
 [[package]]
+name = "bytepleat"
+version = "0.5.1"
+dependencies = [
+ "better_io",
+ "clap",
+ "filetime",
+ "flate2",
+ "lz4",
+ "lz4_flex",
+ "pco",
+ "same-file",
+ "serde",
+ "serde_json",
+ "sevenz-rust2",
+ "sha2",
+ "tar",
+ "tempfile",
+ "unicode-normalization",
+ "walkdir",
+ "zip",
+ "zstd",
+]
+
+[[package]]
 name = "cc"
 version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -430,30 +454,6 @@ checksum = "b63fbc4a50860e98e7b2aa7804ded1db5cbc3aff9193adaff57a6931bf7c4b4c"
 dependencies = [
  "adler2",
  "simd-adler32",
-]
-
-[[package]]
-name = "bytepleat"
-version = "0.5.1"
-dependencies = [
- "better_io",
- "clap",
- "filetime",
- "flate2",
- "lz4",
- "lz4_flex",
- "pco",
- "same-file",
- "serde",
- "serde_json",
- "sevenz-rust2",
- "sha2",
- "tar",
- "tempfile",
- "unicode-normalization",
- "walkdir",
- "zip",
- "zstd",
 ]
 
 [[package]]
