@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="320" height="80" fill="currentColor" role="img" aria-labelledby="pleat-t">
+<title id="pleat-t">A flat sheet gathered into pleats</title>
+<rect x="8" y="16" width="112" height="48" fill-opacity=".14"/>
+<path d="M8 16h112M8 64h112M8 16v48" fill="none" stroke="currentColor" stroke-opacity=".5" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+<path d="M24 30h56M24 40h72M24 50h40" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>
+<g fill-opacity=".42"><polygon points="120 16 154 22 154 58 120 64"/><polygon points="184 16 210 22 210 58 184 64"/><polygon points="232 16 252 22 252 58 232 64"/><polygon points="270 16 286 22 286 58 270 64"/><polygon points="300 16 312 22 312 58 300 64"/></g>
+<g fill-opacity=".92"><polygon points="154 22 184 16 184 64 154 58"/><polygon points="210 22 232 16 232 64 210 58"/><polygon points="252 22 270 16 270 64 252 58"/><polygon points="286 22 300 16 300 64 286 58"/></g>
+</svg>

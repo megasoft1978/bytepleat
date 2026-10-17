@@ -11,3 +11,6 @@ target/
 release-workspace/
 worker-logs/
 worker-prompts/
+
+# Design review screenshots (generated)
+/design/screenshots/
