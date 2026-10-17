@@ -25,6 +25,7 @@ use std::{
   bytepleat decompress notes.zst -o restored-notes.txt
   bytepleat compress samples.f64le --format pco --type f64
   bytepleat pack ./folder -o folder.tar.zst
+  bytepleat pack ./folder -o folder.zip
   bytepleat unpack folder.tar.zst --output ./restored
 
 Decode output, archive input, entry-count, and depth caps are configurable. See each subcommand's help for defaults and format-specific limits."
@@ -214,7 +215,7 @@ enum Command {
     },
     /// Pack a directory using tar, ZIP, or 7z.
     #[command(
-        long_about = "Pack a directory with tar plus Zstandard/gzip/LZ4, or with ZIP/7z. Pco is a typed numeric stream and cannot encode directory archives. The default input/output byte cap is 1 GiB. Example: `bytepleat pack ./project --format zip -o project.zip`."
+        long_about = "Pack a directory with tar plus Zstandard/gzip/LZ4, or with ZIP/7z. Without --format, the format follows the -o extension (.zip, .7z, .tar.zst/.tzst, .tar.gz/.tgz, .tar.lz4); otherwise it is tar plus Zstandard. A --format that conflicts with the extension is an error. Pco is a typed numeric stream and cannot encode directory archives. The default input/output byte cap is 1 GiB. Examples: `bytepleat pack ./project -o project.zip`; `bytepleat pack ./project --format 7z -o project.7z`."
     )]
     Pack {
         /// Directory whose regular files and directories will be archived.
@@ -229,8 +230,12 @@ enum Command {
         stored: bool,
         #[arg(short, long, help = "Archive output path")]
         output: Option<PathBuf>,
-        #[arg(long, value_enum, default_value = "zstd", help = "Archive format")]
-        format: ArchiveFmt,
+        #[arg(
+            long,
+            value_enum,
+            help = "Archive format; default: from the -o extension, else zstd"
+        )]
+        format: Option<ArchiveFmt>,
         #[arg(
             long,
             value_enum,
@@ -403,6 +408,40 @@ fn decode_output(input: &str) -> Option<PathBuf> {
         out.set_file_name(format!("{name}.decoded"))
     }
     Some(out)
+}
+fn infer_archive_format(output: &Path) -> Option<(ArchiveFmt, &'static str, &'static str)> {
+    let name = output.file_name()?.to_string_lossy().to_ascii_lowercase();
+    [
+        (".zip", ArchiveFmt::Zip, "ZIP archive"),
+        (".7z", ArchiveFmt::Sevenz, "7z archive"),
+        (".tar.zst", ArchiveFmt::Zstd, "tar+zstd archive"),
+        (".tzst", ArchiveFmt::Zstd, "tar+zstd archive"),
+        (".tar.gz", ArchiveFmt::Gzip, "tar+gzip archive"),
+        (".tgz", ArchiveFmt::Gzip, "tar+gzip archive"),
+        (".tar.lz4", ArchiveFmt::Lz4, "tar+lz4 archive"),
+    ]
+    .into_iter()
+    .find(|(ext, _, _)| name.ends_with(ext))
+    .map(|(ext, fmt, what)| (fmt, ext, what))
+}
+fn pack_format(format: Option<ArchiveFmt>, output: Option<&Path>) -> io::Result<ArchiveFmt> {
+    let name = |f: ArchiveFmt| {
+        f.to_possible_value()
+            .map(|v| v.get_name().to_owned())
+            .unwrap_or_default()
+    };
+    let inferred = output.and_then(|p| infer_archive_format(p).map(|x| (p, x)));
+    match (format, inferred) {
+        (Some(f), Some((p, (g, ext, what)))) if f != g => Err(bad(&format!(
+            "--format {} conflicts with output name {} (a {ext} file is a {what}); pass --format {} or rename the output",
+            name(f),
+            p.display(),
+            name(g)
+        ))),
+        (Some(f), _) => Ok(f),
+        (None, Some((_, (g, _, _)))) => Ok(g),
+        (None, None) => Ok(ArchiveFmt::Zstd),
+    }
 }
 fn run() -> io::Result<()> {
     let cli = Cli::parse();
@@ -602,6 +641,7 @@ fn run() -> io::Result<()> {
             dictionary,
             stored,
         } => {
+            let format = pack_format(format, output.as_deref())?;
             if format != ArchiveFmt::Sevenz && (solid || no_solid || dictionary.is_some()) {
                 return Err(bad("solid/dictionary options require --format 7z"));
             }

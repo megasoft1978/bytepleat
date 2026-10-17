@@ -17,6 +17,10 @@
 
 The byte commands preserve arbitrary input bytes. Compression defaults to Zstandard; decode detects the frame by its contents. Zstandard/gzip concatenated frames are supported. LZ4 concatenated frames are deliberately rejected. Native frame checksums detect accidental corruption, not tampering or authenticity.
 
+## Output format selection
+
+`pack` takes its format from `--format` or, when that is omitted, from the `-o` extension, matched case-insensitively: `.zip` is ZIP, `.7z` is 7z, `.tar.zst` or `.tzst` is tar plus Zstandard, `.tar.gz` or `.tgz` is tar plus gzip, and `.tar.lz4` is tar plus LZ4. Any other name, `-o -`, or no `-o` uses tar plus Zstandard, so `pack dir` writes `dir.tar.zst`. An explicit `--format` that contradicts a recognised extension fails before anything is written; pass the matching format or rename the output.
+
 ## Folder archives
 
 ### tar with a byte codec

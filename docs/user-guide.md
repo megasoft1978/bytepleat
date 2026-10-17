@@ -44,6 +44,8 @@ bytepleat unpack photos.7z -o extracted-photos
 bytepleat unpack photos.tar.zst -o extracted-photos
 ```
 
+Without `--format`, `pack` takes the format from the `-o` extension (`.zip`, `.7z`, `.tar.zst`/`.tzst`, `.tar.gz`/`.tgz`, `.tar.lz4`, case-insensitive). Other names, `-o -`, or no `-o` use tar plus Zstandard, as before. An explicit `--format` that contradicts the extension is an error.
+
 Tar formats require a directory. ZIP and 7z accept one regular file or a directory. ZIP supports Stored and Deflate; `--stored` selects Stored. The 7z writer uses LZMA2, defaults to solid blocks and a 16 MiB dictionary, and supports `--no-solid`. See [format details](formats.md) for read compatibility and restrictions.
 
 Packing rejects an output inside the input tree. Extraction requires a new destination. Only regular files and directories are supported; links, special files, and unsafe paths are rejected. Extraction stages and validates data before publication, but publishing multiple files is not a portable atomic directory transaction. Limits can be tuned with `--max-entries`, `--max-output`, and `--max-depth`; 7z decoding also accepts `--max-dictionary` and `--max-header`.
