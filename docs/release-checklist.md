@@ -8,6 +8,14 @@ Dry run (report only, writes nothing, no network):
 python3 scripts/release_dryrun.py --from 0.5.1 --to 0.5.2
 ```
 
+## State of the release-0.5.2 branch
+
+Changed on `release-0.5.2`: `Cargo.toml` version (0.5.2); the `bytepleat` entry in the root `Cargo.lock` only; `--version` arguments in `.github/workflows/ci.yml`; tag guard, expected asset names, `SHA256SUMS`, release title and notes in `.github/workflows/release.yml`; the `.github/ISSUE_TEMPLATE/bug_report.yml` placeholder; the CHANGELOG heading (`## 0.5.2 (unreleased)`); this paragraph.
+
+Deliberately unchanged, because they need real assets: download URLs, asset file names and `sha256` values in `README.md`, `RELEASE.md`, `site/project.json`, the `site/` pages, `site/assets/site.js` and the distribution drafts. Also unchanged: the `THIRD-PARTY.json` project version, the historical benchmark and desktop-validation records, and the `bytepleat` entries in `desktop/core/Cargo.lock` and `desktop/src-tauri/Cargo.lock` (they pin 0.5.1 as a path dependency, so `--locked` fails there until updated). `scripts/tests/test_release_instructions.py` fails until `RELEASE.md` names the 0.5.2 Windows ZIP.
+
+Left for the owner after the tag: build and upload the assets; fill the `sha256` values and URLs in `README.md`, `site/project.json`, `RELEASE.md` and the site pages; merge to `main` (the site goes live on merge); decide signing and registries (crates.io skipped).
+
 ## 1. Local verification (before any bump)
 
 ```sh

@@ -131,12 +131,12 @@ jobs:
         if: ${{ inputs.release || github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
         run: |
           test "${#GITHUB_SHA}" -eq 40
-          python scripts/package_release.py --binary "target/release/${{ matrix.exe }}" --target "${{ matrix.target }}" --version 0.5.1 --revision "${GITHUB_SHA}" --output-dir .ci-results/release --bom .ci-results/notices/THIRD-PARTY.json
+          python scripts/package_release.py --binary "target/release/${{ matrix.exe }}" --target "${{ matrix.target }}" --version 0.5.2 --revision "${GITHUB_SHA}" --output-dir .ci-results/release --bom .ci-results/notices/THIRD-PARTY.json
           archive=$(find .ci-results/release -maxdepth 1 -type f \( -name '*.tar.gz' -o -name '*.zip' \) -print -quit)
           cp .ci-results/notices/THIRD-PARTY.json ".ci-results/release/THIRD-PARTY-${{ matrix.target }}.json"
           sevenz=$(python -c "import os,shutil,pathlib; p=shutil.which('7zz') or shutil.which('7z'); print(p or next((str(pathlib.Path(os.environ.get(k,''))/'7-Zip'/'7z.exe') for k in ('ProgramFiles','ProgramFiles(x86)') if (pathlib.Path(os.environ.get(k,''))/'7-Zip'/'7z.exe').is_file()),''))")
           test -n "$sevenz"
-          python scripts/verify_packages.py --archive "$archive" --target "${{ matrix.target }}" --version 0.5.1 --revision "${GITHUB_SHA}" --native --native7z "$sevenz" --output .ci-results/package-verification.json
+          python scripts/verify_packages.py --archive "$archive" --target "${{ matrix.target }}" --version 0.5.2 --revision "${GITHUB_SHA}" --native --native7z "$sevenz" --output .ci-results/package-verification.json
         shell: bash
       - name: Upload reports
         if: always()
