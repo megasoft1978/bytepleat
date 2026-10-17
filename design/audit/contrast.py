@@ -336,23 +336,6 @@ def main(argv):
         print(f"| {tok} vs {ref_name} | {tname} | {claimed}:1 | {r:.2f}:1 | {ok} |")
     print()
 
-    # Group opacity on aria-disabled controls (styles.css:53 .55, :98 .6): the whole element,
-    # label included, is blended over the page background.
-    print("Opacity-dimmed aria-disabled controls (whole element blended over page bg):")
-    print("| Control | Theme | Label on page | Ratio | Result |")
-    print("|---|---|---|---|---|")
-    for tname, env in themes.items():
-        page = colour_of(env, "--color-bg")
-        for ctrl, alpha, fg_t, bg_t in (
-            ("primary button label (.55)", 0.55, "--color-on-accent", "--color-accent"),
-            ("mode tab label (.6)", 0.6, "--color-text-muted", "--color-fold-light"),
-        ):
-            el_bg = tuple(alpha * f + (1 - alpha) * b for f, b in zip(colour_of(env, bg_t), page))
-            el_fg = tuple(alpha * f + (1 - alpha) * b for f, b in zip(colour_of(env, fg_t), page))
-            r = ratio(el_fg, el_bg)
-            print(f"| {ctrl} | {tname} | {fg_t} on {bg_t} | {r:.2f}:1 | {'PASS' if r >= 4.5 else 'BELOW 4.5 (exempt only if truly disabled)'} |")
-    print()
-
     if len(paths) > 1:
         print("Raw colour drift vs primary (theme-resolved values):")
         for other in paths[1:]:

@@ -68,7 +68,7 @@ Full report and method: [docs/benchmarks.md](docs/benchmarks.md).
 
 Bytepleat is small and strict on purpose. Mature tools do more.
 
-- **You need RAR, encrypted or password-protected archives, ZIP64, split archives, or arbitrary 7z files.** Bytepleat does not handle these (see [supported formats](docs/formats.md)). RAR is recognised by `info` only; extraction is not implemented. RAR is a proprietary format, and the project records no licence reason for this. Whether to add support, and which licence applies, is the owner's decision and should get licence advice. Use a tool that does, such as 7-Zip, Keka or The Unarchiver, and check its documentation for its current format list.
+- **You need RAR, encrypted or password-protected archives, ZIP64, split archives, or arbitrary 7z files.** Bytepleat does not handle these (see [supported formats](docs/formats.md)). RAR is recognised by `info` only; extraction is not implemented. Use a tool that supports the format, such as 7-Zip, Keka or The Unarchiver, and check its documentation for its current format list.
 - **You need a full filesystem backup.** Permissions, ownership, links, extended attributes, and timestamps are not restored. Use a backup tool, or `tar` with the options your system documents.
 - **You already use 7-Zip, `tar` with `zstd`, or your system's archive tool, and it does what you need.** Those are mature, widely available tools. Bytepleat is a smaller, stricter alternative, not a replacement.
 
@@ -159,8 +159,6 @@ Zstandard is the default. Without `--format`, the archive type follows the `-o` 
 | 7z | Yes | Yes | Writer uses LZMA2; reader handles a bounded subset, unencrypted and single-volume; up to 100,000 entries |
 | Pco (numeric data) | Yes | Yes | Raw little-endian numbers with an explicit `--type`; not for general files or CSV |
 | RAR | No | No | Recognised by `info` only; extraction not implemented |
-
-RAR is a proprietary format. The project records no licence reason for not supporting it. Whether to add support, and which licence applies, is the owner's decision and should get licence advice.
 
 Not supported: passwords and encryption, ZIP64, split archives, RAR extraction. Exact boundaries are in [docs/formats.md](docs/formats.md).
 
