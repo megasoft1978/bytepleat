@@ -12,3 +12,7 @@ Bytepleat is a Rust CLI using standard byte and archive formats. Keep the docume
 - Do not add downloaded corpora, credentials, personal data, caches or build outputs to the repository.
 - Separate correctness/interoperability checks from performance benchmarks and include all pipeline costs in measurements.
 - Keep each parallel task's file ownership distinct. Publishing/tagging is a maintainer operation.
+
+## Orchestration
+- Sol plans and reviews; Luna workers implement in parallel. See ~/.codex/AGENTS.md.
+- Keep the file-ownership and publish/tag rules above.
