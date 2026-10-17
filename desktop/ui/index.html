@@ -4,123 +4,168 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>Bytepleat Desktop (alpha)</title>
+  <title>Bytepleat</title>
+  <link rel="preload" href="./fonts/InstrumentSans-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="./tokens.css">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to workspace</a>
-  <div class="app-shell">
-    <header class="brand-bar">
-      <a class="brand" href="#main" aria-label="Bytepleat Desktop, alpha">
-        <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><rect width="64" height="64" rx="16" fill="#17674D"/><path d="M12 22l10 6v14l-10-6z" fill="#BCE5D4"/><path d="M22 28l10-6v14l-10 6z" fill="#F4F7F4"/><path d="M32 22l10 6v14l-10-6z" fill="#BCE5D4"/><path d="M42 28l10-6v14l-10 6z" fill="#F4F7F4"/></svg>
-        <span class="brand-name">bytepleat</span><span class="alpha-badge">Alpha</span>
-      </a>
+  <div class="app" id="app">
+    <header class="app-header">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" width="20" height="20" fill="currentColor" aria-hidden="true" focusable="false"><polygon points="3 6 9.5 9.5 9.5 22.5 3 26" fill-opacity=".95"/><polygon points="9.5 9.5 16 6 16 26 9.5 22.5" fill-opacity=".45"/><polygon points="16 6 22.5 9.5 22.5 22.5 16 26" fill-opacity=".95"/><polygon points="22.5 9.5 29 6 29 26 22.5 22.5" fill-opacity=".45"/></svg>
+        <span class="brand-name">Bytepleat</span><span class="chip">Alpha</span>
+      </div>
+      <div class="mode-tabs" role="tablist" aria-label="Mode">
+        <button id="tab-create" class="mode-tab active" type="button" role="tab" aria-selected="true" aria-controls="workspace-panel" tabindex="0" data-mode="create">Create</button>
+        <button id="tab-extract" class="mode-tab" type="button" role="tab" aria-selected="false" aria-controls="workspace-panel" tabindex="-1" data-mode="extract">Extract</button>
+        <button id="tab-open" class="mode-tab" type="button" role="tab" aria-selected="false" aria-controls="workspace-panel" tabindex="-1" data-mode="open">Inspect</button>
+      </div>
+      <div class="header-tools">
+        <button id="history-toggle" class="button button-quiet history-toggle" type="button" aria-expanded="false" aria-controls="history">History</button>
+        <button id="theme-toggle" class="button button-quiet theme-toggle" type="button" title="Appearance: switch between System, Light and Dark">
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.75a6.25 6.25 0 0 1 0 12.5z" fill="currentColor"/></svg>
+          <span class="sr-only">Appearance: </span><span id="theme-label">System</span>
+        </button>
+      </div>
     </header>
 
-    <main id="main" class="main-pane">
-      <div class="topbar">
-        <p class="privacy-label">Processed on this device. Nothing is uploaded.</p>
-        <button id="theme-toggle" class="button button-quiet" type="button" title="Switch between System, Light and Dark">Appearance: <span id="theme-label">System</span></button>
-      </div>
-
-      <div class="content-wrap">
-        <section class="page-intro" aria-labelledby="view-label">
+    <main id="main" class="workspace" tabindex="-1">
+      <div id="workspace-panel" class="panel" role="tabpanel" aria-labelledby="tab-create">
+        <div class="mode-head">
           <h1 id="view-label">Create an archive</h1>
-          <p id="view-hint">Pack files or folders into a new archive. Your originals stay where they are.</p>
-        </section>
+          <p id="view-hint">Pack files or folders into one new archive. Your originals stay put.</p>
+        </div>
 
-        <div class="work-grid">
-          <section class="workspace-card" aria-label="Archive workspace">
-            <div class="pleat-edge" aria-hidden="true"></div>
-            <div class="mode-tabs" role="tablist" aria-label="Archive operation">
-              <button id="tab-create" class="mode-tab active" type="button" role="tab" aria-selected="true" aria-controls="workspace-panel" tabindex="0" data-mode="create">Create</button>
-              <button id="tab-extract" class="mode-tab" type="button" role="tab" aria-selected="false" aria-controls="workspace-panel" tabindex="-1" data-mode="extract">Extract</button>
-              <button id="tab-open" class="mode-tab" type="button" role="tab" aria-selected="false" aria-controls="workspace-panel" tabindex="-1" data-mode="open">Inspect</button>
+        <div id="native-notice" class="notice notice-info" role="status" hidden>You are viewing a preview in a web browser. Open the Bytepleat desktop app to choose files and create, inspect or extract archives.</div>
+
+        <section id="drop-zone" class="sheet" aria-labelledby="input-title">
+          <h2 id="input-title" class="sr-only">Choose what to archive</h2>
+
+          <div class="drop-empty">
+            <svg class="pleat-art" viewBox="0 0 320 80" width="160" height="40" fill="currentColor" aria-hidden="true" focusable="false"><rect x="8" y="16" width="112" height="48" fill-opacity=".14"/><path d="M8 16h112M8 64h112M8 16v48" fill="none" stroke="currentColor" stroke-opacity=".5" stroke-width="1.5" vector-effect="non-scaling-stroke"/><path d="M24 30h56M24 40h72M24 50h40" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/><g class="pleat-folds"><g fill-opacity=".42"><polygon points="120 16 154 22 154 58 120 64"/><polygon points="184 16 210 22 210 58 184 64"/><polygon points="232 16 252 22 252 58 232 64"/><polygon points="270 16 286 22 286 58 270 64"/><polygon points="300 16 312 22 312 58 300 64"/></g><g fill-opacity=".92"><polygon points="154 22 184 16 184 64 154 58"/><polygon points="210 22 232 16 232 64 210 58"/><polygon points="252 22 270 16 270 64 252 58"/><polygon points="286 22 300 16 300 64 286 58"/></g></g></svg>
+            <p id="drop-title" class="drop-title">Drop files or folders here</p>
+            <div class="browse-actions">
+              <button id="browse-inputs" class="button button-secondary" type="button">Choose files…</button>
+              <button id="browse-folder" class="button button-secondary" type="button">Choose folder…</button>
             </div>
+            <p id="drop-sub" class="drop-sub">Nothing leaves this device. Nothing is overwritten.</p>
+            <p id="input-hint" class="drop-hint">Archive output is capped at 1 GiB.</p>
+            <button id="browse-open" class="button-text drop-alt" type="button">Inspect an archive instead…</button>
+          </div>
 
-            <div id="workspace-panel" class="workspace-body" role="tabpanel" aria-labelledby="tab-create">
-              <div class="step"><span class="step-number" aria-hidden="true">1</span><div><h2 id="input-title">Choose what to archive</h2><p id="input-hint">Select files or folders from your device.</p></div></div>
-              <div id="drop-zone" class="drop-zone" role="group" aria-labelledby="input-title">
-                <svg class="drop-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 21V5m0 0-6 6m6-6 6 6M6 19v7h20v-7"/></svg>
-                <p class="drop-copy"><strong id="drop-title">Drop files to compress, or an archive to inspect</strong><span id="drop-sub">or choose them with the buttons here</span></p>
-                <div class="browse-actions"><button id="browse-inputs" class="button button-secondary" type="button">Choose files…</button><button id="browse-folder" class="button button-secondary" type="button">Choose folder…</button><button id="browse-open" class="button button-secondary" type="button">Open archive…</button></div>
-              </div>
-              <p class="standing-note">Existing files are never overwritten.</p>
-              <div id="selection" class="selection-list"><div class="selection-empty">Nothing selected yet.</div></div>
-              <div id="selection-count" class="selection-count" aria-live="polite"></div>
-              <p id="selection-note" class="selection-note" hidden></p>
-              <section id="archive-inspection" class="archive-inspection" hidden aria-labelledby="inspection-title">
-                <div class="inspection-heading"><h3 id="inspection-title" tabindex="-1">Archive contents</h3><span id="inspection-summary"></span></div>
-                <p class="caveat"><strong>Listing only.</strong> File contents have not been checked. Extracting selected entries reads the whole archive first, so large archives can take a while.</p>
-                <div id="entry-list" class="entry-list" role="group" aria-labelledby="inspection-title"></div>
-                <p id="entry-hint" class="entry-hint" aria-live="polite"></p>
-                <button id="extract-selected" class="button button-secondary" type="button" disabled>Extract selected…</button>
-              </section>
-              <section id="selected-review" class="archive-inspection selected-review" hidden aria-labelledby="review-title">
-                <div class="inspection-heading"><h3 id="review-title" tabindex="-1">Entries to extract</h3><span id="review-summary"></span></div>
-                <p class="review-note">Chosen from the listing you inspected. If the archive has changed since, inspect it again; extraction stops if a chosen entry is missing. Bytepleat reads the whole archive first and then keeps only these, so large archives can take a while.</p>
-                <ul id="review-list" class="review-list" tabindex="0" aria-label="Entries chosen for extraction"></ul>
-                <div class="review-actions"><button id="review-change" class="button button-secondary" type="button">Change selection</button><button id="review-clear" class="button button-quiet" type="button">Extract everything instead</button></div>
-              </section>
+          <div class="selection-view">
+            <div id="selection" class="selection-list"><div class="selection-empty">Nothing selected yet.</div></div>
+            <div class="selection-foot">
+              <span id="selection-count" class="selection-count" aria-live="polite"></span>
+              <span class="selection-tools">
+                <button id="add-files" class="button button-secondary button-small" type="button">Add files…</button>
+                <button id="add-folder" class="button button-secondary button-small" type="button">Add folder…</button>
+                <button id="clear-selection" class="button-text" type="button">Clear all</button>
+                <button id="open-different" class="button-text" type="button">Open a different one…</button>
+              </span>
+            </div>
+          </div>
 
-              <div id="format-section" class="configuration-section">
-                <div class="step"><span class="step-number" aria-hidden="true">2</span><div><h2>Choose a format</h2><p>ZIP and 7z support common features only. <a href="#format-limits">See what is supported</a>.</p></div></div>
-                <div class="format-options" role="radiogroup" aria-label="Archive format">
-                  <label class="format-option selected"><input type="radio" name="format" value="zip" checked><span class="radio-mark" aria-hidden="true"></span><span class="format-main"><strong>ZIP</strong><small>Classic ZIP. Opens almost anywhere.</small></span></label>
-                  <label class="format-option"><input type="radio" name="format" value="7z"><span class="radio-mark" aria-hidden="true"></span><span class="format-main"><strong>7z</strong><small>Compact 7z archive for tools that read 7z.</small></span></label>
-                  <details class="advanced-formats"><summary>Compressed tar formats</summary><div class="advanced-list">
-                    <label class="format-option"><input type="radio" name="format" value="tar.zst"><span class="radio-mark" aria-hidden="true"></span><span class="format-main"><strong>TAR · Zstandard</strong><small>Compressed tar. Common on Linux and macOS.</small></span></label>
-                    <label class="format-option"><input type="radio" name="format" value="tar.gz"><span class="radio-mark" aria-hidden="true"></span><span class="format-main"><strong>TAR · Gzip</strong><small>Compressed tar. Broad Unix compatibility.</small></span></label>
-                    <label class="format-option"><input type="radio" name="format" value="tar.lz4"><span class="radio-mark" aria-hidden="true"></span><span class="format-main"><strong>TAR · LZ4</strong><small>Compressed tar with LZ4 frames.</small></span></label>
-                  </div></details>
-                </div>
-              </div>
+          <section id="archive-inspection" class="archive-inspection" hidden aria-labelledby="inspection-title">
+            <div class="inspection-heading">
+              <h3 id="inspection-title" tabindex="-1">Archive contents</h3>
+              <span id="inspection-summary" class="caption"></span>
+            </div>
+            <p class="caveat">Reading only. Nothing is extracted. File contents have not been checked.</p>
+            <div class="entry-head" role="presentation">
+              <label class="entry-row entry-all"><input id="select-all" type="checkbox"><span id="select-all-label" class="entry-name">Select all listed</span><span id="entry-counter" class="entry-size" aria-live="polite"></span></label>
+            </div>
+            <div id="entry-list" class="entry-list" role="group" aria-labelledby="inspection-title"></div>
+          </section>
 
-              <div id="destination-section" class="destination-row">
-                <div class="step"><span class="step-number" id="destination-step" aria-hidden="true">3</span><div><h2 id="destination-title">Save archive as</h2><p id="destination-hint">Choose where the finished archive will go.</p></div></div>
-                <button id="choose-destination" class="button button-secondary" type="button">Choose location…</button>
-                <p id="destination-path" class="destination-path" aria-live="polite">No location chosen yet.</p>
-                <p id="destination-note" class="destination-note"></p>
-              </div>
-
-              <div class="run-row">
-                <p id="run-hint" class="run-hint">Choose what to archive to continue.</p>
-                <button id="run-job" class="button button-primary" type="button" aria-describedby="run-hint" disabled><span id="run-label">Create archive</span></button>
-              </div>
-              <p id="run-fineprint" class="run-fineprint"></p>
-              <div id="native-notice" class="notice" role="status" hidden>You are viewing a preview in a web browser. Open the Bytepleat desktop app to choose files and create, inspect or extract archives.</div>
-              <div id="status-message" class="status-message" role="status" aria-live="polite"></div>
-              <section id="job-now" class="job-now" aria-label="Current job" hidden></section>
+          <section id="selected-review" class="archive-inspection selected-review" hidden aria-labelledby="review-title">
+            <div class="inspection-heading">
+              <h3 id="review-title" tabindex="-1">Entries to extract</h3>
+              <span id="review-summary" class="caption"></span>
+            </div>
+            <ul id="review-list" class="review-list" tabindex="0" aria-label="Entries chosen for extraction"></ul>
+            <div class="review-foot">
+              <p class="review-note caption">Chosen from the listing you inspected. If the archive has changed since, inspect it again; extraction stops if a chosen entry is missing. Bytepleat reads the whole archive first, then keeps only these.</p>
+              <span class="review-actions"><button id="review-change" class="button button-secondary button-small" type="button">Change selection</button><button id="review-clear" class="button-text" type="button">Extract everything instead</button></span>
             </div>
           </section>
 
-          <aside class="formats-aside" aria-label="Format information">
-            <section id="format-limits" class="aside-block" aria-labelledby="limits-title" tabindex="-1">
-              <h2 id="limits-title">What is supported</h2>
-              <ul class="limit-list">
-                <li><strong>ZIP</strong> classic ZIP files only (no ZIP64).</li>
-                <li><strong>7z</strong> common 7z archives only.</li>
-                <li><strong>TAR</strong> compressed with Zstandard, Gzip or LZ4.</li>
-                <li class="limit-no"><strong>Not supported</strong> RAR, password-protected archives and ZIP64.</li>
-              </ul>
-              <p id="aside-note" class="aside-note"></p>
-            </section>
-            <section class="aside-block" aria-labelledby="local-title">
-              <h2 id="local-title">Local and careful</h2>
-              <p class="aside-note">Files are processed on this device. Originals are never moved or removed, and existing files or folders are never overwritten.</p>
-            </section>
-          </aside>
-        </div>
+          <section id="job-now" class="job-now" aria-label="Current job" hidden></section>
+        </section>
 
-        <footer class="bottom-note"><span>Bytepleat Desktop alpha. Platform validation is incomplete; there is no consumer installer yet.</span></footer>
+        <div class="options-row">
+          <div id="format-section" class="format-section">
+            <span id="format-label" class="option-label">Format</span>
+            <div class="format-body">
+              <div class="format-options" role="radiogroup" aria-labelledby="format-label" aria-describedby="format-desc">
+                <label class="format-option selected"><input type="radio" name="format" value="zip" checked data-desc="Classic ZIP. Opens almost anywhere. Up to 65,534 files."><span>ZIP</span></label>
+                <label class="format-option"><input type="radio" name="format" value="7z" data-desc="Smaller archive for people who have 7-Zip or Keka."><span>7z</span></label>
+                <label class="format-option"><input type="radio" name="format" value="tar.zst" data-desc="Compressed tar with Zstandard. Common on Linux and macOS."><span>tar.zst</span></label>
+                <label class="format-option"><input type="radio" name="format" value="tar.gz" data-desc="Compressed tar with gzip. Opens on nearly every Unix system."><span>tar.gz</span></label>
+                <label class="format-option"><input type="radio" name="format" value="tar.lz4" data-desc="Compressed tar with LZ4. Needs a tool that reads LZ4."><span>tar.lz4</span></label>
+              </div>
+              <p class="format-desc-row"><span id="format-desc" class="format-desc">Classic ZIP. Opens almost anywhere. Up to 65,534 files.</span> <button id="formats-open" class="button-text" type="button" aria-haspopup="dialog">What each format supports</button></p>
+            </div>
+          </div>
+          <p id="selection-note" class="selection-note caption" hidden></p>
+          <p id="entry-hint" class="entry-hint caption" aria-live="polite"></p>
+          <div id="entry-cap" class="cap-note" hidden></div>
+          <p id="destination-note" class="destination-note caption"></p>
+          <p id="run-fineprint" class="run-fineprint caption"></p>
+          <div id="selection-alert" class="inline-alert" role="alert" hidden></div>
+          <div id="status-message" class="status-message" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="band" id="band">
+        <div class="band-idle">
+          <div id="destination-section" class="destination">
+            <p class="destination-line">
+              <span id="destination-title" class="option-label">Save to</span>
+              <span id="destination-path" class="destination-path is-empty" aria-live="polite">Not chosen yet</span>
+              <button id="choose-destination" class="button-text" type="button">Choose…</button>
+            </p>
+            <span id="destination-hint" class="sr-only"></span><span id="destination-step" hidden></span>
+          </div>
+          <p id="band-note" class="band-note caption">Reading only. Nothing is extracted.</p>
+          <div class="run-row">
+            <p id="run-hint" class="run-hint caption">Choose what to archive first.</p>
+            <button id="extract-all" class="button-text" type="button" hidden>Extract everything…</button>
+            <button id="extract-selected" class="button button-secondary" type="button" hidden>Extract selected…</button>
+            <button id="run-job" class="button button-primary button-large" type="button" aria-describedby="run-hint" disabled><span id="run-label">Create archive</span></button>
+          </div>
+        </div>
+        <div id="job-band" class="job-band" hidden></div>
       </div>
     </main>
 
-    <aside class="activity" aria-labelledby="activity-title">
-      <h2 id="activity-title">Recent jobs</h2>
-      <div id="job-list" class="job-list"><p class="empty-history">Your archive jobs will appear here.</p></div>
+    <aside id="history" class="history" aria-labelledby="activity-title">
+      <div class="history-head">
+        <h2 id="activity-title">History</h2>
+        <button id="history-close" class="button button-quiet button-small history-close" type="button">Close</button>
+      </div>
+      <div id="job-list" class="job-list"><p class="empty-history">Your jobs will appear here. History stays on this device.</p></div>
     </aside>
+    <div class="history-scrim" id="history-scrim" hidden></div>
   </div>
+
+  <dialog id="formats-dialog" class="dialog" aria-labelledby="limits-title">
+    <section id="format-limits" class="dialog-body">
+      <h2 id="limits-title">What each format supports</h2>
+      <dl class="limit-list">
+        <div><dt>ZIP</dt><dd>Classic ZIP files only, up to 65,534 files. No ZIP64.</dd></div>
+        <div><dt>7z</dt><dd>Common 7z archives only.</dd></div>
+        <div><dt>tar.zst, tar.gz, tar.lz4</dt><dd>Tar compressed with Zstandard, gzip or LZ4.</dd></div>
+        <div class="limit-no"><dt>Not supported</dt><dd>RAR, password-protected archives, ZIP64 and split archives.</dd></div>
+      </dl>
+      <p id="aside-note" class="caption aside-note"></p>
+      <p class="caption aside-note">Files are processed on this device. Originals are never moved or removed, and existing files or folders are never overwritten.</p>
+      <div class="dialog-actions"><button id="formats-close" class="button button-secondary" type="button">Close</button></div>
+    </section>
+  </dialog>
+
   <div id="announce" class="sr-only" role="status" aria-live="polite"></div>
   <script type="module" src="./app.js"></script>
 </body>
