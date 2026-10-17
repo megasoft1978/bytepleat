@@ -2,7 +2,7 @@ name: Desktop native UI smoke
 
 on:
   push:
-    branches: [main, desktop-alpha]
+    branches: [main]
     paths:
       - '.github/workflows/desktop-ui-smoke.yml'
       - 'README.md'

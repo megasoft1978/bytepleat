@@ -1,17 +1,13 @@
 name: Desktop package schema probe
+# Manual only. This probe validates packaging inputs from an EXISTING successful `Desktop alpha native checks`
+# run (artifacts expire after 7 days), so it cannot run on every push; pass a recent run id when dispatching.
 on:
-  push:
-    branches: [desktop-alpha]
-    paths:
-      - .github/workflows/desktop-package-probe.yml
-      - desktop/integrations/windows/package/**
   workflow_dispatch:
     inputs:
       source-run-id:
         description: Successful desktop workflow run containing Windows x64 and ARM64 executable and Explorer artifacts
         required: true
         type: string
-        default: '38626708085'
 permissions:
   contents: read
   actions: read
@@ -38,19 +34,19 @@ jobs:
         with:
           name: ${{ matrix.executable-artifact }}
           path: source-executable
-          run-id: ${{ inputs.source-run-id || '38626708085' }}
+          run-id: ${{ inputs.source-run-id }}
           github-token: ${{ github.token }}
       - name: Download matching Explorer DLL from source run
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: ${{ matrix.explorer-artifact }}
           path: source-explorer
-          run-id: ${{ inputs.source-run-id || '38626708085' }}
+          run-id: ${{ inputs.source-run-id }}
           github-token: ${{ github.token }}
       - name: Assemble exact architecture payload and record hashes
         shell: pwsh
         env:
-          SOURCE_RUN_ID: ${{ inputs.source-run-id || '38626708085' }}
+          SOURCE_RUN_ID: ${{ inputs.source-run-id }}
           MANIFEST_COMMIT: ${{ github.sha }}
           ARCHITECTURE: ${{ matrix.architecture }}
         run: |
