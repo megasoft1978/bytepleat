@@ -121,6 +121,7 @@ code, pre, samp, kbd { font-family: var(--font-mono); }
 .menu-toggle:hover, .theme-toggle:hover { background: var(--color-fold-light); }
 
 @media (max-width: 639.98px) {
+  .nav { flex-wrap: nowrap; column-gap: var(--space-3); }
   .js .nav-install { display: inline-flex; }
   .js .menu-toggle { display: inline-block; }
   .js .nav-links { display: none; }
