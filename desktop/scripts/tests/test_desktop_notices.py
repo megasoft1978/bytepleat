@@ -244,5 +244,75 @@ class SupplementalCatalogTests(unittest.TestCase):
             self.assertFalse(report["literal_inventory_complete"])
 
 
+class BundledUiFontTests(unittest.TestCase):
+    def make_root(self, base: Path) -> Path:
+        fonts = base / "desktop/ui/fonts"
+        fonts.mkdir(parents=True)
+        for font in module.BUNDLED_UI_FONTS:
+            for name in font["files"]:
+                (fonts / name).write_bytes(b"woff2")
+            (fonts / font["notice"]).write_text(font["copyright"] + "\nSIL OFL 1.1")
+        return base
+
+    def test_fonts_are_listed_with_copied_hashed_notices(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = self.make_root(Path(temp) / "repo")
+            out = Path(temp) / "out"
+            out.mkdir()
+            components = module.bundled_ui_assets(root, out)
+            self.assertEqual([c["component"] for c in components], ["Instrument Sans", "JetBrains Mono"])
+            for c in components:
+                self.assertEqual(c["license"], "OFL-1.1")
+                self.assertTrue(c["copyright"].startswith("Copyright"))
+                (notice,) = c["notices"]
+                copied = out / notice["path"]
+                self.assertIn(c["copyright"], copied.read_text())
+                self.assertEqual(notice["sha256"], module.sha256(copied))
+
+    def test_missing_ofl_text_fails(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = self.make_root(Path(temp) / "repo")
+            (root / "desktop/ui/fonts/OFL-JetBrainsMono.txt").unlink()
+            out = Path(temp) / "out"
+            out.mkdir()
+            with self.assertRaisesRegex(ValueError, "licence text missing"):
+                module.bundled_ui_assets(root, out)
+
+    def test_missing_font_file_fails(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = self.make_root(Path(temp) / "repo")
+            (root / "desktop/ui/fonts/JetBrainsMono-latin.woff2").unlink()
+            out = Path(temp) / "out"
+            out.mkdir()
+            with self.assertRaisesRegex(ValueError, "font file missing"):
+                module.bundled_ui_assets(root, out)
+
+    def test_repo_fonts_present_and_matching_real_files(self):
+        root = SCRIPT.parents[2]
+        with tempfile.TemporaryDirectory() as temp:
+            out = Path(temp)
+            components = module.bundled_ui_assets(root, out)
+            self.assertEqual(len(components), 2)
+            for c in components:
+                self.assertIn(c["copyright"], (out / c["notices"][0]["path"]).read_text())
+
+    def test_collect_includes_fonts_in_runtime_components_and_count(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = self.make_root(Path(temp))
+            manifest = root / "desktop/src-tauri/Cargo.toml"
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text("[package]\nname='r'\n")
+            (manifest.parent / "Cargo.lock").write_text("lock")
+            (root / "THIRD-PARTY.json").write_text('{"packages": []}')
+            metadata = {"packages": [{"id": "root", "name": "bytepleat-desktop", "version": "1.0.0", "manifest_path": str(manifest), "license": "MIT"}], "resolve": {"nodes": [{"id": "root", "deps": []}]}}
+            fake = type("R", (), {"returncode": 0, "stdout": json.dumps(metadata).encode(), "stderr": b""})()
+            with patch.object(module.subprocess, "run", return_value=fake), patch.object(module, "rust_runtime", return_value=([], [])):
+                report = module.collect("aarch64-apple-darwin", root / "out", root)
+            self.assertEqual([c["component"] for c in report["runtime_components"]], ["Instrument Sans", "JetBrains Mono"])
+            self.assertEqual(report["notice_file_count"], 2)
+            for c in report["runtime_components"]:
+                self.assertTrue((root / "out" / c["notices"][0]["path"]).is_file())
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -191,6 +191,33 @@ def rust_runtime(root: Path, target: str, out: Path) -> tuple[list[dict], list[d
     return runtime, gaps
 
 
+BUNDLED_UI_FONTS = (
+    {"component": "Instrument Sans", "version": "variable (Google Fonts, fetched 2026-10-17)", "license": "OFL-1.1", "copyright": "Copyright 2022 The Instrument Sans Project Authors (https://github.com/Instrument/instrument-sans)", "source_url": "https://github.com/Instrument/instrument-sans", "files": ["InstrumentSans-latin.woff2", "InstrumentSans-latin-ext.woff2"], "notice": "OFL-InstrumentSans.txt"},
+    {"component": "JetBrains Mono", "version": "variable (Google Fonts, fetched 2026-10-17)", "license": "OFL-1.1", "copyright": "Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)", "source_url": "https://github.com/JetBrains/JetBrainsMono", "files": ["JetBrainsMono-latin.woff2"], "notice": "OFL-JetBrainsMono.txt"},
+)
+
+
+def bundled_ui_assets(root: Path, out: Path) -> list[dict]:
+    """Inventory UI assets embedded in the app binary (desktop/ui). Strict: a missing font or OFL text raises."""
+    fonts_dir = root / "desktop/ui/fonts"
+    if not (root / "desktop/ui").is_dir():
+        return []
+    components = []
+    for font in BUNDLED_UI_FONTS:
+        for name in font["files"]:
+            if not (fonts_dir / name).is_file():
+                raise ValueError(f"bundled UI font file missing: desktop/ui/fonts/{name}")
+        src = fonts_dir / font["notice"]
+        if src.is_symlink() or not src.is_file():
+            raise ValueError(f"bundled UI font licence text missing: desktop/ui/fonts/{font['notice']}")
+        if src.stat().st_size > MAX_NOTICE_BYTES:
+            raise ValueError(f"bundled UI font licence text exceeds {MAX_NOTICE_BYTES} bytes: {font['notice']}")
+        dst = out / "third-party-licenses/bundled-ui" / font["component"].replace(" ", "-") / font["notice"]
+        safe_copy(src, dst, root, out)
+        components.append({"component": font["component"], "kind": "bundled-ui-font", "version": font["version"], "license": font["license"], "copyright": font["copyright"], "source_url": font["source_url"], "files": [f"desktop/ui/fonts/{n}" for n in font["files"]], "notices": [{"path": dst.relative_to(out).as_posix(), "sha256": sha256(dst), "source_relative_path": f"desktop/ui/fonts/{font['notice']}", "source": "desktop/ui/fonts"}]})
+    return components
+
+
 def collect(target: str, out: Path, root: Path = ROOT) -> dict:
     root = root.resolve()
     manifest = root / MANIFEST_RELATIVE
@@ -287,6 +314,7 @@ def collect(target: str, out: Path, root: Path = ROOT) -> dict:
         result.append(entry)
     runtime, runtime_gaps = rust_runtime(root, target, out)
     gaps.extend(runtime_gaps)
+    runtime = runtime + bundled_ui_assets(root, out)
     systems = {"aarch64-apple-darwin": "macOS frameworks and system libraries are provided by macOS; WebView is the OS-provided WKWebView. No OS libraries are bundled here.", "x86_64-pc-windows-msvc": "Windows system libraries and WebView2 runtime are platform prerequisites; the MSVC toolchain/redistributable may be required. They are not inventoried as Cargo packages.", "x86_64-unknown-linux-gnu": "GNU/Linux system libraries and a supported WebKitGTK/WebView runtime are platform prerequisites; they are not Cargo packages."}
     report = {"schema_version": 1, "generated_by": "desktop/scripts/collect-desktop-notices.py", "project": {"name": "bytepleat-desktop", "version": packages[desktop_root[0]]["version"]}, "target": target, "cargo_metadata_filter_platform": target, "cargo_lock_sha256": sha256(manifest.parent / "Cargo.lock"), "package_count": len(result), "notice_file_count": sum(len(p["notices"]) for p in result) + sum(len(c["notices"]) for c in runtime), "packages": result, "runtime_components": runtime, "platform_prerequisites": {"status": "not bundled; verify for each installer", "description": systems.get(target, "Target operating system libraries and WebView/toolchain prerequisites are not Cargo packages.")}, "unresolved_gaps": gaps, "literal_inventory_complete": not gaps, "platform_qa": "Not assessed by literal notice inventory; verify each installer and target independently.", "redistribution_ready": False, "legal_clearance": "Not assessed; literal inventory and declared metadata do not constitute legal clearance."}
     (out / "THIRD-PARTY.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
