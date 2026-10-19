@@ -2,6 +2,8 @@
 
 A local desktop app (Tauri 2) for the Bytepleat archive tools. It is an early alpha with no installer. How it works internally: [docs/desktop-internals.md](../docs/desktop-internals.md). What has been tested: [docs/desktop-validation.md](../docs/desktop-validation.md).
 
+If you are evaluating the app, start with the [beta testing guide](../docs/beta-testing.md) for its current availability, a safe test walkthrough, and known validation gaps. The app is not yet a beta-ready consumer download.
+
 ## Prerequisites
 
 Rust 1.93 or newer, Node.js/npm, and the [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/) for your platform. Run all commands from this directory.

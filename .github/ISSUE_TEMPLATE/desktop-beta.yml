@@ -1,0 +1,53 @@
+name: Desktop beta feedback
+description: Report a reproducible issue while trying the Bytepleat desktop beta
+title: ""
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Bytepleat app or package version
+      description: Include the desktop app version or package/build version shown by your download.
+      placeholder: "0.1.0-alpha.0"
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Operating system and architecture
+      placeholder: "Windows 11, x64"
+    validations:
+      required: true
+  - type: dropdown
+    id: operation
+    attributes:
+      label: Operation
+      options:
+        - Install or launch
+        - Create an archive
+        - Extract an archive
+        - Inspect an archive
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: format
+    attributes:
+      label: Archive format
+      description: Name the format involved, or enter “not applicable”.
+      placeholder: "ZIP, 7z, or not applicable"
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and actual result
+      description: State what you expected and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: List the steps needed to reproduce. Remove private paths or data. Do not attach private archives or logs containing personal data.
+    validations:
+      required: true

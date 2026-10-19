@@ -6,27 +6,49 @@ body:
   - type: input
     id: version
     attributes:
-      label: Bytepleat version
-      placeholder: "0.5.2"
+      label: Bytepleat app or package version
+      description: Include the desktop app version or CLI/package version you used.
+      placeholder: "0.5.2 or 0.1.0-alpha.0"
     validations:
       required: true
   - type: input
     id: platform
     attributes:
       label: Operating system and architecture
-      placeholder: "macOS 15, Apple Silicon"
+      placeholder: "macOS 15, arm64"
+    validations:
+      required: true
+  - type: dropdown
+    id: operation
+    attributes:
+      label: Operation
+      options:
+        - Create an archive
+        - Extract an archive
+        - Inspect an archive
+        - Launch or install the app
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: format
+    attributes:
+      label: Archive format
+      description: Name the format involved, or enter “not applicable”.
+      placeholder: "ZIP, 7z, or not applicable"
     validations:
       required: true
   - type: textarea
     id: steps
     attributes:
       label: Command and reproduction steps
-      description: Remove private paths or data. Do not include vulnerability details here.
+      description: Include the exact steps needed to reproduce. Remove private paths or data. Do not attach private archives or logs containing personal data. Do not include vulnerability details here.
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
       label: Expected and actual result
+      description: State what you expected and what happened instead.
     validations:
       required: true

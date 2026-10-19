@@ -131,8 +131,8 @@
     if (download) {
       if (asset) {
         download.href = asset.url;
-        download.textContent = `Download for ${targets[selected].name}`;
-        download.setAttribute('aria-label', `Download Bytepleat ${config.version} for ${targets[selected].name}, file ${asset.filename}`);
+        download.textContent = `Download CLI for ${targets[selected].name}`;
+        download.setAttribute('aria-label', `Download the Bytepleat ${config.version} command-line tool for ${targets[selected].name}, file ${asset.filename}`);
       } else if (config) {
         download.href = releases;
         download.textContent = 'See releases on GitHub';

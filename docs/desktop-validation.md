@@ -274,6 +274,27 @@ first hosted Nautilus runtime job passed in [GitHub Actions run
 38762493952](https://github.com/megasoft1978/bytepleat/actions/runs/38762493952).
 The same job passed again in [run 38770917796](https://github.com/megasoft1978/bytepleat/actions/runs/38770917796).
 
+### Latest native CI and UI smoke · 2026-10-17
+
+At product HEAD `13f36d30966b3f4fa8688a72466bf5ec6772c808`, [Native CI run
+39065324219](https://github.com/megasoft1978/bytepleat/actions/runs/39065324219)
+and [Desktop native UI smoke run
+39065324244](https://github.com/megasoft1978/bytepleat/actions/runs/39065324244)
+passed. The UI smoke matrix built and ran on macOS ARM64, Ubuntu x64 and ARM64,
+and Windows x64 and ARM64. Its current test source covers generated-ZIP
+inspection and selected-extraction review; native create and selected
+extraction; preservation of occupied output; and cancellation after partial
+staging, including removal of staging, absence of published output, and
+byte-for-byte preservation of the input archive.
+
+These checks use the CI `ui-test` executable with its embedded WebDriver and
+native command bridge. They are useful current-source correctness evidence but
+are not tests of an ordinary installed desktop package. They do not exercise
+native save/open dialogs, Finder/Explorer/Nautilus/Dolphin menus, or the missing
+D28 installed-package workflows on Ubuntu GNOME and Windows. A current-source
+ordinary installed-app GUI pass on macOS is also outstanding. Beta therefore
+remains **NO-GO** pending these runtime checks.
+
 ### Packaged Linux window render · Ubuntu 24.04 x64 · 2026-10-15
 
 Run `38770917796` built the ordinary Linux development `.deb` twice and checked
@@ -381,6 +402,7 @@ Run in a UTM virtual machine on Apple silicon: Windows 11 Pro 26H2, build 10.0.2
 - Signing: Developer ID signing and notarization for macOS, and appropriate Windows signing. Packages are unsigned today.
 - Installers: no signed or public installer is published, so installer behavior is untested.
 - Interactive coverage across more operating systems and archive formats. GUI tests do not establish performance, and this record makes no new codec or performance claim.
+- Current-source ordinary installed-package GUI confirmation on macOS. Earlier native GUI checks and the isolated unsigned review app at commit `0d9a8a8` are useful historical evidence, but they do not establish the current product HEAD (`13f36d3`) as an installed application. The current-source CI WebView smoke is a separate test build, not package-installation evidence.
 
 ## Scope notes
 

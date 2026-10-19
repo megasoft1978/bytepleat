@@ -1,18 +1,18 @@
-# Release checklist
+# CLI release checklist
 
-Ordered steps for the next release. Target: 0.5.2 (from 0.5.1). Nothing here publishes, tags or signs; the owner-only steps are marked.
+Bytepleat CLI 0.5.2 has already been released. This checklist is for a future
+CLI release; choose its version and source tag before using the commands below.
+It does not cover a desktop consumer release. Desktop remains an alpha with no
+published installer; see the [beta testing guide](beta-testing.md) and
+[desktop validation record](desktop-validation.md).
 
 Dry run (report only, writes nothing, no network):
 
+Replace the placeholders with the chosen versions before running the dry run:
+
 ```sh
-python3 scripts/release_dryrun.py --from 0.5.1 --to 0.5.2
+python3 scripts/release_dryrun.py --from VERSION_FROM --to VERSION_TO
 ```
-
-## State of the 0.5.2 release prep
-
-Done before tagging: version bump (`Cargo.toml`, root and desktop `Cargo.lock` pins), `--version` checks in `ci.yml`, tag guard, asset names and notes in `release.yml`, bug report placeholder, dated CHANGELOG entry, and `RELEASE.md` rewritten for 0.5.2 (the release-instructions test passes).
-
-Still to do after the assets exist: real download URLs and `sha256` values in `README.md`, `site/project.json`, the `site/` pages and `site/assets/site.js` (list them with `scripts/release_dryrun.py`). Unchanged by design: `THIRD-PARTY.json`, historical benchmark and validation records, older CHANGELOG entries.
 
 ## 1. Local verification (before any bump)
 
@@ -32,43 +32,45 @@ All must pass on a clean tree. The native package checks (macOS Apple silicon, L
 
 ## 2. Version bump (after the release commit is ready)
 
-Every hardcoded `0.5.1` from the dry run changes to `0.5.2`:
+Use the dry-run report to find references that need the new version. Preserve
+historical release notes, benchmark records, and validation records.
 
 1. `Cargo.toml` `version`.
 2. `cargo update -p bytepleat --offline` to refresh `Cargo.lock`. Do not hand-edit the lockfile.
-3. `README.md`: download URLs, `curl`/PowerShell examples, `--tag v0.5.2`, status lines.
-4. `RELEASE.md`: title, asset names, sidecar names, `--tag v0.5.2`.
-5. `site/project.json`: `version`, filenames, URLs, `checksum_url`s. Leave `sha256` values as they are until step 4b.
-6. `site/index.html`, `site/docs/index.html`, `site/404.html`: version text, download links, install commands.
-7. `.github/ISSUE_TEMPLATE/bug_report.yml` placeholder.
-8. `.github/workflows/ci.yml`: `--version` arguments in the package and verify steps.
-9. `.github/workflows/release.yml`: tag guard (`test "$RELEASE_TAG" = v0.5.2`), expected asset names, `SHA256SUMS` names, release notes text, `gh release create` asset names.
-10. Re-run `python3 scripts/release_dryrun.py --from 0.5.1 --to 0.5.2` and confirm no `0.5.1` remains outside the excluded files and historical benchmark records.
+3. `README.md`: download URLs, `curl`/PowerShell examples, install tag, and release status.
+4. `RELEASE.md`: title, asset names, sidecar names, and install tag.
+5. `site/project.json`: version, filenames, URLs, and checksum URLs. Fill hashes only after release assets exist and are verified.
+6. Site pages and scripts: version text, download links, and install commands.
+7. Bug report version placeholder.
+8. `.github/workflows/ci.yml`: version arguments in package and verify steps.
+9. `.github/workflows/release.yml`: tag guard, expected asset names, `SHA256SUMS` names, notes, and upload assets.
+10. Re-run the dry run with the selected versions and resolve every unexpected stale reference.
 11. Re-run step 1.
 
-Do not push the bump until the owner says to publish: the live Pages site and README point at assets that do not exist before the release.
+Do not push or publish without maintainer authorization. Update public download
+links only when the corresponding release assets exist.
 
 ## 3. Owner-only steps (publishing)
 
 Owner runs these. Do not automate them.
 
-1. Create the annotated tag `v0.5.2` on the release commit.
-2. Let the release workflow build the native packages and checksums, or build them on the named runners as the workflow expects.
-3. Create the GitHub release `v0.5.2`. Upload the three archives and their `.sha256` sidecars plus `SHA256SUMS`.
-4. Signing (open decision: sign 0.5.2 or ship unsigned as 0.5.1 was). Signing changes archive bytes, so any signed release gets new hashes.
-   - a. Apple Developer ID and notarization, Windows Trusted Signing: credentials go only into GitHub secrets (names in the owner's local lab notes, not in this repository). Never commit values.
-   - b. Only after the assets exist: copy the real `sha256` values from the uploaded sidecars into `README.md` and `site/project.json`. Never compute or type these from memory.
+1. Create an annotated tag for the approved release version on the release commit.
+2. Let the release workflow build the native packages and checksums, or use the named runners as the workflow expects.
+3. Create the GitHub release and upload the expected archives, sidecars, and `SHA256SUMS`.
+4. Signing and notarization require a separate maintainer decision and credentials. Signing changes archive bytes, so calculate hashes from the final assets.
+   - a. Put signing credentials only in the approved secret store. Never commit values.
+   - b. Only after assets exist: copy verified SHA-256 values from their sidecars into public metadata. Never type hashes from memory.
 5. Homebrew tap (`megasoft1978/homebrew-tap`, formula from the owner's local lab notes, not in this repository): update the formula with the real hashes after step 4b.
-6. winget (`manifests/m/Megasoft1978/Bytepleat/0.5.2/`): regenerate from the real hashes, validate, open the PR to `microsoft/winget-pkgs`.
+6. winget: generate the manifest for the approved version from verified hashes, validate it, and open the PR to `microsoft/winget-pkgs`.
 7. crates.io: skipped. Decided in the owner's local lab notes, not in this repository; `[patch.crates-io]` would drop the hardened 7z reader on publish.
 8. Commit the `sha256` fill-in and any site changes, then push and tag only with owner approval.
 
 ## 4. Post-release verification
 
-1. For each asset (macOS arm64 tar.gz, Linux x86-64 tar.gz, Windows x86-64 zip): download into an empty directory.
+1. For each published platform asset: download into an empty directory.
 2. Verify the sidecar: `shasum -a 256 -c <asset>.sha256` (macOS), `sha256sum -c <asset>.sha256` (Linux), `Get-FileHash` against the sidecar (Windows). Confirm the digest equals the value in `site/project.json` and `README.md`.
-3. Extract and run `--version`; it must print `bytepleat 0.5.2`, and `--help` must run.
+3. Extract and run `--version`; it must print the approved release version, and `--help` must run.
 4. Check that the GitHub release lists exactly the expected assets, with no extras.
-5. Check the Pages site: download links, version text, and install commands point at `v0.5.2`; no broken links (`.github/workflows/pages.yml` deploys).
-6. Check the `cargo install --locked --git ... --tag v0.5.2` command builds from the tag.
+5. Check the Pages site: download links, version text, and install commands point at the approved release; no broken links (`.github/workflows/pages.yml` deploys).
+6. Check the `cargo install --locked --git ... --tag <tag>` command builds from the release tag.
 7. Record the results in the release notes, or in `RELEASE.md` if the owner asks.

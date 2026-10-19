@@ -406,7 +406,7 @@ function renderJobNow(job){
 }
 function renderJobHistory(jobs){
   const host=$('#job-list');
-  if(!jobs.length){host.innerHTML='<p class="empty-history">Your jobs will appear here. History stays on this device.</p>';return;}
+  if(!jobs.length){host.innerHTML='<p class="empty-history">No jobs yet. Archives you create, extract or inspect will be listed here. History stays on this device.</p>';return;}
   host.innerHTML=jobs.map((job,index)=>{
     const button=(index>0||(!isActive(job)&&!outcomeShown(job)))?jobActionButton(job,'button-text'):'';
     const verb=job.state==='completed'?(DONE_VERB[job.action]||'Completed'):STATE_LABEL[job.state]||job.state;

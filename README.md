@@ -193,6 +193,9 @@ npm run tauri -- dev
 ```
 
 The contributor guide is in [desktop/README.md](desktop/README.md).
+For a tester-focused source-build walkthrough and current limitations, see
+[docs/beta-testing.md](docs/beta-testing.md). The desktop app remains an alpha,
+not a beta-ready consumer download.
 
 ## Build and contribute
 
